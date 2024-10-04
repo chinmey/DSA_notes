@@ -1,0 +1,14 @@
+https://leetcode.com/discuss/study-guide/1733447/become-master-in-recursion
+
+
+How to identify a recursive problem ? 
+
+Any  problem in which we have choices and we need to make decisions that is recusion . Ex generate all substring for "ab" {"", "a", "b", "ab"}
+At each index we have a choice to take it or not this is why this is a recursive problem.
+
+Our decisions taken are represented using a tree that is called recursive tree which is basic for each problem. Technique used here is I/P-O/P (Aditya)
+initial input is "ab" and o/p is "" as we reach end of input we get our answers, each branch is based on decision taken by us
+
+If we are not able to think directly using choices we need to look at alternative way of thinking (Base condition - Hypothesis - induction). It relies on 
+making input smaller. Example is print 1 to N using recusion. This is about making Hypothesis/Faith in a function on a smaller problem.
+Example let us say Solve(n) print 1--> n , let us have faith that Solve(n-1) --> prints 1 --> n-1 than if we just print n (induction we are done)

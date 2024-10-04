@@ -1,0 +1,106 @@
+Buy and sell with 'k' transcations 
+
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        return Recursive(prices, 0, true, 1);
+    }
+
+    int Recursive(vector<int> &p, int ind, bool b, int k) {
+        if (ind >= p.size() || k <= 0) return 0;
+        int ans = 0;
+        
+        if (b) {
+            return max(-p[ind] + Recursive(p, ind + 1, !b, k), Recursive(p, ind + 1, b, k));
+        } else {
+            return max({ p[ind] + Recursive(p, ind + 1, !b, k - 1), Recursive(p, ind + 1, b, k) });
+        }`
+    }
+};
+
+
+Kadane algo 
+
+cur_max --> abhi tak ki array le , ya sirf naya number 
+
+
+Set Matrix zero 
+
+Use set to know location of 0 and do another traversal for actual zeroing , better to use 1st row and 1st column as marker
+
+
+Pascal Triangle 
+
+Initution will solve but nth row is ncr
+
+int nCr(int n, int r) {
+    long long res = 1;
+
+    // calculating nCr:
+    for (int i = 0; i < r; i++) {
+        res = res * (n - i);
+        res = res / (i + 1);
+    }
+    return res;
+}
+
+void pascalTriangle(int n) {
+    // printing the entire row n:
+    for (int c = 1; c <= n; c++) {
+        cout << nCr(n - 1, c - 1) << " ";
+    }
+    cout << "n";
+}
+
+
+Sort 0s, 1s , 2s
+
+Swap wala logic h 0 ko aage , 2 ko peeche , 2 ko peeche le jate time index inc mat karo (because of case like 1 2 0)
+
+
+Next permutation 
+
+//find the first adacent pair from right side where left is smaller than right
+ //if you dont find such a pair, reverse the whole array
+//swap the left element in the pair with the smallest element greater than that to its right
+//then reverse the sub array from the point of swap(after the left element in the pair) till the end
+
+
+Repeating and missing number in array (explain : https://www.youtube.com/watch?v=pnx5JA9LNM4&list=PL-Jc9J83PIiFJRioti3ZV7QabwoJK6eKe&index=9)
+
+Ex : 1 4 2 2 --> answer would be 2 and 3
+
+Xor of number with itself is always zero, take xor of original array and what should be correct array ( 1 -> 4)
+
+We would be left with 2 xor 3 (all other number would get cut )
+ 
+Now get the right-most set bit  = number & -number
+
+The original set (which is array + 1-> n) can be divided into 2 with numbers having right most set bit as on/off and each of our number would be in different bucket 
+Go thru set if & is zero xor seperately and if & is one xor seperately (you have 2 numbers)
+
+
+Rotate matrix : think about final solution like what would ans[i][j] could be than figure out operation ( ex clockwise --> transpose + row reverse)
+
+*** IMP ******Count inversion (explain : https://www.youtube.com/watch?v=uojx--MK_n0)
+
+Basically gives how far a array is from getting sorted (if a[i] > a[j] but i < j that is a insertion)
+
+Same as merge sort but in the step where we do merging of array whenever left is bigger we do count + = left.size - index; 
+
+Power (x, n) : based on logic that xpn = xpn/2 * xpn/2 (when n is even we need another x when odd just do recursion on same)
+
+n/3 element --> same as n/2 just take 2 candidates  and than run in last loop to verify that answer we got is right
+
+larget Subarray with sum = 0 (running sum niklate jao zero h to check max ,also map me index aur uska running sum store karo same aaya to window me zero sum h)
+
+Number of subarray with sum k (explain : https://www.youtube.com/watch?v=xvNwoz-ufXA)
+
+take a loop i(0--> n) and j(i --> n) keep on calculating sum if it matches we count (slightly better than brute)
+
+Optimal approach is to prefix sum (remember if 0 < i < j < n) prefix[j] = prefix[i] + (sum of elements from i+1 to j-1)
+
+Let us say prefix_sum(j) = s ( we are looking for a subarray ending at j with sum k) (so there must exist a i < j whose prefix sum is s-k)
+
+So in a hash_map keep on storing (prefix_sum , count_occ ) and use above to get result
+

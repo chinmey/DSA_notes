@@ -1,0 +1,61 @@
+Subset-sum (all subset) , 2 (all subset without duplicate) , combination sum all are done using decision tree method 
+
+Question ---> return all subsets without dups
+vector<vector<int>> ans;
+unordered_set<string> f;
+    vector<vector<int>> subsetsWithDup(vector<int>& nums) {
+        ans.clear();
+        f.clear();
+        vector<int> local;
+        recursive(nums, nums.size(), 0, local);
+        return ans;
+    }
+
+    void recursive(vector<int> arr, int n , int ind, vector<int> res) {
+        
+        if(ind == n) {
+            string test;
+            sort(res.begin(), res.end());
+            for (int x : res) {
+                test = test + "-" + to_string(x);
+            }
+            if (f.find(test) == f.end()) {
+            f.insert(test);
+            ans.push_back(res);
+            }
+            return;
+        }
+        
+        recursive(arr, n , ind+1, res);
+        res.push_back(arr[ind]);
+        recursive(arr, n , ind+1, res);
+        
+        return;
+    }
+
+Palindrom partitioning : (explain : https://www.youtube.com/watch?v=VOiNexeScLU) aditya has this covered in DP too
+
+Solved using IBH technique we can partition throughout string , if first part is palindrome we recur for second part and so on and we have to pop_back at last
+
+
+Kth Grammar :: use observation to shorten input  (https://www.youtube.com/watch?v=5P84A0YCo_Y&list=PL_z_8CaSLPWeT1ffjiImo0sYTcnLzo-wY&index=10) , you don't 
+need to generate the all rows and than give answer
+
+0 , 0 1 , 0 1 1 0 , 0 1 1 0 1 0 0 1 and so on 
+
+Observe that each time first half of array is same as above and second is reverse of that build logic on that.
+
+int help(int n , int k) {
+        if (n== 1 && k == 1) {
+            return 0;
+        }
+        
+        int m = pow(2, n-1)/2;
+
+        if(k <= m) return help(n-1,k);
+        return !help(n-1, k-m);
+        
+
+    }
+
+Similar observation is needed for kth permutation sequence

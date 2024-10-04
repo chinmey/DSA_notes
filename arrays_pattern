@@ -1,0 +1,198 @@
+https://www.linkedin.com/feed/update/urn:li:activity:7231910229993484289/
+
+
+**** Sliding Window ******
+
+The Sliding Window pattern is used to perform a required operation on a specific window size of a given array or linked list, such as finding the longest subarray containing all 1s. Sliding Windows start from the 1st element and keep shifting right by one element and adjust the length of the window according to the problem that you are solving. In some cases, the window size remains constant and in other cases the sizes grows or shrinks.
+
+
+How to identify ?
+
+> Question is on linear ds like array, linked list , string
+> We are asked to find things like longest/shortest substring , or value equal to desired
+
+Common Problems 
+
+Maximum sum subarray of size ‘K’ (easy)
+Longest substring with ‘K’ distinct characters (medium)
+String anagrams (hard)
+
+
+Template for this 
+
+vector<int> slidingWindowTemplateByHarryChaoyangHe(string source, string target) {
+    vector<int> result;
+    if (target.length() > source.length()) return result;
+    
+    unordered_map<char, int> charCountTarget;
+    for (char c : target) {
+        charCountTarget[c]++;
+    }
+
+    int counter = charCountTarget.size(); // Count all unique characters that need to be matched
+    int start = 0, end = 0;
+    int minLength = INT_MAX;
+
+    while (end < source.length()) {
+        char currentChar = source[end];
+        
+        if (charCountTarget.count(currentChar)) {
+            charCountTarget[currentChar]--;
+            if (charCountTarget[currentChar] == 0) counter--;
+        }
+        end++;
+        
+        // Shrinking window
+        while (counter == 0) {
+            char startChar = source[start];
+            if (charCountTarget.count(startChar)) {
+                charCountTarget[startChar]++;
+                if (charCountTarget[startChar] > 0) counter++;
+            }
+            
+            // Update result based on problem
+            start++;
+        }
+    }
+
+    return result;
+}
+
+
+**** Two pointers ******
+
+Two Pointers is a pattern where two pointers iterate through the data structure in tandem until one or both of the pointers hit a certain condition.Two Pointers is often useful when searching pairs in a sorted array or linked list; for example, when you have to compare each element of an array to its other elements.
+
+Two pointers are needed because with just pointer, you would have to continually loop back through the array to find the answer. This back and forth with a single iterator is inefficient for time and space complexity — a concept referred to as asymptotic analysis
+
+How to identify ?
+
+> Questions on sorted ds , like sorted array or linked list 
+> We have to find things like pair/tuples etc 
+
+
+Example Problem: Longest Substring Without Repeating Characters
+Consider the problem: Given a string, find the length of the longest substring without repeating characters.
+
+Input: "abcabcbb"
+Output: 3 (The longest substring without repeating characters is "abc")
+
+A brute-force approach might check every possible substring, which would take a long time. But using two pointers, you can slide a window over the string and adjust the window as you detect repeating characters.
+
+Start with two pointers i and j at the beginning of the string.
+Expand the window by moving j (the right pointer) until you hit a repeating character.
+Then, move i (the left pointer) forward to skip over the repeating character and continue.
+This method avoids checking unnecessary cases and reduces time complexity.
+
+When Can Two Pointers Be Used?
+The two-pointer technique can't be used when both of these don't hold:
+
+If a larger window (range) is valid, every smaller window inside it is also valid.
+For example, in the substring problem, if a longer substring has no repeating characters, all shorter substrings inside it also have no repeating characters.
+If a smaller window is invalid, any larger window containing it is also invalid.
+If you find a smaller substring with repeating characters, you know any longer substring starting from the same point will also have repeating characters.
+
+When we can't use this ?
+
+Ex subarray sum equals 'k' with negative numbers think on this .
+
+Common Problems 
+
+Squaring a sorted array (easy)
+Triplets that sum to zero (medium)
+Comparing strings that contain backspaces (medium)
+
+
+**** Fast/Slow pointers ******
+
+is a pointer algorithm that uses two pointers which move through the array (or sequence/linked list) at different speeds. This approach is quite useful when dealing with cyclic linked lists or arrays.
+
+How to identify ?
+
+Dealing with cyclic ds 
+Asked to find position of element in overall length of linked list
+
+Then should I use it over the Two Pointer method mentioned above?
+
+There are some cases where you shouldn’t use the Two Pointer approach such as in a singly linked list where you can’t move in a backwards direction. An example of when to use the Fast and Slow pattern is when you’re trying to determine if a linked list is a palindrome.
+Problems featuring the fast and slow pointers pattern:
+
+Linked List Cycle (easy)
+Palindrome Linked List (medium)
+Cycle in a Circular Array (hard)
+
+
+**** Merge intervals *******
+
+
+The Merge Intervals pattern is an efficient technique to deal with overlapping intervals. In a lot of problems involving intervals, you either need to find overlapping intervals or merge intervals if they overlap. The pattern works like this:
+
+Given two intervals (‘a’ and ‘b’), there will be five different ways the two intervals can relate to each other:
+
+> a and b do not overlap 
+> a and b overlap and b ends after a 
+> a and b overlap and a ends afer b
+> a completely overlaps b 
+> b completely overlaps a 
+
+How do you identify when to use the Merge Intervals pattern?
+
+If you’re asked to produce a list with only mutually exclusive intervals
+If you hear the term “overlapping intervals”.
+
+Common problems:
+
+Intervals Intersection (medium)
+Maximum CPU Load (hard)
+
+
+**** Cyclic sort ***********
+
+
+This pattern describes an interesting approach to deal with problems involving arrays containing numbers in a given range. The Cyclic Sort pattern iterates over the array one number at a time, and if the current number you are iterating is not at the correct index, you swap it with the number at its correct index
+
+How do I identify this pattern?
+
+They will be problems involving a sorted array with numbers in a given range
+If the problem asks you to find the missing/duplicate/smallest number in an sorted/rotated array
+
+Common Problems:
+
+Find the Missing Number (easy)
+Find the Smallest Missing Positive Number (medium)
+
+
+
+**** Binary search *******
+
+
+Used when we can discard one half of search space post one check , ex template (just change boundaries and condition for all problem)
+
+All problems : https://leetcode.com/discuss/general-discussion/786126/python-powerful-ultimate-binary-search-template-solved-many-problems
+
+int binarySearch(const vector<int>& arr, int target) {
+    int left = 0;                   // Left boundary
+    int right = arr.size() - 1;      // Right boundary
+    
+    // Loop until the search space is exhausted
+    while (left <= right) {
+        int mid = left + (right - left) / 2;  // Calculate the middle index
+        
+        // Check if the middle element is the target
+        if (arr[mid] == target) {
+            return mid;               // Target found at index `mid`
+        }
+        else if (arr[mid] < target) {
+            left = mid + 1;           // Target must be in the right half
+        }
+        else {
+            right = mid - 1;          // Target must be in the left half
+        }
+    }
+    
+    return -1;  // Return -1 if the target is not found
+}
+
+
+
+
