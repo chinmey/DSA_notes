@@ -1,0 +1,107 @@
+\documentclass[a4paper,10pt]{article}
+
+\usepackage{parskip} 
+\usepackage{hologo}
+\usepackage{fontspec}
+\RequirePackage{color}
+\RequirePackage{graphicx}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[scale=0.9, top=.4in, bottom=.4in]{geometry}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\usepackage{supertabular}
+\newlength{\fullcollw}
+\setlength{\fullcollw}{0.42\textwidth}
+\usepackage{titlesec}
+\usepackage{multicol}
+\usepackage{multirow}
+\titleformat{\section}{\Large\scshape\raggedright}{}{0em}{}[\titlerule]
+\titlespacing{\section}{1pt}{2pt}{2pt}
+\usepackage[unicode, draft=false]{hyperref}
+\color{black}
+\usepackage{fontawesome5}
+\usepackage[normalem]{ulem}
+\setmainfont{Arial}
+
+\begin{document}
+
+\pagestyle{empty}
+
+% Header Section
+\begin{tabularx}{\linewidth}{@{} C @{}}
+\textcolor{black}{\Huge{Chinmey Srivastav}} \\[6pt]
+\\
+\textcolor{black}{{\faEnvelope} \href{mailto:srichinmey.43@gmail.com}{srichinmey.43@gmail.com}} \hspace{1cm}
+\textcolor{black}{{\faMobile} +91 93041 77124} \hspace{1cm}
+\textcolor{black}{\href{https://github.com/chinmey}{\faGithub \ github.com/chinmey}} \hspace{1cm}
+\href{https://linkedin.com/in/chinmey-srivastav-839a0a1a2}{\faLinkedin \ linkedin.com/chinmey}
+\end{tabularx}
+
+% Professional Summary
+\section{Professional Summary}
+Software Development Engineer with over 3 years of experience, efficient in delivering ideas on schedule. Skilled in backend development, cloud services, and problem-solving.
+
+% Work Experience
+\section{Work Experience}
+\textbf{Software Development Engineer - 2, Amazon} \hfill \textcolor{black}{05/2024 - Present} 
+\begin{itemize}[nosep,after=\strut, leftmargin=2em, itemsep=2pt]
+    \item Part of the FireTV Vending team, which owns backend services providing metadata (title, synopsis, image, etc.) and buy box on the Fire TV detail page.
+    \item Led developments in IdTranslation Service, a tier-1 service used across FireTV for converting IDs across namespace with TPS exceeding half million.
+    \item Handled creation of TV-hierarchy for easy accumulation of TV viewing options.
+    \item Contributed to development of incremental data processing, improving end-to-end data flow latency from 1 day to 2 hours.
+\end{itemize}
+
+\textbf{Software Development Engineer - 1, Amazon} \hfill \textcolor{black}{09/2022 - 05/2024} 
+\begin{itemize}[nosep,after=\strut, leftmargin=2em, itemsep=2pt]
+    \item Developed core services and contributed to FireTV’s Settings and Storage team, managing on-device storage and customer settings.
+    \item Contributed to development of dynamic offload functionality which helps auto-offload apps on device, reducing the percentage of devices in low storage by 50\%.
+    \item Built Advanced Low Storage feature, a smart recommender for identifying and uninstalling storage-hogging apps, reducing user time in low storage by 35\%.
+     \item Introduced CDK based pipeline creation and propagation, migrating legacy LPT+CFN system.
+\end{itemize}
+
+\textbf{Associate Software Developer, Sabre} \hfill \textcolor{black}{02/2021 - 09/2022} 
+\begin{itemize}[nosep,after=\strut, leftmargin=2em, itemsep=2pt]
+    \item Played a key role in developing a new Loyalty Management System, increasing total revenue from Rewards Bookings by 30-40\%.
+    \item Implemented features such as Dynamic Rewards, Tax Exception, and Tier Level Profiles.
+\end{itemize}
+
+% Skills Section
+\section{Skills}
+\textbf{Languages:} Java, C++, JavaScript, HTML, CSS \\
+\textbf{Frameworks and Libraries:} Spring, Mockito, JUnit, ReactJS, Redux \\
+\textbf{Version Control and Tools:} Git, Jenkins, AWS, CDK \\
+\textbf{Fundamentals:} Object-Oriented Programming (OOP), Database Management Systems (DBMS), Data Structures, Computer Networks
+
+% Achievements
+\section{Achievements}
+\begin{itemize}[nosep,after=\strut, leftmargin=2em, itemsep=2pt]
+    \item Won numerous internal awards including award given for showing operational excellence throughout year.
+    \item Top 20\% of problem solvers on \href{https://leetcode.com/chinmey/}{LeetCode} and \href{https://www.interviewbit.com/profile/chinmey15}{InterviewBit}.
+    \item Captain of chess team that secured 3rd place in Inter-NIT Sports Meet, 2019.
+    \item Ranked 6th in entire state for AISCEE-2017
+\end{itemize}
+
+% Projects
+\section{Projects}
+\textbf{JSON Custom Deserializer} 
+\begin{itemize}[nosep,after=\strut, leftmargin=2em, itemsep=2pt]
+    \item Created a custom deserializer to convert JSON to POJO with condition-based data discarding, outperforming libraries like Jackson and FastJSON for specific usecase.
+    \item Benchmarked performance using JMH.
+    \item \href{https://github.com/chinmey/JSONCustomDeserializer}{GitHub Link: JSON Custom Deserializer}
+\end{itemize}
+
+\textbf{ReactQuote}
+\begin{itemize}[nosep,after=\strut, leftmargin=2em, itemsep=2pt]
+    \item Developed a React app with user authentication, quote viewing/adding functionality, and routing.
+    \item Managed the backend using Node.js and MongoDB.
+    \item \href{https://github.com/chinmey/ReactQuote}{GitHub Link: ReactQuote}
+\end{itemize}
+
+% Education
+\section{Education}
+\textbf{National Institute of Technology, Jamshedpur} \hfill B.Tech, Electronics and Communication Engineering \hfill \textit{CGPA: 8.86/10}
+
+\textbf{DAV Public School, Gandhinagar, Ranchi} \hfill Class 12 - CBSE Board \hfill \textit{Percentage: 96\%}
+
+\end{document}
