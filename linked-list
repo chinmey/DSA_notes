@@ -113,6 +113,15 @@ it simplifies to L1 + x = nC, meaning the distance from the head to the cycle st
 
 LRU cache : done using map(because we need O(1) get and put) and duoble linked list (for maintaining order and determining what to evict)
 
+Video -- https://www.youtube.com/watch?v=Hi5obC_CwIU
+
+Why we need iterator in map ? because i want to know without traversing list that it exists or not
+
+Why we use DLL and not SLL ? So map would give me ref to node , now i need to have ref to node behind me so that it can point to node in front of me ,
+essentially deleting me and i can move to front for that it is easier if i use DLL
+
+What exactly is refresh doing ? Read above point , basically it removes existing key from list and puts it in front 
+
 class LRUCache {
     list<int> lruList; // Doubly linked list to store only keys
     unordered_map<int, pair<int, list<int>::iterator>> cacheMap; // Map: key -> {value, iterator to lruList}
@@ -158,6 +167,32 @@ public:
         }
     }
 };
+
+
+LFU (least frequently used) Tie should be broken by recency 
+
+When a key is first inserted into the cache, its use counter is set to 1 (due to the put operation). The use counter for a key in the cache is incremented 
+either a get or put operation is called on it
+
+To maintain a Least Frequently Used (LFU) cache with recency as the tiebreaker, you can follow this intuition:
+
+Track Frequency of Usage: Each key in the cache should be associated with a frequency count that tracks how often it's accessed (via get or put operations). 
+You can use a map (hash table) to store the key-value pairs and their frequency.
+
+Group Keys by Frequency: Use multiple lists (or doubly linked lists) to group keys that have the same frequency. 
+Each frequency group (e.g., all keys with frequency 1, frequency 2, etc.) would have its own list to track the keys in order of recency.
+
+Recency within Frequency Group: Within each frequency group, maintain the order of keys by recency of access. 
+The most recently used key should be at the front of the list, while the least recently used (LRU) key should be at the back.
+
+Eviction Strategy: When the cache exceeds capacity, evict the least frequently used key. 
+If there is a tie in frequency, evict the least recently used key within the group of the lowest frequency.
+
+
+In code we need to maintain 2 maps 
+
+Maps key -> node (iterator to the node in freqList) : unordered_map<int, std::list<Node>::iterator> keyMap;
+Maps frequency -> list of nodes with that frequency : unordered_map<int, std::list<Node>> freqListMap;
 
 
 3 sum/ 4 sum 

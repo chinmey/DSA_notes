@@ -1,0 +1,674 @@
+Inorder -- left root right  Preorder -- root left right  Postorder --- left right root
+
+WIth recursion all are straightforwrad just make call in same way
+
+Iterative way
+Inituition is to keep a array and store state of node (1 for in , 2 for pre, 3 for post) and solve accoridingly
+
+stack<pair<TreeNode*,int>> s;
+        s.push({root, 1});
+
+        while(!s.empty()) {
+            pair<TreeNode*, int> top = s.top();
+
+            int state = top.second;
+            TreeNode* node = top.first;
+
+            if(state == 1) {
+                pre.push_back(node->val);
+                s.pop();
+                s.push({node, 2});
+                if(node->left != nullptr) {
+                    s.push({node->left, 1});
+                }
+            } else if(state == 2) {
+                in.push_back(node->val);
+                s.pop();
+                s.push({node, 3});
+                if(node->right != nullptr) {
+                    s.push({node->right, 1});
+                }
+            } else if(state == 3) {
+                post.push_back(node->val);
+                s.pop();
+            }
+ }
+
+Morris inorder traversal (using no extra space)
+
+We have 2 observations from using recursion and what it helps us with we need to simulate both here 
+
+> Right is processed only when either left does not exists or left is already fully processed
+> Recursion makes a connection between a root and its rightmost node in its left tree 
+
+We need to do both here and think on those two points
+
+vector<int> in;
+    TreeNode* curr = root;
+
+    while (curr != nullptr) {
+        if (curr->left == nullptr) {
+            // Process the node if there's no left subtree
+            in.push_back(curr->val);
+            curr = curr->right;  // Move to the right subtree
+        } else {
+            // Find the inorder predecessor (rightmost node of the left subtree)
+            TreeNode* pre = curr->left;
+            while (pre->right != nullptr && pre->right != curr) {
+                pre = pre->right;
+            }
+
+            if (pre->right == nullptr) {
+                // Create a temporary link to the current node
+                pre->right = curr;
+                curr = curr->left;  // Move to the left subtree
+            } else {
+                // Remove the temporary link (restoring the tree)
+                pre->right = nullptr;
+                in.push_back(curr->val);
+                curr = curr->right;  // Move to the right subtree
+            }
+        }
+}
+
+we just change making and removing of connection part in pre-order (line in.push_back(curr->val); is moved to if)
+
+
+Level order traversal --> BFS use a queue put root in it and pop front of queue and push children in (we can use some delimiter for level like nullptr etc)
+
+
+Is tree symmetric ? --> for tree to be symmetric its child should be mirror image of each other and that should hold true for all their childs and so on 
+
+bool areMirror(TreeNode* left, TreeNode* right) {
+    if (left == nullptr && right == nullptr) return true;
+    if (left == nullptr || right == nullptr) return false;
+
+    // This is the critical check you're missing
+    return (left->val == right->val) 
+        && areMirror(left->right, right->left) 
+        && areMirror(left->left, right->right);
+}
+
+Invert a tree ? 
+
+void invertHelper(TreeNode* node) {
+    if (node == nullptr) return;
+
+    // Swap the left and right children
+    TreeNode* temp = node->left;
+    node->left = node->right;
+    node->right = temp;
+
+    // Recursively invert the subtrees
+    invertHelper(node->left);
+    invertHelper(node->right);
+}
+
+Left view of tree : first node in each level (easy in BFS) (for DFS use pre-order and take first node in each level)
+
+
+Top view of tree : track horizontol distance each one for a level is to be returned there are two ways to do this now 
+
+If we have independent copies than we dont need to care about backtracking etc 
+
+void fillMap(Node* root, int d) {
+        if (root == NULL) return;
+        
+        // Only add the node if it is the first one encountered at that distance
+        if (mp.find(d) == mp.end()) {
+            mp[d] = root->data;
+        }
+        
+        // Correctly propagate the horizontal distance
+        fillMap(root->left, d - 1);  // Left child goes to d - 1
+        fillMap(root->right, d + 1); // Right child goes to d + 1
+}
+
+Using single copy 
+void fillMap(Node* root, int &d) {
+        if (root == nullptr) return;
+
+        if (mp.find(d) == mp.end()) {
+            mp[d] = root->data;
+        }
+
+        // Increment for left child
+        d--;
+        fillMap(root->left, d); // Move to the left child
+        d++; // Backtrack to the original value for the right child
+        d++;
+        fillMap(root->right, d); // Move to the right child
+        d--; // Backtrack to the original value after right child
+ }
+
+
+Diameter of tree 
+
+The diameter of a binary tree is the length of the longest path between any two nodes in a tree
+
+Initution 
+
+For each node there are two responsibility first check if its left+right can be answer (in case answer passes thru it)
+Pass the max(left,right) to its parent (in case answer does not pass thru it)
+
+int result = 0;
+    int solve(TreeNode* root) {
+        
+        if(root == NULL) return 0;
+
+        int l = solve(root->left);
+        int r = solve(root->right);
+
+        result = max(result, l+r);
+
+        return max(l,r) + 1;
+    }
+    int diameterOfBinaryTree(TreeNode* root) {
+        
+        int s = solve(root);
+
+        return result;
+    }
+
+Similar code for max sum between any two nodes 
+
+class Solution {
+public:
+    int maxSum = INT_MIN;
+
+    int solve(TreeNode* root) {
+        if (root == nullptr) return 0;
+
+        // Recursively calculate the maximum sum from left and right subtrees
+        int leftSum = max(0, solve(root->left));  // Ignore negative sums, treat them as 0
+        int rightSum = max(0, solve(root->right));
+
+        int currentSum = leftSum + rightSum + root->val;
+
+        maxSum = max(maxSum, currentSum);
+
+        return root->val + max(leftSum, rightSum);
+    }
+
+    int maxPathSum(TreeNode* root) {
+        solve(root);
+        return maxSum;
+    }
+};
+
+
+LCA of 2 nodes in tree
+
+One way is to get path for root->node of both and see where it differes 
+But we have another better way , using observations for a inorder traversal
+
+
+if while traversing we get either a or b than return that , it is LCA
+if both a and b are in different subtree than root is answer 
+and rely on rest for recursion
+
+
+TreeNode* findLCA(TreeNode* root, TreeNode* p, TreeNode* q) {
+    // Base case: if root is NULL or root is either p or q, return root
+    if (root == nullptr || root == p || root == q) {
+        return root;
+    }
+
+    // Recur for the left and right subtrees
+    TreeNode* leftLCA = findLCA(root->left, p, q);
+    TreeNode* rightLCA = findLCA(root->right, p, q);
+
+    // If both the left and right subtree calls return non-null, 
+    // it means p and q are found in different subtrees, hence root is their LCA.
+    if (leftLCA != nullptr && rightLCA != nullptr) {
+        return root;
+    }
+
+    // Otherwise, return the non-null result from left or right (if only one subtree contains p or q)
+    return (leftLCA != nullptr) ? leftLCA : rightLCA;
+}
+
+
+Path sum , given a sum find out if there exists any path between root->leaf which equals a target
+
+One way is to get all path sums and see if one matches , better is this 
+
+bool hasPathSum(TreeNode* root, int targetSum) {
+    // Base case: If the tree is empty, there's no path, so return false.
+    if (root == nullptr) {
+        return false;
+    }
+
+    // Subtract the current node's value from the target sum.
+    targetSum -= root->val;
+
+    // If we reach a leaf node (both left and right are null), check if the target sum is 0.
+    if (root->left == nullptr && root->right == nullptr) {
+        return targetSum == 0;
+    }
+
+    // Recursively check the left and right subtrees.
+    // If either subtree has a path that results in the target sum, return true.
+    return hasPathSum(root->left, targetSum) || hasPathSum(root->right, targetSum);
+}
+
+
+Check if a given tree is subTree for another given tree 
+
+bool checkTreeSame(TreeNode* a, TreeNode* b) {
+        if (!a && !b) return true;  // Both nodes are NULL, so trees are identical
+        if (!a || !b) return false; // One is NULL and the other is not, so trees differ
+        return (a->val == b->val) && checkTreeSame(a->left, b->left) && checkTreeSame(a->right, b->right);
+    }
+
+    bool isSubtree(TreeNode* root, TreeNode* subRoot) {
+        if (root == nullptr) return false; // If the main tree is empty, it can't contain any subtree
+
+        // Check if the current tree rooted at 'root' is the same as 'subRoot'
+        if (checkTreeSame(root, subRoot)) return true;
+
+        // Otherwise, check the left and right subtrees recursively
+        return isSubtree(root->left, subRoot) || isSubtree(root->right, subRoot);
+    }
+
+
+Create tree from inorder and Preorder
+
+class Solution {
+public:
+    // Helper function to find index of root in inorder array
+    int find(int k, vector<int>& in, int inStart, int inEnd) {
+        for(int i = inStart; i <= inEnd; i++) {
+            if(in[i] == k) return i;
+        }
+        return -1;  // Should not happen if input is valid
+    }
+
+    // Recursive helper function to build the tree
+    TreeNode* buildTreeHelper(vector<int>& pre, vector<int>& in, int& preIndex, int inStart, int inEnd) {
+        if (inStart > inEnd) return nullptr;  // Base case: no subtree to build
+
+        // Create the root from the current preorder index
+        TreeNode* root = new TreeNode(pre[preIndex]);
+        preIndex++;  // Move to the next preorder element for the next call
+
+        // Find the root in the inorder array to split the tree
+        int inIndex = find(root->val, in, inStart, inEnd);
+
+        // Recursively build left and right subtrees
+        root->left = buildTreeHelper(pre, in, preIndex, inStart, inIndex - 1);
+        root->right = buildTreeHelper(pre, in, preIndex, inIndex + 1, inEnd);
+
+        return root;
+    }
+
+    TreeNode* buildTree(vector<int>& pre, vector<int>& in) {
+        int preIndex = 0;  // Start from the first element in preorder
+        return buildTreeHelper(pre, in, preIndex, 0, in.size() - 1);
+    }
+};
+
+For postorder and inorder start traversing postorder array from reverse rest same code
+
+
+Convert tree to DLL (watch codeStoryWithMIk binary tree to sorted linked list recursion video for inituition just follow same)
+
+In short , assume karo left child ke call pe usne sorted de di and same with right child ab bs connection bana lo 
+
+Node* bToDLL(Node* root) {
+    if (root == NULL) return root;
+    
+    // Convert the left subtree and get the head of the left DLL
+    Node* left = bToDLL(root->left);
+    
+    // Find the rightmost node of the left subtree (if it exists)
+    if (left != NULL) {
+        Node* leftEnd = left;
+        while (leftEnd->right != NULL) {
+            leftEnd = leftEnd->right;
+        }
+        
+        // Link the rightmost node of the left subtree with root
+        leftEnd->right = root;
+        root->left = leftEnd;
+    }
+    
+    // Convert the right subtree
+    Node* right = bToDLL(root->right);
+    
+    // Link root to the right subtree
+    if (right != NULL) {
+        root->right = right;
+        right->left = root;
+    }
+    
+    // Return the head of the DLL
+    return left != NULL ? left : root;
+}
+
+Check for Children Sum Property
+
+Inituition is to check for myself if i dont violate than check for my children also (same approach is used in other questions like if tree is height balanced or not and so on)
+
+int isSumProperty(Node *root)
+    {
+      if(root == NULL) return true;
+      
+      if (root->left == NULL && root->right == NULL) return true;
+      
+      int leftSum = (root->left==NULL) ? 0 : root->left->data;
+      int rightSum = (root->right == NULL) ? 0 : root->right->data;
+      
+      int sum = leftSum + rightSum;
+      
+      if(sum != root->data) return false;
+      
+      return isSumProperty(root->left) && isSumProperty(root->right);
+      
+      
+    }
+
+Kth Ancestor of a Tree Node (binary lifting) (https://leetcode.com/problems/kth-ancestor-of-a-tree-node/description/) (https://www.youtube.com/watch?v=PE-kQVZxvWA)
+
+
+Inituition is to preprocess and store ancestors for all nodes so that we can answer queries in O(1)
+
+But if we store all ancestors of all nodes it becomes too large to store in parents (as n given is 10^5)
+
+Key is to represent a number (k) in its binary form so k = 11 is (1+ 2+ 8), so all we need is these three parents and not all.
+
+class TreeAncestor {
+public:
+    vector<vector<int> > P; // P[i][node] :::: [node] 's [2^i]th parent
+    TreeAncestor(int n, vector<int>& parent) {
+        // initialize
+        P.resize(20, vector<int>(parent.size(), -1));
+        
+        // 2^0
+        for(int i = 0; i < parent.size(); i++){
+            P[0][i] = parent[i];
+        }
+        
+        // 2^i
+        for(int i = 1; i < 20; i++){
+            for(int node = 0; node < parent.size(); node ++){
+                int nodep = P[i-1][node];
+                if(nodep != -1) P[i][node] = P[i-1][nodep];
+            }
+        }
+    }
+    
+    int getKthAncestor(int node, int k) {
+        for(int i = 0; i < 20; i++){
+            if(k & (1 << i)){
+                node = P[i][node];
+                if(node == -1) return -1;
+            }
+        }
+
+        return node;
+    }
+};
+
+This can be used to solve the Lowest Common Ancestor (LCA) problem efficiently.
+
+The idea is to preprocess a table similar to the one you used for getKthAncestor, where you store ancestors of each node at powers of 2 distances (i.e., 2^0, 2^1, 2^2, etc.). 
+Then, to find the LCA of two nodes u and v, you essentially "lift" both nodes up to the same level and then binary lift them together to find their common ancestor.
+
+Heres how LCA can be solved using binary lifting:
+
+Equalizing depth: If the nodes u and v are at different depths, lift the deeper node to the same depth as the shallower one.
+Binary lifting to the LCA: Once they are at the same level, lift both nodes simultaneously using powers of 2 until their ancestors converge.
+This method works in O(log N) time for each query after an O(N log N) preprocessing step
+
+
+***** Binary Search Tree (BST) *************
+
+The way we received values that part is critical in BST (see how we take value in root->left or root->right that joins new node with parent)
+
+Insert a node in BST ?
+
+Just traverse the tree with comparing values till you reach null at that point we have result 
+
+TreeNode* insertIntoBST(TreeNode* root, int val) {
+        if(root == NULL) {
+            return new TreeNode(val);
+        }
+
+        if(val > root->val) {
+            root->right = insertIntoBST(root->right, val);
+        } else {
+            root->left = insertIntoBST(root->left, val); 
+        }
+
+        return root;
+}
+
+
+Delete a node in BST ?
+
+First we need to find the root to be deleted. That root can have 3 types , 0 child, 1 child, 2 child (all these need to be handled)
+
+Incase of two child we find largest in left tree or smallest in right tree and replace that value with node
+
+TreeNode* find(TreeNode* root) {
+        TreeNode* pre = root->left;
+        while(pre && pre->right) pre= pre->right;
+        return pre;
+    }
+    TreeNode* deleteNode(TreeNode* root, int key) {
+        if(root == NULL) return NULL;
+
+        if(root->val > key) {
+            root->left = deleteNode(root->left, key);
+        } else if(root->val < key) {
+            root->right = deleteNode(root->right, key);
+        } else {
+           if(!root->left && !root->right) {
+            // Leaf node
+            return NULL;
+           } else if(!root->left) {
+             return root->right;
+           } else if(!root->right) {
+            return root->left;
+           } else {
+            // two children
+            TreeNode* pre = find(root);
+            root->val = pre->val;
+            root->left = deleteNode(root->left, pre->val);
+            return root;
+           }
+        }
+
+        return root;
+}
+
+Find inorder successor of node in BST ?
+
+if node has no right than we need to find its parent and check otherwise its straightforwrad (see how we use pass by ref here)
+ void find(Node *root, Node* x, Node*& par) {
+        if(root == NULL) return;
+        if(root->data > x->data) {
+           par = root;
+           find(root->left, x , par);
+        } else if(root->data < x->data) {
+          find(root->right, x, par);
+        } else {
+            return;
+        }
+    }
+    Node * inOrderSuccessor(Node *root, Node *x)
+    {
+        //Your code here
+        
+        if(root == NULL) return root;
+        
+        if(x->right == NULL) {
+            Node *par = NULL;
+            find(root, x, par);
+            return par;
+        } else {
+            Node* temp = x->right;
+            while(temp->left) temp= temp->left;
+            return temp;
+        }
+        
+        return NULL;
+    }
+
+Kth smallest number in bst 
+
+We have to use the inituition that inorder travel gives us numbers in sorted order , so if we keep count and reach kth number we should reach correct number 
+
+int inOrderTraversal(TreeNode* node, int k, int& count) {
+        // Base case: If the node is NULL, return -1 (or any invalid value)
+        if (node == nullptr) {
+            return -1; // Indicates the k-th smallest wasn't found
+        }
+
+        // Traverse the left subtree
+        int leftResult = inOrderTraversal(node->left, k, count);
+        if (leftResult != -1) {
+            return leftResult; // If found in left subtree, return it
+        }
+
+        // Visit this node
+        count++;
+        if (count == k) {
+            return node->val; // Found the k-th smallest element
+        }
+
+        // Traverse the right subtree
+        return inOrderTraversal(node->right, k, count);
+}
+
+Valid BST 
+
+bool isValidBST(TreeNode* root, long minVal = LONG_MIN, long maxVal = LONG_MAX) {
+    if (root == NULL) return true;  // An empty tree is a valid BST
+
+    // Check if the current node's value is within the allowed range
+    if (root->val <= minVal || root->val >= maxVal) {
+        return false;  // Violates the BST property
+    }
+
+    // Recursively validate left and right subtrees with updated ranges
+    return isValidBST(root->left, minVal, root->val) && isValidBST(root->right, root->val, maxVal);
+}
+
+There is another way to do this which we can use to solve other problems also (like max size BST in a B-Tree thus listing here)
+
+All nodes must follow the property of being smaller than all their right nodes and being bigger than all their left nodes
+
+The key observation is for all nodes we want to validate something which consistes of a property which can be influenced by all its children so we need Post-order traversal
+
+So the info we will ask from each node is if the tree rooted at it is BST , min in it tree and max in its tree 
+
+struct Node {
+       bool isBst;
+       int min;
+       int max;
+    };
+    Node helper(TreeNode* root) {
+
+        if(root == NULL) {
+            return {true, INT_MAX, INT_MIN};
+        }
+
+        if(root->left == NULL && root->right == NULL) {
+            return {true, root->val, root->val};
+        } // leaf
+
+        Node left = helper(root->left);
+        Node right = helper(root->right);
+
+        bool isNodeBst = left.isBst && right.isBst && root->val < right.min && root->val > left.max;
+
+        int Max = max(root->val, max(left.max, right.max));
+        int Min = min(root->val, min(left.min, right.min));
+
+       return {isNodeBst, Min, Max}; }
+
+
+To solve largest bst in B-tree take the same Node add a size property which is largest BST inside me with this condition 
+when i am bst its size is l-bstSize + r-bstSize + 1 when i am not it is max(l-bstSize, r-bstSize)
+
+
+Pair of numbers which sum to target in BST 
+
+> do inorder traversal store result in array than its 2-sum
+> One other way is to push all left nodes in a stack and all right nodes in a another stack (than again we do 2 sum type)
+
+
+BST iterator (iterator for inorder traversal of BST)
+
+> Push all leftmost child in stack
+> Now whenever top is called (we pop stack top) and push all left child of right child of current node
+
+class BSTIterator {
+private:
+    stack<TreeNode*> st;
+
+    void pushLeft(TreeNode* node) {
+        while (node) {
+            st.push(node);
+            node = node->left;  // Move to the leftmost child
+        }
+    }
+
+public:
+    // Constructor: Initialize the iterator with the root of the BST
+    BSTIterator(TreeNode* root) {
+        pushLeft(root);  // Start the traversal from the root
+    }
+
+    // Returns true if there is a next number
+    bool hasNext() {
+        return !st.empty();  // Check if there are more elements
+    }
+
+    // Returns the next number in the BST
+    int next() {
+        TreeNode* node = st.top();
+        st.pop();  // Remove the node from the stack
+        pushLeft(node->right);  // Push the leftmost nodes of the right subtree
+        return node->val;  // Return the current node's value
+    }
+};
+
+
+Sorted array to BST / Inorder to BST
+
+TreeNode* buildBST(vector<int>& nums, int left, int right) {
+        if (left > right) {
+            return nullptr; // Base case
+        }
+        
+        int mid = left + (right - left) / 2; // Find the middle index
+        TreeNode* root = new TreeNode(nums[mid]); // Create the root node
+        
+        // Recursively build the left and right subtrees
+        root->left = buildBST(nums, left, mid - 1);
+        root->right = buildBST(nums, mid + 1, right);
+        
+        return root; // Return the root of the subtree
+}
+
+Preorder to BST 
+
+TreeNode* buildTree(std::vector<int>& preorder, int& index, int minVal, int maxVal) {
+        // Base case: If index is out of bounds or value is not in range
+        if (index >= preorder.size() || preorder[index] < minVal || preorder[index] > maxVal) {
+            return nullptr;
+        }
+        
+        // Create the root node with the current value
+        TreeNode* root = new TreeNode(preorder[index]);
+        index++; // Move to the next element
+        
+        // Recursively build the left and right subtrees
+        root->left = buildTree(preorder, index, minVal, root->val); // Restrict max for left subtree
+        root->right = buildTree(preorder, index, root->val, maxVal); // Restrict min for right subtree
+        
+        return root; // Return the root of the subtree
+ }

@@ -1,0 +1,14 @@
+Use of stoi and stringstream
+
+vector<int> convertStringToVector(const string& str) {
+    vector<int> result;
+    string token;
+    stringstream ss(str); // Create a stringstream object
+
+    // Split the string using the underscore as a delimiter
+    while (getline(ss, token, '_')) {
+        result.push_back(stoi(token)); // Convert to int and add to the vector
+    }
+
+    return result;
+}

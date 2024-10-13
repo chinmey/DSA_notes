@@ -1,0 +1,58 @@
+K + smallest/close -- max heap 
+K + largest/top -- min heap
+
+Get Kth largest number --> use minHeap 
+
+Give k most frequent elements --> take a map count frequecy of all element , take a heap enter number and frequecy as pair in it and use custom comparator
+class with frequecy
+
+Minimise cost with rope addition 
+Put all numbers in heap , pick 2 at top add put addition back in heap and so on 
+
+Median of running stream/sorted array
+Inituition is let minH handle large elements and maxH handle small elements their tops give Median
+Always ensure diff between heap size is at max one to ensure they handle correct size parts
+
+Merge k sorted array/lists
+put list head in heap , keep on popping from top adding to answer and pushing next element from  array/linked list from which top was
+
+Reorganise string
+Given a string s, rearrange the characters of s so that any two adjacent characters are not the same.
+
+1. Count Character Frequencies:
+Create a frequency map (um) to count occurrences of each character in the string s.
+2. Initialize a Max Heap:
+Use a priority queue (max heap) to store character-frequency pairs, ensuring that characters with the highest frequencies are prioritized.
+3. Construct the Output String:
+Continuously pop the two characters with the highest frequencies from the heap and append them to the output string.
+ If their frequency is greater than zero after appending, push them back into the heap.
+4. Handle Remaining Characters:
+If there's one character left in the heap, check its frequency. If it's 1, append it to the output. If it's greater than 1, return an empty string as 
+it’s impossible to arrange without adjacent duplicates.
+
+
+Minimum cost to hire 'k' workers
+https://www.youtube.com/watch?v=kxR52OB_I8k
+
+Sort Workers:
+
+Sort the workers based on their wage-to-quality rati
+This ensures that we consider the cheapest options first.
+Use a Min-Heap:
+
+Use a priority queue (min-heap) to keep track of the qualities of the workers we are considering hiring.
+Calculate Costs:
+
+Iterate through the sorted workers:
+Add the current worker's quality to the min-heap.
+If the size of the heap exceeds k, remove the worker with the highest quality (since we want the k lowest quality workers for minimum cost).
+If the size of the heap is exactly k, calculate the cost to hire these k workers based on the current worker's wage-to-quality ratio.
+Return Minimum Cost:
+
+
+How does Heap sort work ?
+
+
+Take unsorted array convert it to max heap , the top number is maximum of array remove it (place it at last) remake a heap and go on 
+
+Heap sort is inplace takes no extra space , its unstable that similar element can looose their starting position

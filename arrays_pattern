@@ -165,7 +165,7 @@ Find the Smallest Missing Positive Number (medium)
 
 **** Binary search *******
 
-
+Sorted keyword h wo rehta h generally 
 Used when we can discard one half of search space post one check , ex template (just change boundaries and condition for all problem)
 
 All problems : https://leetcode.com/discuss/general-discussion/786126/python-powerful-ultimate-binary-search-template-solved-many-problems
@@ -193,6 +193,7 @@ int binarySearch(const vector<int>& arr, int target) {
     return -1;  // Return -1 if the target is not found
 }
 
+BS on answer --> for cases for even unsorted array we apply BS , by getting a element checking if it matches our criteria and discarding array half in each step
 
 
 

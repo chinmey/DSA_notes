@@ -1,0 +1,85 @@
+Ex Next Greater element to right (Initution is which form you want your stack to be what is not useful is not needed)
+
+vector<int> nextLargerElement(vector<int> arr, int n){
+        
+        stack<int> s;
+        
+        vector<int> ans;
+        
+        for(int i= arr.size() -1; i >=0 ; i--) {
+            
+            if(s.empty() || s.top() > arr[i]) {
+                if(s.empty()) {
+                    ans.push_back(-1);
+                } else {
+                    ans.push_back(s.top());
+                }
+                s.push(arr[i]);
+            } else {
+                while(!s.empty() && s.top() <= arr[i]) {
+                    s.pop();
+                }
+                if(s.empty()) {
+                    ans.push_back(-1);
+                } else {
+                    ans.push_back(s.top());
+                }
+                s.push(arr[i]);
+            }
+        }
+        
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+
+
+Largest rectangle in histogram 
+
+The limiting factor is next smaller number to left and right for each bar just find that and find max of h[i] * width , width = (right[i] - lefy[i] - 1);
+
+
+Min stack 
+
+Basic way is to 2 stacks (second stack is min stack and it will only take a number if it is smaller than top because if it is larger it can never be min
+since a number smaller than it is in stack which would be minimum always)
+
+To do it in O(1) space if number is smaller push 2*n - min_ele in stack and maintain min_ele in variable
+
+
+Stack using array or queue using array (all operations are O(1))
+
+Stack -- init (top == -1) and maintain it in push/pop , queue --- init (rear,front == 0) and maintain them
+
+
+Stack using queue
+
+2 queues ---> In your stack implementation using two queues, the push operation is straightforward: when an element is pushed, it is added to q1, 
+and this process takes constant time, O(1). On the other hand, the pop operation involves moving all elements from q1 to q2, except for the last element, 
+which represents the top of the stack. This last element is then returned as the popped element. After that, the contents of q2 
+(which now holds all the elements except the popped one) are copied back into q1, and q2 is emptied, preparing it for future operations.
+
+
+Single queue 
+
+Take a single queue.
+push(x): Push the element in the queue.
+Use a for loop of size()-1, remove element from queue and again push back to the queue, hence the most recent element becomes the most former element and vice versa.
+pop(): remove the element from the queue.
+top(): show the element at the top of the queue.
+size(): size of the current queue.
+
+
+LRU cache (check linked list problems)
+
+
+
+Sliding window maximum for each size k 
+
+
+Queue is natural way to think with this (if a number bigger than me comes post me in window k than i am useless since i will get popped first, this way 
+i maintain a queue and q.front() will be max)
+
+
+issue can occur with cases like (1, 3 , 1 ,2) where when 3 is evicted 1 becomes front and not 2 to combat we may use priority_queue 
+
+That too fails some case (for same numbes repeating) so optimal way is to use deque with indices and storing numbers from max to min in it.

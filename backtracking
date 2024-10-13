@@ -1,0 +1,142 @@
+Rate in a maze problem (https://www.youtube.com/watch?v=wXwZSytYrIs&list=PLpIkg8OmuX-IBcXsfITH5ql0Lqci1MYPM&index=11)
+Problem link : https://www.geeksforgeeks.org/problems/rat-in-a-maze-problem/1
+
+Watch video to understand inituition
+
+ vector<string> ans;
+    vector<string> findPath(vector<vector<int>> &mat) {
+        ans.clear();
+        
+        solve(mat, 0, 0, mat.size(), "");
+        return ans;
+    }
+    
+    void solve(vector<vector<int>> &mat, int i, int j, int n, string path) {
+        
+        if(i<0 || i>=n || j<0 || j>=n || mat[i][j] ==0) return;
+        
+        if(i == n-1 && j == n-1) {
+            ans.push_back(path);
+            return;
+        }
+        
+        mat[i][j] = 0; // Mark it as visited
+        
+        path.push_back('D');
+        solve(mat, i+1, j, n, path);
+        
+        path.pop_back();
+        path.push_back('R');
+        solve(mat, i, j+1, n,path);
+        
+        path.pop_back();
+        path.push_back('U');
+        solve(mat, i-1, j, n,path);
+        
+        path.pop_back();
+        path.push_back('L');
+        solve(mat,i, j-1, n,path);
+        
+        mat[i][j] = 1; //Backtrack
+        
+        return;
+        
+}
+
+
+N queen 
+
+Go row by row (base case is row out of bounds in that print board configuration)
+
+solve(board, row, n) {
+
+    // Base case 
+
+    for(int i=0; i<n ; i++) {
+        if(isValid(board, row, i, n)) { --> check if queen can be kept here without attacking
+            board[row][i] = 1;
+            solve(board, row+1, n);
+            board[row][i] = 0;        
+        }
+    }
+}
+
+
+Generate parenthesis 
+
+
+ bool check(string t)
+    {
+        if(t[0] == ')') return false;
+        stack<char> s;
+        s.push(t[0]);
+        
+        for(int i=1;i<t.size();i++)
+        {
+            if(t[i] == ')') {
+                if(s.empty()) return false;
+                s.pop();
+            }
+            else
+                s.push('(');
+        }
+        return s.empty();
+    }
+    vector<string> ans;
+    vector<string> generateParenthesis(int n) {
+        ans.clear();
+        solve(n, "");
+        return ans;
+    }
+
+    void solve(int n, string cur) {
+
+        if(cur.size() == 2*n) {
+            if(check(cur)) ans.push_back(cur);
+            return;
+        }
+
+        cur.push_back('(');
+        solve(n, cur);
+        cur.pop_back();
+        cur.push_back(')');
+        solve(n, cur);
+    }
+
+printing all root to leaf path 
+
+vector<vector<int>> res;
+    void solve(Node* root, vector<int> &ans) {
+        
+        if(root->left == NULL && root->right == NULL) {
+            res.push_back(ans);
+            return;
+        }
+        
+        if(root->left) {
+            ans.push_back(root->left->data);
+            solve(root->left, ans);
+            ans.pop_back();
+        }
+        
+        if(root->right) {
+            ans.push_back(root->right->data);
+            solve(root->right, ans);
+            ans.pop_back();
+        }
+        
+        return;
+        
+    }
+    vector<vector<int>> Paths(Node* root) {
+        // code here
+        
+        if(root == NULL) return res;
+        
+        vector<int> ans;
+        ans.push_back(root->data);
+        
+        solve(root, ans);
+        
+        return res;
+    }

@@ -1,0 +1,83 @@
+Stack identification -- array ka question + brute force is O(n2) where second loop is dependent on i ( it's not j 0-n but like 0-i or i+1-n)
+
+Parent question is "Next [Greatest/Smallest] number to [right/left]" which solves multiple problems.
+
+
+Heap identification -- k something and smallest/largest word
+K + smallest/close -- max heap 
+K + largest/top -- min heap
+Heap ke question jo bhi h unke brute force sorting hoga (Nlogn -- Nlogk)
+There are multiple ways to define heap but one we use (aditya verma) is same as stack but one in which we can enter from both directions
+
+Heap : https://leetcode.com/discuss/general-discussion/1127238/master-heap-understanding-4-patterns-where-heap-data-structure-is-used
+
+priority_queue<int> maxHeap
+priority_queue<int, vector<int>, greater<int>> minHeap
+
+priority_queue<data_type, container, Compare> ds;
+
+class Compare {
+    public:
+       bool operator()(T a, T b){
+           if(cond){
+               return true;
+           }
+           return false;
+      }
+};
+When true is returned, it means the order is NOT correct and swapping of elements takes place.
+When false is returned, it means the order is correct and NO swapping of elements takes place.
+*** This is opposite behavior to custom sort comparator ****
+
+Heaps are commonly implemented as binary trees that maintain the heap property, but instead of using explicit tree structures like linked nodes, 
+they are typically implemented using arrays. This array-based implementation allows for efficient index-based access to parent and child nodes.
+
+Heap Properties:
+Binary Heap: A binary heap is a complete binary tree, meaning all levels are fully filled except possibly the last, which is filled from left to right.
+Min-Heap: In a min-heap, the value of each node is greater than or equal to its parent’s value, with the smallest element at the root.
+Max-Heap: In a max-heap, the value of each node is less than or equal to its parent’s value, with the largest element at the root.
+Array Representation of Heaps:
+Heaps are implemented using arrays because the parent-child relationships can be easily mapped using simple index calculations:
+
+For a node at index i:
+Left child is at index 2*i + 1
+Right child is at index 2*i + 2
+Parent is at index (i-1) // 2
+Example of an Array-based Min-Heap:
+Consider the following min-heap:
+
+        10
+      /    \
+    15      30
+   /  \    /
+  40   50 100
+The corresponding array representation of this heap would be:
+
+[10, 15, 30, 40, 50, 100]
+The root 10 is at index 0.
+Its left child 15 is at index 1, and its right child 30 is at index 2.
+Similarly, 15 has children 40 at index 3 and 50 at index 4.
+
+
+Heap Operations:
+Insert Operation (push in priority queue):
+
+Insert the new element at the end of the array.
+"Bubble up" (or shift up) the element by comparing it with its parent and swapping until the heap property is restored.
+Time complexity: O(log n), where n is the number of elements.
+Delete (or Extract Min/Max):
+
+Replace the root element (min or max) with the last element in the array.
+"Bubble down" (or sift down) the new root element by comparing it with its children and swapping with the smaller (in min-heap) or larger (in max-heap) child until the heap property is restored.
+Time complexity: O(log n).
+Peek (Get Min/Max):
+
+The minimum (or maximum) element is always at the root, so this operation is O(1).
+
+// Convert an unsorted array into a heap
+void buildHeap(vector<int>& arr) {
+    heap = arr;
+    for (int i = (heap.size() / 2) - 1; i >= 0; i--) {
+        bubbleDown(i);
+    }
+}

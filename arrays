@@ -104,3 +104,203 @@ Let us say prefix_sum(j) = s ( we are looking for a subarray ending at j with su
 
 So in a hash_map keep on storing (prefix_sum , count_occ ) and use above to get result
 
+
+
+Merge intervals 
+
+vector<vector<int>> mergeOverlappingIntervals(vector<vector<int>> &arr) {
+    int n = arr.size(); // size of the array
+
+    //sort the given intervals:
+    sort(arr.begin(), arr.end());
+
+    vector<vector<int>> ans;
+
+    for (int i = 0; i < n; i++) {
+        // if the current interval does not
+        // lie in the last interval:
+        if (ans.empty() || arr[i][0] > ans.back()[1]) {
+            ans.push_back(arr[i]);
+        }
+        // if the current interval
+        // lies in the last interval:
+        else {
+            ans.back()[1] = max(ans.back()[1], arr[i][1]);
+        }
+    }
+    return ans;
+}
+
+
+********* Binary search ***************************
+
+
+First and last occurance of element in sorted array 
+
+Do binary search when you get number go for either side to get first and last
+
+Number of times sorted array is rotated : ex 5 1 2 3 4 is rotated once 
+
+number of times array rotated is index of minimum element(pivot)
+
+This follows the Initution of BS where we need to discard a side based on our selection(mid), here the pivot element would be one which is lesser than both 
+of its neighbor, if this is not the case we need to check if arr[m] > arr[high] because one half of array would be sorted and other half would be unsorted , 
+answer would always lie in unsorted half because its less than both neighbor, it means answer lies in (mid+1,high) else opposite
+
+Searching in a rotated sorted array --> find pivot than do BS in 2 arrays divided by pivot
+
+
+Position of element in infinite sorted array --> issue is we dont know bounds since high is infinite
+Let low be pointing to 1st element and high pointing to 2nd element of array, Now compare key with high index element, 
+->if it is greater than high index element then copy high index in low index and double the high index. 
+->if it is smaller, then apply binary search on high and low indices found
+
+
+Find peak element (greater than both its neighbour) using BS 
+
+get mid , check if it is peak , if not move to the side which is larger than mid element (which caused this not be a peak). let us break down inituition for this
+
+A peak element is defined as an element that is not smaller than its neighbors. In simpler terms, a peak is either:
+
+A local maximum (larger than both its neighbors), or
+An edge element (in case its the first or last element of the array, and there is no neighbor on one side).
+How Binary Search Discards One Side:
+Lets break down why we can confidently discard one side when comparing the middle element arr[mid] to its neighbors.
+
+If arr[mid] < arr[mid + 1]:
+This means the right neighbor (arr[mid + 1]) is larger than arr[mid].
+We can conclude that there is a slope upwards towards the right. Moving in this direction (right) gives us two scenarios:
+There could be a peak further right. Since the slope is increasing, we might find a local peak somewhere on the right.
+The rightmost element could be the peak. Even if we dont encounter an intermediate peak, the last element (or near the last) could be the peak, 
+as its higher than arr[mid] (so no smaller elements force us to return left).
+
+
+Allocate minimum no of pages (https://www.youtube.com/watch?v=2JSQIhPcHQg&list=PL_z_8CaSLPWeYfhtuKHj-9MpYb6XQJ_f2&index=21)/ Similar concept in Aggressive cows
+
+
+Do BS between 0 and sum of all pages 
+Get mid check if that is max a student can read are number of students getting books is equal to all students if yes than that is valid combo we recur for 
+better answer in each case
+
+
+Median in a row wise sorted matrix (note it is not sorted column wise)
+
+Observations:
+
+What is the search space where we will apply binary search?
+
+If we carefully observe, our answer lies between the smallest and the largest number in the given matrix. So, the search space will be [min(matrix), max(matrix)].
+While applying binary search how to check if an element ‘x’ is a possible median?
+
+If ‘x’ is the median, the number of elements smaller or equal to ‘x’ will be surely greater than (MXN) // 2 (integer division).
+How to check how many numbers are smaller or equal to an element ‘mid’?
+
+One of the ways is to traverse the whole matrix and count the numbers. But in that case, the time complexity will be high. So, we have to find other ways. It is given that the matrix is row-wise sorted. So, we can apply the concept of upper bound
+For every particular row, we will find the upper bound of the current element ‘mid’. The index returned will be the number of smaller or equal elements in that row.
+We will do it for each row and add them to get the total number for the whole matrix.
+Mathematically, smaller_equal_in_row = upperBound(matrix[row], mid)
+We will just convert the above observation into code.
+
+Algorithm:
+
+Calculate min(matrix) and max(matrix): As the given matrix is row-wise sorted the minimum element will be the minimum element in the first column and the maximum will be the maximum in the last column.
+Place the 2 pointers low and high: Initially, we will place the pointers. The pointer low will point to min(matrix) and the high will point to max(matrix).
+Calculate the ‘mid’: Now, inside a loop, we will calculate the value of ‘mid’ using the following formula: mid = (low+high) // 2 ( ‘//’ refers to integer division)
+Use the calculateSmallEqual() function to get the number of elements <= mid: Inside the function, we will use the above-mentioned upper bound formula for each row and calculate the total number of elements <= mid. Then we will return the total number from the function calculateSmallEqual().
+If smallEqual <= (M*N) // 2: We can conclude that our median must be a bigger number. So, we will eliminate the left i.e. the smaller half (low = mid+1).
+If smallEqual > (M*N) // 2: We can conclude that the element mid might be the median. But we have to reach the smallest number to find the actual median. So, in this case, we will remove the right half( i.e. high = mid-1).
+
+
+Find element that appears once in sorted array where everyone appears twice 
+
+
+Since the array is sorted, and all elements except one appear twice, we can leverage binary search to reduce the time complexity to O(log n).
+
+The key observation is how the indices are structured around the single element:
+
+If we look at the array before the single element, pairs will have their first occurrence at an even index and their second occurrence at an odd index.
+After the single element, the pattern reverses: the second occurrence of pairs will be at an even index, and the first occurrence of the next pair will be at an odd index.
+This gives us a way to decide which half of the array to discard during binary search.
+
+
+Similar logic can be applied to find kth element in 2 sorted array 
+
+basically by having search space as min, max getting mid and checking in both array how many numbers are smaller than this 
+
+And sum should be k-1. (note how we update answer when number of elements smaller is more than k as we are counting case where one of those number is mid itself)
+
+int kthElement(int k, vector<int>& arr1, vector<int>& arr2) {
+        int n = arr1.size();
+        int m = arr2.size();
+        
+        int low = min(arr1[0], arr2[0]);
+        int high = max(arr1[n-1], arr2[m-1]);
+        
+        int ans = -1; // Initialize the answer variable
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            
+            // Count of elements <= mid in both arrays
+            int smallerInFirst = small(arr1, n, mid);
+            int smallerInSecond = small(arr2, m, mid);
+            
+            int totalSmaller = smallerInFirst + smallerInSecond;
+            
+            if (totalSmaller < k) {
+                low = mid + 1; // Look for larger elements
+            } else {
+                ans = mid; // Update answer
+                high = mid - 1; // Continue to search in left half
+            }
+        }
+        
+        return ans;
+    }
+    
+    int small(vector<int>& arr, int n, int mid) {
+        int low = 0;
+        int high = n - 1;
+        int ans = -1; // Initialize ans
+
+        while (low <= high) {
+            int m = low + (high - low) / 2;
+            
+            if (arr[m] <= mid) { // Change to <= for correct count
+                ans = m; // Update ans to current index
+                low = m + 1; // Search in the right half
+            } else {
+                high = m - 1; // Search in the left half
+            }
+        }
+        
+        return ans + 1; // Return count of elements <= mid
+    }
+};
+
+
+
+Median of 2 sorted arrays (https://www.youtube.com/watch?v=jDJuW7tSxio)
+
+
+Finding the Correct Partition: Let’s say we partition arr1 at index i and arr2 at index j. The total number of elements in the left part of both arrays will 
+be i + j, and the right part will contain the remaining elements.
+
+We need to ensure that all the elements in the left part (combined from both arrays) are less than or equal to the elements in the right part 
+(combined from both arrays).
+
+In other words, we want:
+
+
+arr1[i-1] <= arr2[j] 
+and 
+arr2[j-1] <= arr1[i]
+This condition ensures that the partition is correct.
+
+Binary Search on Smaller Array: We perform binary search on the smaller array (to keep the time complexity low). At each step of the binary search:
+
+We compute the partition indices for both arrays.
+We check if the partition condition is satisfied.
+If the condition is satisfied, we compute the median.
+If not, we adjust the binary search range (move left or right).
+
+

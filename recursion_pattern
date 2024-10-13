@@ -1,5 +1,6 @@
 https://leetcode.com/discuss/study-guide/1733447/become-master-in-recursion
 
+Aditya verma playlist and codestorywithMIK playlist
 
 How to identify a recursive problem ? 
 
@@ -12,3 +13,39 @@ initial input is "ab" and o/p is "" as we reach end of input we get our answers,
 If we are not able to think directly using choices we need to look at alternative way of thinking (Base condition - Hypothesis - induction). It relies on 
 making input smaller. Example is print 1 to N using recusion. This is about making Hypothesis/Faith in a function on a smaller problem.
 Example let us say Solve(n) print 1--> n , let us have faith that Solve(n-1) --> prints 1 --> n-1 than if we just print n (induction we are done)
+
+IBH is derived from recursive faith method , we call function on smaller input expect it to do the job and we just perform remaining action (ex 
+reversing a stack we take out top call function on rest of stack assume it is reversed and put top at appropriate place)
+
+
+Time complexity of recursion --> just make tree and see how many nodes are there ex for factorial it is O(N) but for fibonacci it is exponential
+Another way to think is how many calls * work done in each call.
+
+Ex fibonacci calls is exponential * work done is constant 
+Ex reversing a stack call is linear and work done is also linear so O(N2)
+
+Space complexity of recursion --> depth of tree diagram (fibonnaci ke liye O(N))
+
+Tail recursion : type of recursion in which inside a function body the last line is making the recursive call
+
+because the result of recursion is not stored those frames are dropped thus tail recursion is space optimized
+
+normal
+int factorial(int n) {
+    if (n == 0 || n == 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+tail-call optimized
+int factorialHelper(int n, int accumulator) {
+    if (n == 0 || n == 1) {
+        return accumulator;
+    }
+    return factorialHelper(n - 1, n * accumulator);
+}
+
+int factorial(int n) {
+    return factorialHelper(n, 1); // Initial accumulator is 1
+}
