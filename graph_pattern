@@ -1,0 +1,119 @@
+https://leetcode.com/discuss/study-guide/2360573/become-master-in-graph
+
+Basic terminology :: Node/Edge , Directed/Undirected graph
+
+
+Connected components : Let says this is graph : A ---B ---C       D---E , in this we have 2 components (A,B,C) (D,E)
+Since starting from any node in component we should be able to reach any node , a graph having only one components is called connected graph
+
+Now for graphs we would be given nodes and vertex between them we need to be able to represent that info in code , so we have 2 ways 
+
+1. Adjacency Matrix
+
+Space Complexity:
+For a graph with V vertices, an adjacency matrix requires  V×V space, regardless of the number of edges.
+Space complexity: O(V²).
+Time Complexity:
+Adding an edge: O(1) — We directly access the matrix at the appropriate index.
+Checking if an edge exists: O(1) — Just access the value in the matrix.
+Iterating over all neighbors of a vertex: O(V) — We need to scan through an entire row.
+
+class GraphMatrix {
+    vector<vector<int>> adjMatrix; or //   vector<vector<int>> adjList(V);
+    int V; // number of vertices
+
+public:
+    GraphMatrix(int vertices) {
+        V = vertices;
+        adjMatrix = vector<vector<int>>(V, vector<int>(V, 0)); // Initialize with 0
+    }
+
+    // Add an edge (undirected graph)
+    void addEdge(int u, int v) {
+        adjMatrix[u][v] = 1;
+        adjMatrix[v][u] = 1; // For undirected graph
+    }
+
+2. Adjacency List
+Space Complexity:
+For a graph with  each vertex stores its neighbors in a list.
+Space complexity: O(V + E) (since each edge is stored as a list node).
+Time Complexity:
+Adding an edge: O(1) — We just append to the list.
+Checking if an edge exists: O(deg(V)) — We need to search through the list of neighbors for the vertex.
+Iterating over all neighbors of a vertex: O(deg(V)) — Iterate through the list of neighbors
+
+deg(V) means number of edges connected to vertex
+
+
+To traverse graphs we use 2 ways DFS(pre-order traversal)  and BFS (level order)
+
+DFS : Goes as deep as possible in a branch and only backtrack once it exhausts all options . The issue is from a node how to know which all are viable for means
+so we keep a visited array for this , these visited arrays act as base condition also for recursion etc
+
+ void DFSUtil(int v, vector<bool>& visited) {
+        // Mark the current node as visited and print it
+        visited[v] = true;
+        cout << v << " ";
+
+        // Recur for all the vertices adjacent to this vertex
+        for (int neighbor : adjList[v]) {
+            if (!visited[neighbor]) {
+                DFSUtil(neighbor, visited);  // Recur for unvisited neighbors
+            }
+        }
+    }
+
+    // DFS traversal starting from a given vertex
+    void DFS(int startVertex) {
+        // Mark all vertices as not visited initially
+        vector<bool> visited(V, false);
+
+        // Call the recursive helper function to print DFS traversal
+        DFSUtil(startVertex, visited);
+    }
+
+Time Complexity: O(V + E) , This is because every vertex is visited once, and every edge is explored once.
+Space Complexity: O(V) due to the visited array and recursive call stack in the worst case
+
+
+BFS : Traverses graph level by level , that is all children of node are explored together 
+
+void BFS(int startVertex) {
+        // Mark all vertices as not visited
+        vector<bool> visited(V, false);
+
+        // Queue for BFS
+        queue<int> q;
+
+        // Start by visiting the startVertex
+        visited[startVertex] = true;
+        q.push(startVertex);
+
+        while (!q.empty()) {
+            // Dequeue a vertex from the queue and print it
+            int v = q.front();
+            q.pop();
+            cout << v << " ";
+
+            // Get all adjacent vertices of the dequeued vertex v
+            // If an adjacent vertex has not been visited, mark it visited and enqueue it
+            for (int neighbor : adjList[v]) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    q.push(neighbor);
+                }
+            }
+        }
+    }
+
+Problem Type	                                Use DFS	                                                  Use BFS
+Pathfinding (Unweighted Graph)	             Find any path	                                                   Find the shortest path
+Connected Components	            Useful for deep exploration	                                               Not typically used
+Topological Sorting	                     Yes (DAGs)	                                                           No
+Shortest Path	              No (unless exploring weighted graph with Dijkstra)	                           Yes (in unweighted graphs)
+Cycle Detection	                     Yes	                                                                  Less commonly used
+Backtracking Problems (e.g., N-Queens)	 Yes	                                                               No
+Minimum Moves (Puzzles, Grid, etc.)  	No	                                                                   Yes
+Bipartite Graph Checking	Not typically	                                                                   Yes
+Closest Node in a Grid	         No	                                                                           Yes

@@ -1,0 +1,619 @@
+Number of components in a graph (just see how many DFS are needed to traverse each node)
+
+void DFS(vector<vector<int>> &adj, vector<bool> &vis, int start) {
+        vis[start] = true;
+
+        for(int x : adj[start]) {
+            if(!vis[x]) DFS(adj, vis, x);
+        }
+    }
+    int numProvinces(vector<vector<int>> adj, int V) {
+        
+           vector<bool> vis(V, false); 
+           int ans = 0;
+           
+           for(int i=0; i<V; i++) {
+               if(vis[i] == false) {
+                   ans++;
+                   DFS(adj, vis, i);
+               }
+           }
+           
+           return ans;
+}
+
+Number of islands (https://leetcode.com/problems/number-of-islands/)
+
+Again we have to count no of DFS needed , take neighbor as edges 
+
+
+For shortest paths in unweighted graphs we need to rely on BFS and not DFS
+
+BFS explores the graph level by level, meaning it visits all nodes at distance 1 from the source before visiting nodes at distance 2, and so on. 
+This makes BFS ideal for finding the shortest path in an unweighted graph because the first time BFS reaches a node, it has found the shortest path to 
+that node.
+
+
+First kind of shortest path is finding shortest distance from S and D with some obstacles (https://leetcode.com/problems/shortest-path-in-binary-matrix/)
+Single Source
+
+
+int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
+        int n = grid.size();
+
+        int m = grid[0].size();
+
+        if(grid[0][0] || grid[n-1][m-1]) return -1;
+
+        vector<vector<bool>> vis(n, vector<bool>(m, false));
+
+        int dx[]={0,0,1,1,1,-1,-1,-1};
+        int dy[]={-1,1,0,1,-1,0,1,-1};
+
+        queue<pair<int,int>> q;
+
+        q.push({0,0});
+        vis[0][0] = true;
+        q.push({-1,-1}); // Helps us deduce which levels we are at
+
+        int ans = 1;
+
+        while(!q.empty()) {
+           pair<int,int> p = q.front();
+           q.pop();
+
+           if(p.first == -1 && p.second == -1) {
+              ans++;
+              if(!q.empty()) {
+                q.push({-1,-1});
+              }
+           } else {
+            if(p.first == n-1 && p.second == m-1) return ans;
+
+            for(int i = 0; i<8; i++) {
+                int x = p.first + dx[i];
+                int y = p.second + dy[i];
+
+                if(x >= 0 && x < n && y>=0 && y<n && !vis[x][y] && !grid[x][y]) {
+                    q.push({x, y});
+                    vis[x][y] = true;
+                }
+            }
+           }
+        }
+
+        return -1;
+
+
+    }
+
+Second common type is when in a matrix we only have (S and D) and we are asked to convert D into S in shortest time (ex Rotten Oranges) 
+Multi Source
+
+In this we put all of Source in Matrix than we go level by level and populate D 
+
+*** imp : Identify the cells (states) that are already in the target condition or cannot be changed based on the problem constraints, these are put in queue ***
+
+Example problem (Surrond cell : https://leetcode.com/problems/surrounded-regions/) 
+
+The key initution is not around flipping 0s but finding out which 0s should be protected (so traverse boundary and push all 0s to queue) Do BFS and 
+protect the 0s reachable from here (flip rest of the zeroes)
+
+
+Third common type is Single Source problem with obstacles where we have ability to break obstacles (https://leetcode.com/problems/shortest-path-in-a-grid-with-obstacles-elimination/description/)
+
+
+The basic idea of BFS/DFS is we never visit the same cell again. In case of shortest paths this is important to ensure we dont visit same path again.
+However addition of 'k' subpowers make it different we can visit a already visited path provided we have more value of 'k' than earlier visitor 
+this is because since we have more 'k' we have better chance of breaking a obstacles and finding a new smallest path
+
+he key insight here is to treat each possible state (x, y, d) as part of the BFS exploration. Instead of just checking whether a cell can be visited, 
+the solution checks if it can be visited with a certain number of remaining obstacle eliminations (d). 
+This allows the algorithm to differentiate between paths that may initially appear similar but offer different future potentials depending on how many obstacles remain.
+
+struct State {
+    int x, y, remainingK;
+};
+
+int shortestPath(vector<vector<int>>& grid, int k) {
+    int n = grid.size(), m = grid[0].size();
+    if (n == 1 && m == 1) return 0;
+    
+    vector<vector<int>> vis(n, vector<int>(m, -1));  // track max k remaining at each cell
+    queue<State> q;
+    q.push({0, 0, k});
+    vis[0][0] = k;
+
+    int level = 0;
+    int dx[] = {0, 0, 1, -1};
+    int dy[] = {1, -1, 0, 0};
+
+    while (!q.empty()) {
+        int sz = q.size();
+        while (sz-- > 0) {
+            State cur = q.front();
+            q.pop();
+            
+            // Check if we reached the destination
+            if (cur.x == n - 1 && cur.y == m - 1) return level;
+            
+            // Explore all 4 possible directions
+            for (int i = 0; i < 4; i++) {
+                int nextX = cur.x + dx[i];
+                int nextY = cur.y + dy[i];
+                
+                // Make sure the new position is within bounds
+                if (nextX >= 0 && nextX < n && nextY >= 0 && nextY < m) {
+                    
+                    if (grid[nextX][nextY] == 0) {  // If the cell is empty
+                        if (vis[nextX][nextY] < cur.remainingK) {
+                            vis[nextX][nextY] = cur.remainingK;
+                            q.push({nextX, nextY, cur.remainingK});
+                        }
+                    } else if (grid[nextX][nextY] == 1 && cur.remainingK > 0) {  // If it's an obstacle and we can eliminate it
+                        if (vis[nextX][nextY] < cur.remainingK - 1) {
+                            vis[nextX][nextY] = cur.remainingK - 1;
+                            q.push({nextX, nextY, cur.remainingK - 1});
+                        }
+                    }
+                }
+            }
+        }
+        level++;
+    }
+    
+    return -1;  // If no path is found
+}
+
+
+
+0-1 BFS
+
+0-1 BFS is a special case of BFS used in graphs where edge weights are restricted to only two possible values: 0 and 1
+
+In 0-1 BFS, instead of using a regular queue, you use a deque (double-ended queue). The reason for this is that if you encounter an edge with weight 0, 
+you want to process it immediately by adding it to the front of the deque (since it’s a "free" move). 
+If the edge has weight 1, you add it to the back of the deque (since its a "costly" move).
+
+how it works:
+
+Edges with weight 0 are processed first (pushed to the front of the deque).
+Edges with weight 1 are processed later (pushed to the back of the deque).
+This allows you to efficiently find the shortest path in O(V + E) time, where V is the number of vertices and E is the number of edges, by minimizing the cost of traversal using the properties of the deque
+
+
+
+Initution of Dijkstra
+
+In BFS we traverse the nodes level by level , essentially since graph is unit weight , we are pushing nodes at levels + 1(weight) however with weighted
+graph what we need to do is push the nodes at level + weight
+
+
+Start from the source node, marking its distance as 0 (since it costs nothing to reach itself).
+For each neighbor of the current node, calculate the potential new distance (current_distance + edge_weight). If this distance is smaller than the previously
+recorded distance for that neighbor, update the neighbors distance and push it into the priority queue.
+Repeat this process until all nodes have been processed or the priority queue is empty.
+
+void dijkstra(int src, const vector<vector<pair<int, int>>& adj, vector<int>& dist) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    dist[src] = 0; // Distance to the source is 0
+    pq.push({0, src}); // Push the source into the priority queue
+
+    while (!pq.empty()) {
+        int current_distance = pq.top().first;
+        int current_node = pq.top().second;
+        pq.pop();
+
+        // If the distance is greater than the recorded distance, skip ensures we don't visit visited nodes
+        if (current_distance > dist[current_node]) {
+            continue; // or keep a visisted array and if already visisted proceed [prefared]
+        }
+
+        // Explore neighbors
+        for (const auto& neighbor : adj[current_node]) {
+            int neighbor_node = neighbor.first;
+            int weight = neighbor.second;
+
+            // Calculate potential distance to neighbor
+            int new_distance = current_distance + weight;
+
+            // If found a shorter path to the neighbor
+            if (new_distance < dist[neighbor_node]) {
+                dist[neighbor_node] = new_distance; // Update distance
+                pq.push({new_distance, neighbor_node}); // Push into priority queue
+            }
+        }
+    }
+}
+
+Time complexity = O((V+E)logV)
+
+
+Cheapest flight with 'k' stops (https://leetcode.com/problems/cheapest-flights-within-k-stops/)
+
+Dijkstra but with extra condition of atmost k relaxation done
+
+ queue<pair<int,int>> q;
+        q.push({src,0});
+        
+        vector<int> dist(n,INT_MAX);
+        dist[src] =0;
+        
+        int level =0;
+        
+        while(!q.empty() && level <=k)
+        {
+            int sz =q.size();
+            while(sz--)
+            {
+                pair<int,int> p=q.front(); q.pop();
+                int cv=p.first;
+                int cw =p.second;
+                
+                for(auto it : adj[cv])
+                {
+                    int node =it.first;
+                    int wt =it.second;
+                    if(dist[node] > wt + cw)
+                    {
+                        dist[node] = wt + cw;
+                        q.push({node,dist[node]});
+                    }
+                }
+            }
+            level++;
+        }
+        if(dist[dst] == INT_MAX) return -1;
+        return dist[dst];
+    }
+
+
+
+Detect cycle in undirected graph 
+
+o detect a cycle in an undirected graph using DFS, we rely on the parent-child relationship. Here's the key intuition summarized:
+
+Parent Tracking: When visiting a node v from node  u, we track u as the parent of v (i.e., the node that led us to v).
+
+Cycle Detection:
+
+Undirected :: chalte chalte agar visited node pe aagaye jo mera parent nahi h to cycle h 
+
+Directed :: Same logic will not work ex 0---->1<-----2 (we will say cycle h yahan) , basically teen state rakho (unvisted, visiting, visisted)
+agar dfs ke dauran visiting mil jaye cycle h
+
+While visiting a neighbor w of the current node v:
+If w has not been visited, we continue the DFS by visiting w, marking v as the parent of w.
+
+
+If w has already been visited and w is not the parent of v, this indicates a back edge (i.e., an edge that connects two nodes that are not directly connected in a parent-child relationship), 
+which means a cycle is present
+
+Detecting a cycle in a directed graph using DFS is a bit different from detecting one in an undirected graph. 
+The key difference lies in the fact that edges have direction, so we dont need to worry about parent-child relationships as in undirected graphs. 
+Instead, we use the concept of node states to detect cycles.
+
+Intuition for Cycle Detection in Directed Graphs Using DFS
+Node States:
+
+Unvisited: The node has not been visited yet.
+Visiting (or in recursion stack): The node is currently being explored (it is part of the current DFS path).
+Visited: The node has been fully explored, meaning all its descendants have been processed, and its no longer part of the current DFS path.
+Cycle Detection:
+
+During the DFS traversal, if we encounter a node that is already in the "visiting" state (i.e., its in the recursion stack), it means there is a back edge
+ leading to a node that is currently being visited, which indicates a cycle.
+Once a node and all its descendants have been fully explored, we mark it as visited (fully processed).
+
+
+Topological sorting for Directed Acyclic Graph (DAG) is a linear ordering of vertices such that for every directed edge u -> v, 
+vertex u comes before v in the ordering. ---> DO dfs once a node is fully explored put it in stack (answer)
+
+
+Kahns Algo (BFS way to do Topological sort and detect cycle in directed graph)
+
+Calculate Indegrees: Compute the indegree (number of incoming edges) for each vertex in the graph.
+
+Initialize Queue: Add all vertices with indegree 0 to a queue. These are the vertices with no dependencies, so they can be processed first.
+
+Process Queue: Repeatedly do the following until the queue is empty:
+Remove a vertex from the front of the queue and add it to the topological order.
+For each of its neighbors, reduce their indegree by 1. If any neighbor’s indegree becomes 0, add it to the queue.
+
+Check for Cycles: If the number of processed nodes is equal to the number of vertices, a valid topological sort exists. 
+Otherwise, the graph contains a cycle (since there are nodes with non-zero indegree left).
+
+
+
+Union Find and the initution behind same (https://www.youtube.com/watch?v=L1T4AB8xBcw)
+
+
+Let say we are given a graph and we get only two type of query in it (add edge between 2vertices ) and (find out if 2 vertice are in same component)
+
+
+1st approach : make a adjanceny matrix out of graph than add edge is O(1) and to say if 2 vertex is in same component do dfs from either O(N)
+we want to imporve on second 
+
+2nd approach : Maintain a root-array ex  : 1 1 1 1 5 5
+
+
+1 ----2 ----3        5----6 
+      ----4  
+
+Now whenever second type of query comes just check if roots are same , however if we are asked to add edge we need to traverse whole array and make 
+all child have same root ( ex think if 4 --6 edge addition comes )
+
+
+3rd approach : Maintain a  parent array ex : -1 1 2 2 -1 5 
+
+Now how to find root (keep going till you get parent as -1) , just use this method to solve both kinds O(height) both
+
+To minimise the height we want the tree to be as balanced as possible to ensure it when we join roots always make root with more height the parent
+
+class UnionFind {
+private:
+    vector<int> parent, rank;
+
+public:
+    // Constructor to initialize parent and rank arrays
+    UnionFind(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);  // Initialize ranks to 0
+        for (int i = 0; i < n; ++i) {
+            parent[i] = i;  // Every element is its own parent initially
+        }
+    }
+
+    // Find function with path compression
+    int find(int node) {
+        if (parent[node] != node) {
+            parent[node] = find(parent[node]);  // Path compression
+        }
+        return parent[node];
+    }
+
+    // Union function by rank
+    void unionByRank(int u, int v) {
+        int rootU = find(u);
+        int rootV = find(v);
+
+        if (rootU != rootV) {
+            if (rank[rootU] > rank[rootV]) {
+                parent[rootV] = rootU;  // Attach smaller rank tree under root of higher rank tree
+            } else if (rank[rootU] < rank[rootV]) {
+                parent[rootU] = rootV;
+            } else {
+                parent[rootV] = rootU;
+                rank[rootU]++;  // Increase rank when both have the same rank
+            }
+        }
+    }
+};
+
+
+Kruskal algo (Minimum Spanning tree)
+
+An MST (Minimum Spanning Tree) of a graph is a subgraph that:
+
+Spans all vertices (i.e., includes every vertex in the original graph).
+Is a tree (connected and acyclic).
+Has the minimum possible total edge weight, compared to all other spanning trees of the graph.
+
+
+How can we use Union by Rank to find the MST?
+Union by Rank (with Path Compression) can be applied to Kruskals Algorithm, which is a popular algorithm for finding the MST of a graph. 
+The algorithm works as follows:
+
+Sort all the edges in non-decreasing order of their weights.
+Initialize a Union-Find (Disjoint Set Union) structure to keep track of which vertices are in which connected components.
+Iterate over the sorted edges, and for each edge, check if its two vertices are in different connected components (using the find function).
+If they are in different components, add the edge to the MST and union the two components.
+Continue this process until you have added exactly V-1 edges (where V is the number of vertices).
+
+struct Edge {
+    int u, v, weight;
+    bool operator<(Edge const& other) {
+        return weight < other.weight;  // Sort by ascending edge weight
+    }
+};
+
+for (Edge edge : edges) {
+        if (uf.find(edge.u) != uf.find(edge.v)) {  // If u and v are in different components
+            uf.unionByRank(edge.u, edge.v);        // Union the components
+            mst_weight += edge.weight;             // Add the edge weight to the total MST weight
+            mst.push_back(edge);                   // Include this edge in the MST
+        }
+    }
+
+
+Cycle detection in Undirected graph (using Union-Find)
+
+Union-Find works for undirected graphs because it efficiently tracks the connected components and allows you to check if adding an edge forms a cycle. 
+Here's how:
+
+Cycle Detection in an Undirected Graph:
+Every time you add an edge (say between nodes u and v), you check if both nodes u and v already belong to the same connected component 
+(i.e., if they have the same root in the Union-Find structure).
+If u and v are already connected (i.e., they have the same root), then adding the edge would form a cycle.
+If they are not connected (i.e., they have different roots), you union them, merging their components.
+
+
+Bipartite Graph 
+
+A graph is called Bipartite if we can color it using only 2 colors such that no 2 adjacent vertex are colored same. 
+
+A graph is bipartite if and only if it contains no odd-length cycles. This is because an odd cycle cannot be 2-colored.
+
+This can be found using DFS or BFS
+bool isBipartite(vector<vector<int>>& adj, int n) {
+    vector<int> color(n, -1); // -1 indicates unvisited
+    
+    // Helper DFS function
+    bool dfs(int node, int col, vector<vector<int>>& adj, vector<int>& color) {
+        // Color the current node
+        color[node] = col;
+        
+        // Visit all the adjacent vertices
+        for (int neighbor : adj[node]) {
+            if (color[neighbor] == -1) {
+                // Recursively visit the neighbor with opposite color
+                if (!dfs(neighbor, 1 - col, adj, color)) {
+                    return false;
+                }
+            } else if (color[neighbor] == color[node]) {
+                // If the neighbor has the same color, the graph is not bipartite
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Start DFS from every unvisited node (for disconnected graphs)
+    for (int i = 0; i < n; i++) {
+        if (color[i] == -1) {
+            if (!dfs(i, 0, adj, color)) {
+                return false;  // Graph is not bipartite
+            }
+        }
+    }
+    
+    return true;  // Graph is bipartite
+}
+
+
+Bellman Ford (Shortest path from single source to all vertices in weighted graph with negative edge weight)
+
+
+Says for a graph with V vertices if its is relaxed V-1 times we will get answer 
+
+bool findShortestPaths(int n, vector<Edge>& edges, int src) {
+        // Step 1: Initialize distances from src to all other vertices as INF
+        vector<int> dist(n, INT_MAX);
+        dist[src] = 0;
+        
+        // Step 2: Relax all edges (n-1) times
+        for (int i = 1; i < n; i++) {
+            for (auto& edge : edges) {
+                int u = edge.u;
+                int v = edge.v;
+                int weight = edge.weight;
+                
+                if (dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
+                    dist[v] = dist[u] + weight;
+                }
+            }
+        }
+        
+        // Step 3: Check for negative weight cycles
+        for (auto& edge : edges) {
+            int u = edge.u;
+            int v = edge.v;
+            int weight = edge.weight;
+            
+            if (dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
+                cout << "Graph contains a negative weight cycle" << endl;
+                return false;  // Negative cycle found
+            }
+        }
+        
+        // Step 4: Print the shortest distances
+        cout << "Shortest distances from source " << src << " are:" << endl;
+        for (int i = 0; i < n; i++) {
+            if (dist[i] == INT_MAX)
+                cout << "INF ";
+            else
+                cout << dist[i] << " ";
+        }
+        cout << endl;
+        return true;  // No negative cycle found
+    }
+
+It takes the number of vertices n, a vector of edges edges, and the source node src.
+First, it initializes the distance to all nodes as infinity, except the source node, which is set to 0.
+It then performs relaxation of all edges for n−1 iterations.
+After n−1 iterations, it checks for negative weight cycles by attempting to relax edges again. 
+If an edge can still be relaxed, it means there is a negative weight cycle in the graph
+
+Time Complexity: O(n⋅m), where n vertex m edge
+
+In a simple path (a path that does not visit any vertex more than once), the longest possible path from one vertex to another can have at most 
+n−1 edges. This is because there are n−1 edges before reaching its destination (since you cant visit a vertex more than once in a simple path)
+
+
+Strongly Connected Components (Connected Components of directed graphs)
+
+A strongly connected component (SCC) is a subgraph in a directed graph where every vertex is reachable from every other vertex in the same component. 
+In other words, for every pair of vertices u and v in an SCC, there exists a path from u to v and a path from v to u.
+
+Kosaraju’s Algorithm (Two Passes):
+First pass (DFS on original graph):
+
+Perform a depth-first search (DFS) on the original graph and store the vertices in a stack based on their finishing times (i.e., vertices with the latest finish time are pushed last).
+Second pass (DFS on reversed graph):
+
+Reverse the directions of all edges to form the transpose of the graph.
+Now, pop vertices one by one from the stack and perform DFS on the transposed graph. Each DFS will explore a distinct SCC.
+
+class Solution {
+public:
+    // Function to perform the first DFS and push nodes to the stack based on finish times.
+    void dfs1(int node, vector<vector<int>>& adj, vector<bool>& visited, stack<int>& st) {
+        visited[node] = true;
+        
+        for (int neighbor : adj[node]) {
+            if (!visited[neighbor]) {
+                dfs1(neighbor, adj, visited, st);
+            }
+        }
+        
+        // After visiting all reachable vertices, push the node to the stack.
+        st.push(node);
+    }
+
+    // Function to perform the second DFS on the transposed (reversed) graph.
+    void dfs2(int node, vector<vector<int>>& transpose, vector<bool>& visited) {
+        visited[node] = true;
+        cout << node << " ";  // Print the node or store it in a component.
+
+        for (int neighbor : transpose[node]) {
+            if (!visited[neighbor]) {
+                dfs2(neighbor, transpose, visited);
+            }
+        }
+    }
+
+    // Function to find and print all SCCs in a directed graph using Kosaraju's Algorithm.
+    void findSCCs(int V, vector<vector<int>>& adj) {
+        vector<bool> visited(V, false);
+        stack<int> st;
+
+        // Step 1: Perform DFS on the original graph and push nodes to the stack in order of their finish times.
+        for (int i = 0; i < V; i++) {
+            if (!visited[i]) {
+                dfs1(i, adj, visited, st);
+            }
+        }
+
+        // Step 2: Create the transpose (reversed) graph.
+        vector<vector<int>> transpose(V);
+        for (int i = 0; i < V; i++) {
+            for (int neighbor : adj[i]) {
+                transpose[neighbor].push_back(i);  // Reverse the direction of the edges.
+            }
+        }
+
+        // Step 3: Perform DFS on the reversed graph in the order defined by the stack.
+        fill(visited.begin(), visited.end(), false);  // Reset visited array for the second DFS pass.
+        while (!st.empty()) {
+            int node = st.top();
+            st.pop();
+
+            // Perform DFS on the reversed graph from the node if it hasn't been visited.
+            if (!visited[node]) {
+                cout << "SCC: ";
+                dfs2(node, transpose, visited);
+                cout << endl;
+            }
+        }
+    }
+};
