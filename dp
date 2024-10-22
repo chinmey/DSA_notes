@@ -1,0 +1,833 @@
+*** 0/1 Knapsack and its types ***
+
+
+For every item either i can take it or not take it , this is recursive choice, to memorize it just see which variables are changing those will be our dimensions, in our case that is W(total capacity) and index(current item we are at)
+
+int ans[1001][1001];
+    int recur(int W, vector<int>& wt, vector<int>& val, int index) {
+        
+        if(index == val.size()) return 0;
+        
+        if(ans[W][index] != -1) return ans[W][index];
+        
+        if(wt[index] > W) return ans[W][index] = recur(W,wt,val,index+1);
+        
+        return ans[W][index] = max(recur(W,wt,val,index+1), val[index] + recur(W-wt[index],wt,val,index+1));
+    }
+    int knapSack(int W, vector<int>& wt, vector<int>& val) {
+        memset(ans, -1, sizeof(ans));
+        return recur(W,wt,val,0);
+}
+
+We can just reduce n also start at last of array and go on ( in this : than base will be if n == 0 || W == 0)
+
+Top-down of this (is again based on recursion only)
+    int tab[n+1][W+1],i,j,maxm=0;
+
+    for(i=0;i<=n;i++)
+    {
+        for(j=0;j<=W;j++)
+        {
+            if(j==0||i==0)
+            tab[i][j]=0;
+            else if(wei[i-1]<=j)
+            tab[i][j]=max(tab[i-1][j],val[i-1]+tab[i-1][j-wei[i-1]]);
+            else
+            tab[i][j]=tab[i-1][j];
+        }
+    }
+    return table[n][W];
+
+
+Questions related to this 
+
+Subset-sum problem , Equal sum partition problem, Count of subset sum with given sum, Minimum subset sum difference , Count of number of subset with given diff, Target Sum 
+
+
+Instead of converting to string and memorization one way to do this can be (used in equal sum partition etc)
+
+unordered_map<int, unordered_map<int, int>> mp;
+Outer map (mp): The key is an integer (sum), representing the remaining sum we are trying to achieve.
+Inner map (unordered_map<int, int>):
+The key is an integer (n), representing the index of the current element in the array.
+The value is the result (0 or 1, corresponding to false or true) of whether it is possible to achieve the remaining sum (sum) using the first n elements of the array.
+
+
+Minimum subset-sum difference : Partition a array into 2 half such that abs difference between them is minimum ex : 1 5 11 6 :: 1 5 6 and 11 (ans : 1 )
+
+This question combines question of subset sum and equal sum 
+
+If we think about it if i calculate one part sum other is already known (Total_sum - that_part) , so we total sum as target sum and check if 
+
+from a array we are able to get that sum (subset sum problem) say these are filled in int mat[n+1][Sum+1], that the last row (nth) will fill details of 
+all the sum in range (0 to targetSum) and if it is possible for uss getting that sum just traverse that row and calculate answer
+
+Recursive code for subset sum  (iterative is written based on that)
+
+bool find(vector<int> arr, int sum, int n) {
+        if(sum == 0) return true;
+        
+        if(n==0) return false;
+        
+        if(t[sum][n] != -1) return t[sum][n];
+        
+        if(arr[n-1] > sum) return t[sum][n] = find(arr, sum, n-1);
+        
+        return t[sum][n] = find(arr,sum,n-1) || find(arr,sum-arr[n-1],n-1);
+    }
+
+int minDifference(int arr[], int n)  { 
+	    int sum = 0;
+	    for(int x = 0; x <n ; x++) {
+	        sum+=arr[x];
+	    }
+	    
+	    bool ans[n+1][sum+1];
+	    
+	    int i,j;
+        
+        for(i=0; i<=n; i++) {
+            for(j=0; j<=sum; j++) {
+                if(j == 0) {
+                    ans[i][j] = 1;
+                } else if (i == 0) {
+                    ans[i][j] = 0;
+                } else if(arr[i-1] > j) {
+                    ans[i][j] = ans[i-1][j];
+                } else {
+                    ans[i][j] = ans[i-1][j] || ans[i-1][j-arr[i-1]];
+                }
+            }
+        }
+        
+        int anss = sum;
+        
+        for(j = 0;j<=sum/2; j++) {
+            if(ans[n][j]) {
+                int diff = abs(sum - 2*j);
+                if(anss > diff) {
+                    anss= diff;
+                }
+            }
+        }
+        
+        return anss;
+} 
+
+Count number of subset with given diff (1 1  2 3 and diff is 1) : This is actually simple we know S1-S2 = 1 , S1+S2 = 7 (Total sum), S1 = 4, we need to find
+count of subrray with sum as 4 (basically subset sum just put + instead of ||)
+
+Target sum is this problem only in twisted way
+
+
+**Unbounded Knapsack ****
+
+Only difference is we have unlimited duplicate items so we can select same items again and again , this would be represented in code is when we select 
+a item we don't decrement (N) or increment (current_index) as we can pick it again rest is same
+
+Question based on it : rod cutting , coin change (minimum and no of ways)
+
+Ex Coin change (Number of ways)
+
+ long long int coinsWays(int N, int coins[], int W)
+    {  
+        if(W == 0) return 1;
+         
+        if(N == 0) return 0;
+        
+        if(t[N][W] != -1) return t[N][W];
+        
+        if(coins[N-1] > W) return t[N][W]= coinsWays(N-1,coins,W);
+        
+        return t[N][W] = coinsWays(N-1,coins,W) + coinsWays(N,coins,W-coins[N-1]);
+    }
+
+This is its iterative dp 
+
+long long int ans[N+1][sum+1];
+        
+        for(int i=0; i<=N; i++) {
+            for(int j=0; j<=sum; j++) {
+                if(j ==0) {
+                    ans[i][j] = 1 ;
+                } else if(i == 0) {
+                    ans[i][j] = 0;
+                } else if(coins[i-1] > j) {
+                    ans[i][j] = ans[i-1][j];
+                } else {
+                    ans[i][j] = ans[i-1][j] + ans[i][j-coins[i-1]];
+                }
+            }
+        }
+        
+        return ans[N][sum];
+
+Now if we need to find minimum coins to make sum we need to adjust a little (initilisatoon and condition)
+
+for(int i=0; i<=N; i++) {
+    for(int j=0; j<=sum; j++) {
+        if(j == 0) {
+            ans[i][j] = 0;  // It takes 0 coins to make sum 0
+        } else if(i == 0) {
+            ans[i][j] = INT_MAX;  // It’s impossible to make a positive sum with 0 coins
+        } else if(coins[i-1] > j) {
+            ans[i][j] = ans[i-1][j];  // If the coin is greater than the sum, exclude it
+        } else {
+            if(ans[i][j - coins[i-1]] != INT_MAX) {
+                // Only add the coin if the sub-problem is solvable
+                ans[i][j] = min(ans[i-1][j], 1 + ans[i][j - coins[i-1]]);
+            } else {
+                // Otherwise, exclude the coin
+                ans[i][j] = ans[i-1][j];
+            }
+        }
+    }
+}
+
+// If ans[N][sum] is still INT_MAX, return -1 as it means no solution was found
+return (ans[N][sum] == INT_MAX) ? -1 : ans[N][sum];
+
+
+*** Longest Common Subsequence ***
+
+Largest Common Substring , Print LCS, Shortest common subsequence, Minimum insertion or deletions to make (a-->b), Largest repeating subsequence,
+Largest Palindromic Subsquence , Largest Palindromic substring, Minium insertion to make palindrom and so on 
+
+
+Longest Common Subsquence (both ways writeen below bottom-up (iterative) and recursive(top-down))
+
+In recursive we start from back since it makes base condition writing easier
+
+int dp[1001][1001];
+    int solve(string s, string d, int n, int m) {
+        if(n==0 || m==0) return 0;
+
+        if(dp[n][m] != -1) return dp[n][m];
+
+        if(s[n-1] == d[m-1]) return dp[n][m] = 1 + solve(s,d,n-1,m-1);
+
+        return dp[n][m] = max(solve(s,d,n,m-1), solve(s,d,n-1,m));
+    }
+    int longestCommonSubsequence(string text1, string text2) {
+        
+        int n = text1.size();
+
+        int m = text2.size();
+
+        //memset(dp,-1,sizeof(dp));
+
+        int ans[n+1][m+1];
+
+        for(int i=0; i<=n; i++) {
+            for(int j=0; j<=m; j++) {
+                if(i==0 || j==0) {
+                    ans[i][j] = 0;
+                } else if(text1[i-1] == text2[j-1]) {
+                    ans[i][j] = 1 + ans[i-1][j-1];
+                } else {
+                    ans[i][j] = max(ans[i-1][j], ans[i][j-1]);
+                }
+            }
+        }
+
+        return ans[n][m];
+    }
+
+Printing LCS : fill the table with above code now start from last row and last column and follow this 
+
+if chars match take that char in answer and move to (i-1,j-1) , if chars don't match move towards (max of a[i-1][j] and a[i][j-1])
+
+Longest Common Substring :: The difference between this and LCS is we can't take chars seperated from each other basically discontinunity is not allowed
+
+So as soon as string don't match we need to store 0 as answer , so fill table using this and max value in table is answer
+
+Shortest Common Supersqence : Given two strings str1 and str2, return the shortest string that has both str1 and str2 as subsequences
+
+A string s is a subsequence of string t if deleting some number of characters from t (possibly 0) results in the string s
+
+Input: str1 = "abac", str2 = "cab"
+Output: "cabac"
+
+Agar sirf answer pooche : find LCS of both , answer is length of string 1 + length of string 2 - LCS 
+
+Print karne bole to same as LCS printing just that jab max ki taraf badho to uss char ko bhi answer me lo
+
+Minimum number of deletions and insertions to transform one string into another
+
+str1 = "heap", str2 = "pea" 
+Output : 
+Minimum Deletion = 2 (hp) and Minimum Insertion = 1 (p)
+
+str1 and str2 be the given strings.
+m and n be their lengths respectively.
+len be the length of the longest common subsequence of str1 and str2
+minimum number of deletions minDel = m – len (as we only need to delete from str1 because we are reducing it to str2)
+minimum number of Insertions minInsert = n – len (as we are inserting x in str1 , x is a number of characters in str2 which are not taking part in the string which is longest common subsequence )
+
+
+Longest palindromic subsequnce : 
+Input: s = "babad" Output: "bab"
+
+Answer is LCS of string and its reverse
+
+
+
+
+Longest palindromic substring : This can't be solved with LCS directly needs a different approach mentioned here 
+
+public:
+    string longestPalindrome(string s) {
+        if (s.empty()) return "";
+
+        int n = s.size();
+        int start = 0;  // Start index of longest palindrome
+        int maxLength = 1;  // Length of longest palindrome
+        
+        vector<vector<bool>> dp(n, vector<bool>(n, false));
+
+        // All substrings of length 1 are palindromes
+        for (int i = 0; i < n; i++) {
+            dp[i][i] = true;
+        }
+
+        // Check for substrings of length 2
+        for (int i = 0; i < n - 1; i++) {
+            if (s[i] == s[i + 1]) {
+                dp[i][i + 1] = true;
+                start = i;
+                maxLength = 2;
+            }
+        }
+
+        // Check for substrings of length 3 to n
+        for (int len = 3; len <= n; len++) {
+            for (int i = 0; i < n - len + 1; i++) {
+                int j = i + len - 1;
+                
+                // A substring is a palindrome if the first and last characters are equal
+                // and the inner substring is a palindrome
+                if (s[i] == s[j] && dp[i + 1][j - 1]) {
+                    dp[i][j] = true;
+
+                    // Update start and maxLength if a longer palindrome is found
+                    if (len > maxLength) {
+                        start = i;
+                        maxLength = len;
+                    }
+                }
+            }
+        }
+
+        return s.substr(start, maxLength);
+    }
+};
+
+Longest Repeating Subsequence 
+
+Ex : AABEBCDD ans is 3 
+
+Just do LCS of string with itself but only increase answer if both characters are same and index is not same
+
+
+*** DP on Kadane's Algo Type problem ***
+
+Kadane's Algorithm Recap (for Maximum Sum Subarray):
+For the Maximum Sum Subarray, the idea is to maintain:
+
+max_ending_here: the maximum sum subarray ending at the current index.
+max_so_far: the maximum sum subarray encountered so far.
+In each step, you either extend the previous subarray or start a new one, and then update the maximum accordingly.
+
+Maximum Product Subarray (Modifying Kadane's Algorithm):
+For the Maximum Product Subarray, the challenge is that the product can turn negative if multiplied by a negative number. So, we need to handle both positive and negative products efficiently.
+
+The key insight is:
+
+Maximum Product at index i can either be:
+The product of the previous maximum product subarray (because multiplying by a positive number increases the product).
+The product of the previous minimum product subarray (because multiplying by a negative number can turn it positive).
+Thus, we need to track:
+
+max_ending_here: the maximum product of subarray ending at the current index.
+min_ending_here: the minimum product of subarray ending at the current index (because a negative product could turn positive when multiplied by a negative number).
+max_so_far: the maximum product encountered so far.
+
+
+int maxProductSubarray(vector<int>& nums) {
+    // Base case: if the array has only one element
+    int max_ending_here = nums[0];
+    int min_ending_here = nums[0];
+    int max_so_far = nums[0];
+
+    // Traverse through the array
+    for (int i = 1; i < nums.size(); i++) {
+        // If the current number is negative, swap max_ending_here and min_ending_here
+        // because multiplying by a negative number changes their signs
+        if (nums[i] < 0) {
+            swap(max_ending_here, min_ending_here);
+        }
+        
+        // Update max_ending_here and min_ending_here
+        max_ending_here = max(nums[i], max_ending_here * nums[i]);
+        min_ending_here = min(nums[i], min_ending_here * nums[i]);
+
+        // Update the global maximum product
+        max_so_far = max(max_so_far, max_ending_here);
+    }
+
+    return max_so_far;
+}
+
+
+*** LIS ***
+
+From a number traverse all previous seen numbers if a number is smaller than me my answer would be 1+that 
+
+Standard LIS : uses O(N2) 
+
+int lengthOfLIS(vector<int>& nums) {
+    int n = nums.size();
+    
+    if (n == 0) return 0;
+    
+    vector<int> dp(n, 1);  // Initialize dp array with 1s
+    
+    int ans = 1;  // Initialize the answer to 1 (since the minimum LIS is 1)
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < i; ++j) {
+            if (nums[j] < nums[i]) {
+                dp[i] = max(dp[i], dp[j] + 1);  // Update the LIS ending at i
+            }
+        }
+        ans = max(ans, dp[i]);  // Keep track of the overall longest LIS
+    }
+
+    return ans;
+}
+
+But there are better ways to do this (which is called Patience sorting) (ONLogN)
+
+We initialize an empty array piles.
+For each element in the input array nums, we perform a binary search to find the first pile whose top card is greater than or equal to the current element. If no such pile exists, it means the current element can extend the sequence, so we add it to the end of the array.
+If such a pile exists, we replace the top card of that pile with the current element. This helps us maintain the smallest possible top cards, which is crucial for the longest increasing subsequence.
+
+int lengthOfLIS(vector<int>& nums) {
+    vector<int> piles;  // This will store the smallest possible end elements for subsequences of various lengths
+    
+    for (int num : nums) {
+        // Use binary search to find the first pile that has a top card greater than or equal to 'num'
+        auto it = lower_bound(piles.begin(), piles.end(), num);
+        
+        // If 'it' is equal to piles.end(), it means 'num' is larger than all elements in piles
+        if (it == piles.end()) {
+            piles.push_back(num);  // Extend the sequence with a new pile
+        } else {
+            *it = num;  // Replace the top card of the existing pile with the current number
+        }
+    }
+    
+    // The size of the 'piles' vector is the length of the longest increasing subsequence
+    return piles.size();
+}
+
+The lower_bound function returns an iterator to the first element in the range [first, last) that is greater than or equal to value
+
+For the input nums = [10, 9, 8, 3, 5, 6, 7]:
+
+We start with an empty piles vector.
+For 10: No piles exist, so we add 10 → piles = [10].
+For 9: Replace 10 with 9 → piles = [9].
+For 8: Replace 9 with 8 → piles = [8].
+For 3: Replace 8 with 3 → piles = [3].
+For 5: Add 5 to piles → piles = [3, 5].
+For 6: Add 6 to piles → piles = [3, 5, 6].
+For 7: Add 7 to piles → piles = [3, 5, 6, 7].
+
+*** Max sum increasing subsequence ***
+
+
+int maxSumIncreasingSubsequence(const vector<int>& nums) {
+    if (nums.empty()) return 0;
+
+    int n = nums.size();
+    vector<int> dp(n);  // dp[i] will store the max sum of increasing subsequence ending at index i
+
+    // Initialize each dp[i] to nums[i], because the minimum sum is the element itself
+    for (int i = 0; i < n; i++) {
+        dp[i] = nums[i];
+    }
+
+    // Build the DP array
+    for (int i = 1; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            if (nums[i] > nums[j]) {
+                dp[i] = max(dp[i], dp[j] + nums[i]);
+            }
+        }
+    }
+
+    // Find the maximum sum in the dp array
+    int maxSum = *max_element(dp.begin(), dp.end());
+    return maxSum;
+}
+
+
+Other questions around this : Longest string chain etc 
+
+There are some questions which will be around maintain Longest Increasing subseuqnce and Longest decreasing subseuqnce together ex : Longest Bitonic Subsequence (LBS)
+
+ Build Array Where You Can Find The Maximum Exactly K Comparisons (1420)
+
+ The initution is that search cost(k) is equal to length of LIS and basically we would be trying numbers at every index as long as search cost is inside bounds (watch : https://www.youtube.com/watch?v=YU9IGG5PB2Y&list=PLpIkg8OmuX-JhFpkhgrAwZRtukO0SkwAt&index=15)
+
+ int solve(int cur_index, int search_cost, int max_so_far, int n, int m, int k) {
+    if (cur_index == n) {
+        if (search_cost == k) {
+            return 1;
+        }
+        return 0;
+    }
+
+    int res = 0;
+    for (int i = 1; i <= m; i++) {
+        if (i > max_so_far) {
+            res += solve(cur_index + 1, search_cost + 1, i, n, m, k);
+        } else {
+            res += solve(cur_index + 1, search_cost, max_so_far, n, m, k);
+        }
+    }
+
+    return res;
+}
+
+
+Maximum balanced subsequence sum (2926) (https://www.youtube.com/watch?v=JrG4tbq6efg&list=PLpIkg8OmuX-JhFpkhgrAwZRtukO0SkwAt&index=16)
+
+We are asked to get maximum sum of a subsequence where this is followed 
+
+nums[ij] - nums[ij-1] >= ij - ij-1, for every j in the range [1, k - 1]
+
+if we change it its like : nums[ij] - ij >= nums[ij-1] - ij-1 
+
+So ex : 3 3 5 6  --> 3 2 3 3 (now we need to find max sum of a LIS in this modified array) (which is 2 3 3 or 3 5 6 = 14)
+
+
+
+*** House robber ****
+
+
+ nums = [1,2,3,1] ans = 4 (can't rob two adjacent numbers)
+
+ int dp[101][2];
+    int solve(vector<int>&nums,int n, bool canRob) {
+        if(n==0) return 0;
+        
+        if(dp[n][canRob] != -1) return dp[n][canRob];
+        if(canRob) {
+        int rob_left = solve(nums,n-1,true);
+        int rob_done = nums[n-1] + solve(nums,n-1,false);
+        return dp[n][canRob] = max(rob_left, rob_done);
+        }
+
+        return dp[n][canRob] = solve(nums,n-1,true);
+         
+    }
+    int rob(vector<int>& nums) {
+        memset(dp,-1,sizeof(dp));
+        return solve(nums,nums.size(),true);
+ }
+
+ In house robber - 2 (first and last element are connected so we would 2 dps )
+
+ one between 0 to n-2 element (we rob first house) and second between 1 to n-1 (we rob last house) and get answer
+
+
+*** MCM ****
+
+
+Questions would be around string/array where we would need to break the array into parts so we will pick a range (i,j) and k would move from i to j
+and for every k we would again call same function on (i,k) and (k+1,j) both of these would return some temp answer and we would apply some logic like 
+min,max,sum etc to calculate our answer from this two temp answer
+
+
+Format of code would be 
+
+int solve(int arr[], int i, int j) {
+
+    if(i>j) return 0;
+    
+    for(int k=i; k< j; k++) {
+        temp = solve(arr,i,k) (some sign) solve(arr,k+1,j);
+        ans= f(temp);
+    }
+
+    return ans;
+}
+
+
+MCM ---> Given a array of matrices find min cost of multiplying them : [40 20 30 10 30] (1st matrix is arr[1] * arr[0])
+
+
+So i can't start from zero as that means matrix is arr[-1]*arr[0] --> invalid so i starts from 1 
+Base condition , i == j is not valid as one index can't define a matrix so i >=j return 0; 
+
+Now calculating temp answer : let us say in our original array i was at 20 k was at 30 j was at 30 , so matrices left would be 
+
+40*20 ---i , 20*30 ---k , 10*30 ---j , so recursion would solve us main and we would be left with 40,30,30 see where these were they are at 
+arr[i-1], arr[k], arr[j]
+
+Code 
+
+ int solve(int arr[], int i, int j) {
+        
+        if(i>=j) return 0;
+        
+        if(dp[i][j] != -1) return dp[i][j];
+        
+        int ans = INT_MAX;
+        
+        for(int k=i; k<j; k++) {
+            int cost = solve(arr,i,k) + solve(arr,k+1,j)+ arr[i-1]*arr[k]*arr[j];
+            ans = min(ans,cost);
+        }
+        
+        return dp[i][j] = ans;
+    }
+    int matrixMultiplication(int N, int arr[])
+    {
+        memset(dp,-1,sizeof(dp));
+        return solve(arr,1,N-1);
+    }
+
+Palindromic partitioning :: Given a string find the minimum no of cuts such that all substring are palindrom ex : nitin : 3 (n iti n)
+
+Here knowing i,j range and base case is easy, the key observation here is that if a string is already a palindrom we have 0 cost and when we start taking 
+k we need to ensure that i,k is a palindrom otherwise that k is not valid 
+
+int solve(string &s, int i, int j) {
+    if(i >= j || isPalindrome(s, i, j)) {
+        return 0; // No partition needed if i >= j or s[i..j] is already a palindrome
+    }
+
+    if(dp[i][j] != -1) return dp[i][j]; // Memoized result
+
+    int ans = INT_MAX;
+
+    // Try every possible partition point k between i and j
+    for(int k = i; k < j; k++) {
+        if(isPalindrome(s, i, k)) {
+            int cost = 1 + solve(s, k + 1, j); // 1 cut + solve for s[k+1..j]
+            ans = min(ans, cost);
+        }
+    }
+
+    return dp[i][j] = ans; // Store and return the minimum cuts
+}
+
+Similar idea is used in word break problem where also we break at every point prefix exists in dictionary
+
+
+Scrambled string : PS (https://leetcode.com/problems/scramble-string/description/)
+
+Ex : great and aterg , so we would break at all places and we have choices to swap or not here ex at r , we need to check if gr and rg , eat and ate are both scrmabled or not (swap case) or we need to check if gr and at , eat and erg are scambled or not (not swap case)
+
+  bool solve(string a , string b)
+    {   
+
+        if(a==b) return true;
+        string s = a + "_" + b;
+        if(mp.find(s)!=mp.end()) return mp[s];
+        int n = a.size();
+        for(int i=1;i<n;i++)
+        {
+            if(solve(a.substr(0,i) , b.substr(0,i)) && solve(a.substr(i,n-i),b.substr(i,n-i))) // No swap
+            return mp[s]= true;
+            if(solve(a.substr(0,i) , b.substr(n-i,i)) && solve(a.substr(i,n-i),b.substr(0,n-i))) // Do swap
+            return mp[s]=true;
+            
+        }
+        return mp[s]=false;
+    }
+
+Egg drop problem :: PS (https://leetcode.com/problems/super-egg-drop/description/)
+
+We need to think on these lines , we can try on every floor betweeen 1 to n ,  we have k eggs and n floors we can try every floor if it breaks there we are left with k-1 eggs and i-1 floor if it does not we would be left with k eggs and n-i floors 
+
+We need to take max of this (worst case) + 1(move made)
+Minimum of all this is answer 
+
+int solve(int k, int n) {
+        if(n==0) return 0; // no floors easy 
+
+        if(k == 0) return INT_MAX-1 ; // with no eggs we can't determine
+
+        if(dp[k][n] != -1) return dp[k][n];
+
+        // try with every floor
+        int ans = INT_MAX-1;
+        for(int i=1; i<=n; i++) {
+            int egg_broke = solve(k-1,i-1);
+            int egg_not_broke = solve(k, n-i);
+
+            int worst_case = max(egg_broke, egg_not_broke) + 1;
+            ans = min(ans, worst_case);
+        }
+
+        return dp[k][n]= ans;
+    }
+
+
+This is still O(n2) since we are doing linear search change it to binary search 
+
+ while (low <= high) {
+            int mid = (low + high) / 2;
+            int egg_broke = solve(k - 1, mid - 1); // Case when egg breaks
+            int egg_not_broke = solve(k, n - mid); // Case when egg doesn't break
+
+            int worst_case = max(egg_broke, egg_not_broke) + 1; // Minimize the worst case
+            ans = min(ans, worst_case);
+
+            if (egg_broke > egg_not_broke) {
+                high = mid - 1; // If the egg breaks, reduce the search space
+            } else {
+                low = mid + 1; // If the egg doesn't break, increase the search space
+            }
+}
+
+
+Boolean parenthesis :: number of ways to evaluate expression to true : ex --> T|T&F^T and is 4
+
+i and j (should be 0 and s.length() -1 ) , k would go k+2 (since we can't break at all places) , we would need additional parameter in solve called 
+what are we looking for since (for ^ both false and true is true)
+
+int helper(string S,int i,int j,char req)
+    {
+        if(i>j) return 0;
+        
+        if(i==j && S[i] == req) return 1;
+        
+        if(dp[i][j][req] !=-1) return dp[i][j][req];
+        
+        int count=0;
+        
+        for(int k=i+1;k<=j-1;k++)
+        {
+            int lt=helper(S,i,k-1,'T');
+            int rt=helper(S,k+1,j,'T');
+            
+            int lf=helper(S,i,k-1,'F');
+            int  rf=helper(S,k+1,j,'F');
+            
+            if(S[k] == '&')
+            {
+                if(req == 'T')
+                {
+                    count+= lt*rt;
+                }
+                else
+                {
+                    count+= lf*rf + lt*rf + lf*rt;
+                }
+            }
+            
+               if(S[k] == '^')
+            {
+                if(req == 'T')
+                {
+                    count+= lt*rf + lf*rt;
+                }
+                else
+                {
+                    count+= lt*rt + lf*rf;
+                }
+            }
+            
+                   if(S[k] == '|')
+            {
+                if(req == 'T')
+                {
+                    count+= lt*rf + lf*rt + lt*rt;
+                }
+                else
+                {
+                    count+=lf*rf;
+                }
+            }
+            
+        }
+        return dp[i][j][req]=count;
+    }
+
+
+*** Misc Problems ***
+
+
+*** Buy and sell stock 'k' Times ***
+
+Initution is to maintain a variable which tells us what we are allowed to do (FYI only count a transcation post sell is done)
+
+int solve(int k, vector<int>&p, bool holding_stock, int cur) {
+
+        if(cur == p.size() || k == 0) return 0;
+
+        if(dp[k][cur][holding_stock] != -1) return dp[k][cur][holding_stock];
+
+        if(holding_stock) {
+          return dp[k][cur][holding_stock] = max(solve(k,p,true,cur+1), p[cur] + solve(k-1,p,false,cur+1));
+        } 
+        
+        return dp[k][cur][holding_stock] = max(solve(k,p,false,cur+1), -p[cur] + solve(k,p,true,cur+1));
+
+    }
+    int maxProfit(int k, vector<int>& prices) {
+        bool holding_stock = false;
+        memset(dp,-1,sizeof(dp));
+        return solve(k,prices,holding_stock,0);
+    }
+
+*** Optimal game ****
+
+int take_i = arr[i] + min(get(i + 2, j, arr), get(i + 1, j - 1, arr));  // Choose arr[i] and minimize opponent's score
+int take_j = arr[j] + min(get(i + 1, j - 1, arr), get(i, j - 2, arr));  // Choose arr[j] and minimize opponent's score
+
+dp[i][j] = max(take_i, take_j)
+
+*** Painter partition problem ***
+
+Given a array of n elements partition it into 'k' parts such that sum of maximum sum subarray is minimum
+
+This can be solved using BS (by applying BS on answer similar to allocate minimum no of pages)
+
+bool canPaint(const vector<int>& boards, int k, int maxTime) {
+    int painters = 1;
+    int currentTime = 0;
+
+    for (int board : boards) {
+        currentTime += board;
+        if (currentTime > maxTime) {
+            painters++;
+            currentTime = board; // start with the current board
+            if (painters > k) return false; // more painters needed than available
+        }
+    }
+    return true;
+}
+
+int painterPartition(const vector<int>& boards, int k) {
+    int low = *max_element(boards.begin(), boards.end()); {max element of array}
+    int high = accumulate(boards.begin(), boards.end(), 0); {sum of array}
+    
+    while (low < high) {
+        int mid = low + (high - low) / 2;
+        if (canPaint(boards, k, mid)) {
+            high = mid; // try for a smaller maximum time
+        } else {
+            low = mid + 1; // increase the time
+        }
+    }
+    return low; // or return high, they will converge
+}
+
+
+But let us understand it in DP way (watch techdose video : https://www.youtube.com/watch?v=zNVT8SnGRig from 10 min)

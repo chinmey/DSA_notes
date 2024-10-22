@@ -1,0 +1,13 @@
+Dynamic programming (DP) is used to solve problems that exhibit the following two characteristics:
+
+1. Optimal Substructure:
+A problem has an optimal substructure if its optimal solution can be constructed from the optimal solutions of its subproblems. This means the solution to the overall problem can be derived from solutions to smaller, similar problems.
+Example: In the shortest path problem, the shortest path from point A to point C through point B is the sum of the shortest path from A to B and the shortest path from B to C.
+
+
+2. Overlapping Subproblems:
+A problem has overlapping subproblems if it can be broken down into subproblems that are reused multiple times. Rather than solving these subproblems repeatedly, DP stores the results of subproblems and reuses them when needed (this is called memoization or tabulation).
+Example: In the Fibonacci sequence, calculating Fibonacci(n) requires Fibonacci(n-1) and Fibonacci(n-2). The subproblems for Fibonacci(n-1) and Fibonacci(n-2) overlap when calculating Fibonacci(n-2) again for Fibonacci(n-1).
+
+
+Practical terms me :: choices hongi + optimal poocha jayega (like max/min etc) + recursion jisme more than one call ho 
