@@ -1,0 +1,175 @@
+Used to solve optimization problem like max/min etc {so dp may also work}
+
+
+*** N meetings in a room ***
+
+start[] = [1, 3, 0, 5, 8, 5], end[] =  [2, 4, 6, 7, 9, 9] Return the maximum number of meetings that can be accommodated in a single meeting room
+
+
+Our first inituition can be to apply recursion (or dp) and it does work actually ex 
+
+   int ans(vector<pair<int,int>>& meet, int ind, int n, int endTime) {
+        if(ind == n) return 0;
+        
+        pair<int,int> cur = meet[ind];
+        
+        if(cur.first > endTime) {
+            return max(ans(meet,ind+1,n,endTime), 1+ans(meet,ind+1,n,cur.second));
+        }
+        
+        return ans(meet,ind+1,n,endTime);
+    }
+    int maxMeetings(vector<int> start, vector<int> end) {
+        
+        int n = start.size();
+        vector<pair<int,int>> meet(n);
+        
+        for(int i=0; i<n; i++) {
+            meet[i] = {start[i],end[i]};
+        }
+        
+        sort(meet.begin(), meet.end(), [](pair<int, int> &a, pair<int, int> &b) {
+            return a.second < b.second;
+         });
+        
+        return ans(meet, 0, n, INT_MIN);
+    }
+
+However let us understand why greedy works and dp is not needed 
+
+In summary : jis problem me local optimal hi global optimal ho basically kisi ek choice to lete time peeche ki sabhi choices ko consider na karna pade wo greedy ka h , greedy me minimize conflict ka 
+concept hota h idhar conflict time h 
+
+Understanding the Problems Structure:
+In this problem, you need to select the maximum number of meetings without overlaps.
+The decision is simple: choose a meeting (or skip it) and then move forward.
+A key insight here is that once you choose a meeting that ends the earliest, it minimizes conflict with future meetings, thereby leaving the largest possible remaining window for subsequent meetings.
+This makes it clear that future choices depend only on the end time of the current meeting, which suggests that a greedy choice (selecting the earliest ending meeting) will likely lead to the optimal solution.
+
+2. Key Characteristics of Problems Solved by Greedy Algorithms:
+Greedy algorithms work when a local optimum (best choice at each step) leads to a global optimum (best overall solution). Here are some characteristics that indicate a greedy solution might work:
+
+Optimal substructure: The problem can be broken down into subproblems, and the solution to the problem can be constructed from the solutions to its subproblems. In this case:
+Once you attend a meeting, your remaining task (attending as many meetings as possible after this one) is just like the original problem but with fewer options and a new starting time.
+
+Greedy choice property: You can make a decision at each step that looks locally optimal and does not require re-evaluating previous decisions. This is true here because:
+If you pick the meeting that finishes earliest, it maximizes the remaining time for attending future meetings without needing to reconsider previous choices.
+
+
+3. Why Not Use Dynamic Programming (DP)?
+In DP problems, there are often multiple overlapping subproblems and the optimal solution to a subproblem depends on different configurations of previous decisions. In contrast, here you can always make a single optimal decision (choose the meeting that ends the earliest) that simplifies the remaining problem.
+
+The lack of overlapping subproblems means that DP is not needed. Each step depends only on the most recent decision, and no additional memory (beyond tracking the end time of the current meeting) is required.
+
+4. Developing the Greedy Intuition:
+Minimizing conflict: The core observation is that by choosing the meeting that ends the earliest, you leave the maximum amount of time for future meetings. This "minimization of conflict" is a recurring theme in greedy algorithms.
+Simplicity of decision-making: After sorting the meetings by end time, each decision (whether to attend a meeting) depends only on the last attended meeting's end time. There's no need to explore multiple possible combinations of meetings (as you would in DP), making the greedy approach efficient and straightforward.
+
+ int maxMeetings(vector<int> start, vector<int> end) {
+        
+        int n = start.size();
+        vector<pair<int,int>> meet(n);
+        
+        for(int i=0; i<n; i++) {
+            meet[i] = {start[i],end[i]};
+        }
+        
+        sort(meet.begin(), meet.end(), [](pair<int, int> &a, pair<int, int> &b) {
+            return a.second < b.second;
+         });
+        
+        int ans = 1;
+        int cur_end = meet[0].second;
+        for(int i=1; i<n; i++) {
+            if(meet[i].first > cur_end) {
+                ans++;
+                cur_end = meet[i].second;
+            }
+        }
+        
+        return ans;
+    }
+
+
+
+Minimum platform problem 
+
+
+Here we need to find intersection basically if a train arrives before previous one is departed we need another platform so what we can do is just keep both arrivals and departure in same array sort it
+go thru it wheneveer we see arrival do inc else do dec 
+
+ static bool customComp(pair<int,int> &a, pair<int,int> &b) {
+         if(a.first == b.first) {
+        return a.second < b.second; // If times are the same, prioritize arrivals (0) over departures (1)
+    }
+    return a.first < b.first;
+    }
+    int findPlatform(vector<int>& arr, vector<int>& dep) {
+        
+        int n = arr.size();
+        vector<pair<int,int>> train(2*n);
+        
+        for(int i=0 ; i<n; i++) {
+            train[i] = {arr[i], 0};
+        }
+        
+        for(int i=0; i<n; i++) {
+            train[n+i] = {dep[i], 1};
+        }
+        
+        sort(train.begin(), train.end(), customComp);
+        
+        int ans = 0;
+        int cur = 0;
+        
+        for(int i=0; i<2*n; i++){
+            pair<int,int> p = train[i];
+            
+            if(p.second == 0) { // arrival
+                cur++;
+                ans = max(cur,ans);
+            } else if(p.second == 1) { // departure
+                cur--;
+            }
+        }
+        
+        return ans;
+    }
+To avoid extra space just sort arr dep seperately and apply similar logic
+
+
+Job Sequencuing Problem 
+
+Sort jobs by profit , for each job put it in latest deadline for it (ex if deadline is 4 put it in 4th so that first 3 are empty)
+
+vector<int> JobScheduling(Job arr[], int n) 
+    { 
+        
+        vector<int> slot(n, -1);
+        
+        sort(arr.begin(), arr.end(), customCom);
+        int ans = 0;
+        for(int i=0; i<n; i++) {
+            int dead = arr[i].dead;
+            
+            int open_slot = dead-1;
+            if(slot[open_slot] == -1) {
+                ans+= arr[i].profit;
+                slot[open_slot] = 1;
+            } else {
+            while(slot[open_slot] != -1 && open_slot >= 0) {
+                open_slot --;
+            }
+             if(open_slot >= 0 && slot[open_slot] == -1) {
+                ans+= arr[i].profit;
+                slot[open_slot] = 1;
+            }
+        }
+    } 
+
+Fractional Knapsack :: Sort items by value/weight ratio and keep in knapsack
+
+Coin change (min coins with limited supply) :: Just try and take the biggest denomition if not possible use next largest denomition
+
+
+
