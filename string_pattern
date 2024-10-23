@@ -12,3 +12,263 @@ vector<int> convertStringToVector(const string& str) {
 
     return result;
 }
+
+stoi/choi -- converts char to int 
+to_string -- converts int to string
+
+
+**** Reverse words in a string *****
+
+
+Ex : the sky is blue :: blue is sky the {one way to do it is using stack traverse from end whenever space comes empty stack and push that entry in answer}
+
+But this can also be done using stringstream
+
+string reverseWords(string s) {
+        
+        
+        stringstream str(s); // Creates a stream of string 
+        
+        string w;
+        string ans;
+        while(str >> w) // Extraction operator takes out word from stream and pushes it to 'w' 
+        {
+            ans = w + " " + ans;
+        }
+        ans.erase(ans.end()-1);
+        return ans;
+        
+}
+
+This shows that stringstream uses space as default delimiter if we have to use something other like '_' we have to use getline
+
+The time complexity of reversing words in a string using stringstream depends on the following key operations:
+
+Extracting word is o(N)
+
+String concatenation (ans = w + " " + ans):
+
+Every time you prepend a word to the result ans, a new string is created, which involves copying the current value of ans plus the new word w.
+The cost of concatenating strings increases progressively because, for each new word, the length of ans grows.
+For the first word, the concatenation cost is proportional to the length of the first word.
+For the second word, the cost is proportional to the combined length of the first and second words, and so on.
+If there are k words and their total combined length is n, the time complexity for concatenating the words would be O(n + 2n + 3n + ...) 
+which sums up to O(n^2) due to repeated copying of the strings, instead of this we can use vector 
+ 
+
+ Roman numeral to int (inituition is number always goes from big to small so if we ever get to a stage where next char is smaller need to subtract 
+ value of current char)
+
+
+ for (int i = 0; i < n; i++) {
+    // If current numeral is less than the next numeral, subtract it
+    if (i < n - 1 && mp[s[i]] < mp[s[i + 1]]) {
+        ans -= mp[s[i]];
+    }
+    // Otherwise, add it
+    else {
+        ans += mp[s[i]];
+    }
+
+
+Longest prefix among vector of string 
+
+
+Natural initution would be to sort string by length and compare first and last string (however this fails for ["abab","aba","abc"] where we return ans as
+aba instead of ab) so we should just sort lexographically a < b (this ensures strings which are most dissimilar are compared)
+
+
+
+**** String pattern matching techniques **** 
+
+
+PS : Given a pattern and string found out if pattern exists in string (Popular technique is Rabin karp and KMP)
+
+Algorithm Overview
+Rabin-Karp:
+Uses hashing to find any one of a set of pattern strings in a text.
+Computes a hash value for the pattern and for substrings of the text.
+If the hash values match, it checks for a character-by-character match (to avoid false positives).
+KMP (Knuth-Morris-Pratt):
+Uses a preprocessing step to create a longest prefix-suffix (LPS) array.
+This array allows the algorithm to skip unnecessary comparisons in the text when a mismatch occurs.
+It guarantees that the pattern will be matched in a linear time complexity.
+2. Time Complexity
+Rabin-Karp:
+Average Case: O(n+m) where 
+Worst Case: 
+O(nm) (when there are many hash collisions).
+KMP:
+Always O(n+m) due to the preprocessing and matching phases, regardless of the input characteristics.
+3. Space Complexity
+RRabin-Karp: 
+O(1) for the hash table (constant space if only one pattern is used) or 
+O(m) if you store hashes for multiple patterns.
+
+KMP: 
+O(m) for storing the LPS array.
+
+4. Use Cases
+Rabin-Karp:
+Better for searching multiple patterns at once.
+Suitable for cases where hash functions are effective and there’s low chance of collisions.
+KMP:
+Preferred for single pattern matching due to its consistent linear performance.
+Works well with large texts where efficiency is crucial, such as in text processing or searching.
+
+
+Rabin karp (https://www.youtube.com/watch?v=swciWFPq3NE)
+
+Uses Hash = s[0]*prime^0 + s[1]*prime^1 and so on , if hash match check individual strings 
+
+public class KarpRabin {
+  private final int PRIME = 101;
+
+  private double calculateHash(String str) {
+    double hash = 0;
+    for(int i=0; i < str.length(); i++) {
+      hash += str.charAt(i) * Math.pow(PRIME, i);
+    }
+    return hash;
+  }
+
+  private double updateHash(double prevHash, char oldChar, char newChar, int patternLength) {
+    double newHash = (prevHash - oldChar) / PRIME; // in calculate hash removing first charcater 
+    newHash = newHash + newChar * Math.pow(PRIME, patternLength - 1); // in calculate hash adding last character
+    return newHash;
+  }
+
+  public void search(String text, String pattern) {
+    int patternLength = pattern.length();
+    double patternHash = calculateHash(pattern);
+    double textHash = calculateHash(text.substring(0, patternLength));
+
+    for(int i=0; i<= text.length() - patternLength; i++) {
+      if(textHash == patternHash) {
+        if(text.substring(i, i+patternLength).equals(pattern)) {
+          System.out.println("Pattern found at index " + i);
+        }
+      }
+
+      if (i < text.length() - patternLength) {
+        textHash = updateHash(textHash, text.charAt(i), text.charAt(i + patternLength), patternLength);
+      }
+    }
+  }
+}
+
+
+KMP algo (https://www.youtube.com/watch?v=qases-9gOpk)
+
+When we match 2 strings , the major flaw with naive approach is everytime few character match but whole string does not next time we have to start from 
+begining again ex 
+
+S:  ABABABD 
+P : ABABD 
+
+Let us say i is used for text and j is used for pattern
+First 4 match than again 5rd doesnt we have to start from begining (2nd character in S, 1st charcater in P )
+
+The idea/inituition is to stop these i and j from going back Repeatedly, in this case we can move j only to 3rd character and not move i back 
+
+What we do is as soon as we get a mismatch we go to char behind pattern and ask for longest prefix is also a suffix 
+
+(j-1) --> longest suffix which is proper prefix (not equal to string itself matlab suffix or prefix equal nahi hona chahiye)
+
+so for ABAB --> proper prefixes are A , AB, ABA only in this only AB is a valid suffix also and proper suffix are B AB BAB
+
+
+for calculate LPS we start with i=1 , length = 0 (LPS[0] = 0 always)
+
+if p[i] and p[length] match i inc length put it in LPS and move forward with i 
+if they dont match i have to try with length-1 so i will put length = lps[length-1] and retry and so on 
+
+vector<int> computeLPSArray(const string &pattern) {
+    int length = 0; // Length of the previous longest prefix suffix
+    int m = pattern.length();
+    vector<int> lps(m, 0); // LPS array
+    int i = 1;
+
+    while (i < m) {
+        if (pattern[i] == pattern[length]) {
+            length++;
+            lps[i] = length;
+            i++;
+        } else {
+            if (length != 0) {
+                length = lps[length - 1]; // Backtrack to previous longest prefix suffix
+            } else {
+                lps[i] = 0; // No match
+                i++;
+            }
+        }
+    }
+
+    return lps;
+}
+
+ vector <int> search(string pattern, string text)
+        {
+            vector<int> lps = calcLps(pattern);
+            vector<int> res;
+            
+            int n = pattern.size();
+            
+            int m = text.size();
+            
+            int i=0,j=0;
+            
+            while(i<n && j<m) {
+                if(pattern[i] == text[j]) {
+                    i++;
+                    j++;
+                } else {
+                    if(i == 0) j++;
+                    else 
+                    i = lps[i-1];
+                }
+                
+                if(i == n) {
+                    res.push_back(j-i+1);
+                    i= lps[i-1];
+                }
+            }
+            
+            return res;
+        }
+
+
+Minimum Insertion Steps to Make a String Palindrome --> take lcs of string with its reverse answer is length of string - lcs
+
+One common point in strings is map can be kept in a array (if characters are only lowercase or uppercase for example)
+
+
+Count And Say (simple recursive just assume my child has got the answer and i need to do last step)
+
+  string countAndSay(int n) {
+        
+        if(n == 1) return "1";
+
+        string k = countAndSay(n-1);
+
+        int i=0, size = k.size();
+        string ans;
+
+        while(i<size) {
+            int count = 1;
+            char c = k[i];
+            while(i < size-1 && k[i] == k[i+1]) {
+                count++;
+                i++;
+            }
+            ans = ans + to_string(count) + c;
+            i++;
+        }
+
+        return ans;
+    }
+
+
+For Compare Version problem : convert string into vector<int> by tokensing it using stringstream and using '.' as delimiter with help of stoi (just see 
+first example)
+
