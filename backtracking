@@ -1,3 +1,5 @@
+The basic idea of Backtrack is to do something , explore (let recursion do rest), undo
+
 Rate in a maze problem (https://www.youtube.com/watch?v=wXwZSytYrIs&list=PLpIkg8OmuX-IBcXsfITH5ql0Lqci1MYPM&index=11)
 Problem link : https://www.geeksforgeeks.org/problems/rat-in-a-maze-problem/1
 
@@ -61,6 +63,274 @@ solve(board, row, n) {
     }
 }
 
+
+Generate all permutation of array 
+
+Input: nums = [1,2,3]
+Output: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+
+
+The key inituition is to maintain numbers that are already put in temp answer (can be done using either set or visited array etc)
+
+void solve(int ind, int n, vector<int> ans, vector<int> &nums, vector<int> vis) {
+
+        if(ind == n) {
+            res.push_back(ans);
+            return;
+        }
+
+        for(int i=0; i<n; i++) {
+            if(vis[i] == 0) {
+              ans.push_back(nums[i]);
+              vis[i] = 1;
+              solve(ind+1,n,ans,nums,vis);
+              ans.pop_back();
+              vis[i] = 0;
+            }
+        }
+
+        return;
+    }
+
+Execution Flow (for nums = [1, 2]):
+Initial Call: solve(0, 2, [], [1, 2], [0, 0])
+
+ind = 0 → means we are building the first position of the permutation.
+ans = [] (empty because no number is chosen yet).
+Both elements in vis are 0 (not visited yet).
+First Iteration (i = 0):
+
+Since vis[0] == 0, we choose 1 (from nums[0]).
+Update ans = [1] and vis = [1, 0] (mark 1 as used).
+Recursive Call: solve(1, 2, [1], [1, 2], [1, 0])
+Second Iteration (inside the recursive call, i = 0):
+
+ind = 1 → We are building the second position of the permutation.
+ans = [1], vis = [1, 0].
+Skip i = 0 because vis[0] == 1 (we've already used 1).
+Second Iteration (i = 1):
+
+Since vis[1] == 0, we choose 2 (from nums[1]).
+Update ans = [1, 2] and vis = [1, 1] (mark 2 as used).
+Recursive Call: solve(2, 2, [1, 2], [1, 2], [1, 1])
+Now, ind == n, meaning we've built a complete permutation, so [1, 2] is added to res.
+Backtrack:
+
+Pop 2 from ans, so ans = [1].
+Set vis[1] = 0 (unmark 2).
+Exit the loop and return to the previous recursive level.
+Backtrack Further:
+
+Pop 1 from ans, so ans = [].
+Set vis[0] = 0 (unmark 1).
+Second Iteration (i = 1):
+
+Now, at the first recursive level (ind = 0), choose 2 (from nums[1]).
+Update ans = [2] and vis = [0, 1] (mark 2 as used).
+Recursive Call: solve(1, 2, [2], [1, 2], [0, 1])
+Third Iteration (inside the recursive call, i = 0):
+
+Choose 1 (since vis[0] == 0).
+Update ans = [2, 1] and vis = [1, 1].
+Recursive Call: solve(2, 2, [2, 1], [1, 2], [1, 1])
+Now, ind == n, so [2, 1] is added to res.
+Final Backtrack:
+
+Pop elements and reset vis as before, returning all the way to the initial state.
+
+
+Sudoku solver 
+
+
+Go row by row , once we reach endrow that is answer , if we reach endCol move to nextRow (use bool return type it helps in edgeCases)
+
+Check grid 
+
+ int startrow = (row / 3) * 3;
+ int startcol = (col / 3) * 3;  
+
+ OR 
+
+ if(row >=0 && row <3) startrow = 0;
+        else if(row >=3 && row <6) startrow = 3;
+        else startrow = 6;
+
+        if(col >=0 && col <3) startcol = 0;
+        else if(col >=3 && col <6) startcol = 3;
+        else startcol = 6;
+
+        for(int i=startrow; i<=startrow+2; i++) {
+            for(int j=startcol; j<=startcol+2;j++) {
+                if(board[i][j] == num) return false;
+            }
+        }
+
+
+Word search problem (in a grid find if word exists or not)
+
+Basic idea is to go thru grid and whenever first character of word meets mark it as visited and call recursion to check if whole word is present or not 
+
+bool solve(vector<vector<char>>& board, string word, int r,int c,int n,int m,vector<vector<bool>>& vis, int ind) {
+
+        if(ind == word.size()) {
+            return true;
+        }
+        
+        int dx[4] = {0,0,1,-1};
+        int dy[4] = {1,-1,0,0};
+
+        for(int i=0; i<4; i++) {
+            int nr = r + dx[i];
+            int nc = c + dy[i];
+
+            if(nr >=0 && nr < n && nc >=0 && nc < m && vis[nr][nc] == 0 && board[nr][nc] == word[ind]) {
+                vis[nr][nc] = 1;
+                bool found = solve(board,word,nr,nc,n,m,vis,ind+1);
+                if(found) return true;
+                vis[nr][nc] = 0;
+            }
+        }
+
+        return false;
+    }
+    bool exist(vector<vector<char>>& board, string word) {
+        
+        int n = board.size();
+        int m = board[0].size();
+
+        vector<vector<bool>> vis(n, vector<bool> (m, false));
+
+        for(int i=0; i<n; i++) {
+            for(int j=0; j<m; j++) {
+                if(board[i][j] == word[0]) {
+                    vis[i][j] = 1;
+                    bool found = solve(board, word,i,j,n,m,vis,1);
+                    if(found) return true;
+                    vis[i][j] = 0;
+                }
+            }
+        }
+
+        return false;
+    }
+
+Non-decreasing subsequence 
+
+One key ideas here we need to maintain order of numbers (so we wont use for loop that runs throughout array like permutation)
+
+ void solve(vector<int>& nums, int ind, int n, vector<int>& ans) {
+        // If subsequence has at least 2 elements, add it to the result
+        if (ans.size() >= 2) {
+            res.push_back(ans);
+        }
+        
+        // Set to track duplicates at the current level
+        unordered_set<int> used;
+        
+        for (int i = ind; i < n; i++) {
+            // Ensure subsequence is non-decreasing and avoid duplicates at the same level
+            if ((ans.empty() || nums[i] >= ans.back()) && used.find(nums[i]) == used.end()) {
+                ans.push_back(nums[i]);
+                solve(nums, i + 1, n, ans);  // Recurse with next element
+                ans.pop_back();  // Backtrack
+                used.insert(nums[i]);  // Mark the current element as used at this level
+            }
+        }
+    }
+
+2305. Fair Distribution of Cookies
+
+The idea is to try and get all possible combinations of distributing candies and see which one is minimum (One optimization is if current distributed
+candies is greater than result no need to go further)
+
+int result = INT_MAX;
+    void solve(vector<int>& cookies, vector<int> bag, int ind, int n, int k) {
+        if(ind == n) {
+            // calc max of bag and see if it improves result
+            int max_bag = 0;
+            for(int i=0; i<k; i++) {
+                max_bag = max(max_bag, bag[i]);
+            }
+            result = min(result,max_bag);
+            return;
+        }
+
+        for(int i=0; i<k; i++) {
+            bag[i] += cookies[ind];
+            if(bag[i] < result) { // Optimization 
+             solve(cookies,bag,ind+1,n,k); 
+            }
+            bag[i] = bag[i] - cookies[ind];
+        }
+
+        return;
+    }
+
+1601. Maximum Number of Achievable Transfer Requests
+
+Here the mission is netinflow for each building must be zero , so for all requests we have 2 options on whether to honor it or not and as we reach end of 
+array we need to determine if the netinflow was indeed zero so we would need Backtrack
+
+void solve(int n, vector<vector<int>>& requests, int ind, vector<int>& build, int req, int honor) {
+        if (ind == req) {
+            // Check if the configuration is valid
+            for (int i = 0; i < n; i++) {
+                if (build[i] != 0) {
+                    return;
+                }
+            }
+            // If valid, update the count with the maximum honors
+            count = max(count, honor);
+            return;
+        }
+
+        vector<int> r = requests[ind];
+        int source = r[0];
+        int destination = r[1];
+
+        // Honor the request
+        build[source]--;
+        build[destination]++;
+
+        solve(n, requests, ind + 1, build, req, honor + 1);
+
+        // Backtrack: undo the request
+        build[source]++;
+        build[destination]--;
+
+        // Skip the current request (don't honor it)
+        solve(n, requests, ind + 1, build, req, honor);
+}
+
+140. Word Break II
+
+Basic idea is go thru string once we see a word which is part of dictinonary we have 2 choices either take it and recur or simply recur need to explore both
+
+void solve(int i, string& currSentence, string &s) {
+        if(i >= s.length()) {
+            result.push_back(currSentence);
+            return;
+        }
+
+        for(int j = i; j < s.length(); j++) {
+
+            string tempWord = s.substr(i, j-i+1);
+
+            if(dict.find(tempWord) != dict.end()) {
+                string origSentence = currSentence;
+                if(!currSentence.empty())
+                    currSentence += " ";
+                
+                currSentence += tempWord; // Take word 
+
+                solve(j+1, currSentence, s);
+
+                currSentence = origSentence; // Remove word (not take word)
+
+            }
+
+        }
+    }
 
 Generate parenthesis 
 

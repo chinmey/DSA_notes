@@ -1,1 +1,5 @@
 If in a question we are asked to print/show all possible ways to do something it is done using this.
+
+Basic idea is to always --> do explore undo 
+
+Example in combination sum --> we take a number call recursion than we pop number and call recursion
