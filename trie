@@ -1,0 +1,301 @@
+Follow codeStoryWithmik playlist
+
+Trie (also called prefix tree) is a efficient way to store strings it is used in autocomplete etc
+
+212. Word Search II
+
+
+Given a grid and a list of words find if these words exists or not in grid.
+
+--> if we have to find only one word that is simple and we have solved same in backtracking but following same way here is too slow
+
+Tries are used to help in effiecient searching of words etc , every trie has a root , a endOfWord flag , which is set if word ends there and it holds ref for all of its children (which are generally a max of 26)
+
+struct TrieNode {
+       bool endOfWord;
+       string word;
+       TrieNode* chilren[26];
+    };
+
+This is an array of pointers to other TrieNode structures. Each index in the array corresponds to a letter of the English alphabet. The size 26 corresponds to the 26 lowercase English letters ('a' to 'z').
+For example, children[0] represents the node that corresponds to 'a', children[1] to 'b', and so on.
+
+
+This question can be solved effieciently by putting all words in a trie
+
+Than doing dfs in grid whenever we find char with ref in root we use findWord, this allows us to solve it with single traversal of grid
+
+class Solution {
+public:
+    struct TrieNode {
+       bool endOfWord;
+       string word;
+       TrieNode* children[26];
+    };
+
+    TrieNode* createNode() {
+        TrieNode* trie = new TrieNode();
+        trie->endOfWord = false;
+        trie->word = "";
+        for(int i=0; i<26; i++) {
+            trie->children[i] = NULL;
+        }
+
+        return trie;
+    }
+
+    void insert(string &word , TrieNode* root) {
+        TrieNode* crawler = root;
+        for(int i=0; i<word.size(); i++) {
+               if(crawler->children[word[i] - 'a'] == NULL) {
+                 crawler->children[word[i] - 'a'] = createNode();
+               }
+               crawler = crawler->children[word[i] - 'a'];
+            }
+            crawler -> endOfWord = true;
+            crawler -> word = word;
+     }
+
+     vector<string> res;
+     vector<vector<int>> dir = {{0,1}, {0,-1}, {1,0}, {-1,0}};
+
+     void findWords(vector<vector<char>>& board, int i, int j, int n, int m, TrieNode* root) {
+        if(i < 0 || i >=n || j < 0 || j >=m) {
+            return;
+        }
+
+        if(board[i][j] == '@' || root->children[board[i][j] - 'a'] == NULL) {
+            return;
+        }
+
+        root = root->children[board[i][j] - 'a'];
+
+        if(root->endOfWord) {
+            res.push_back(root->word);
+            root->endOfWord = false;
+        }
+        
+        char temp = board[i][j];
+        board[i][j] = '@'; // Mark as visited
+        
+        // Visit other directions
+        for(int k=0; k<4; k++) {
+            int nR = i + dir[k][0];
+            int nC = j + dir[k][1];
+
+            findWords(board,nR,nC,n,m,root);
+        }
+
+        board[i][j] = temp;
+
+     }
+
+    vector<string> findWords(vector<vector<char>>& board, vector<string>& words) {
+        TrieNode* root = createNode();
+        
+        // Insert all nodes in trie 
+        for(string &word : words) {
+            insert(word,root);
+        }
+
+        int n = board.size();
+        int m = board[0].size();
+
+        for(int i=0; i<n; i++) {
+            for(int j=0; j<m; j++) {
+                if(root->children[board[i][j] - 'a'] != NULL) {
+                    findWords(board,i,j,n,m,root);
+                }
+            }
+        }
+
+        return res;
+        
+    }
+};
+
+
+421. Maximum XOR of Two Numbers in an Array
+
+nums = [3,10,5,25,2,8] Ans - 28 (5 XOR 25) Brute force is to try all pais and get max
+
+
+Result of xor is max if it has as many 1 as possible to get as many 1 as possible numbers should be completely different from each other at bit level
+since ( 1 XOR 0 is 1)
+
+Also MSB (More significant bit) having one is more critical always {just think of 8 and all numbers from 1->>7 just having MSB as 1 make it bigger}
+
+Lets say x = 3 and its potential pairs are 2 and 5 , now just because 3 has 0 as MSB , we can eliminate 2 because we are guaranteed to have higher result
+with 5
+
+int ith_bit = (num >> i) & 1; --> This is how we get ith bit of a number 
+ 
+Here we will use concept of bit trie where each node will have 2 child (left one for zero and right one for one )
+
+So the representation would look like 
+
+struct TrieNode {
+    TrieNode* left;
+    TrieNode* right;
+}
+
+for insertion we would follow , int ith_bit = (num >> i) & 1 {going thru all bits from 31 to 0}, we will build our trie and traverse it for every number
+always trying to get to opposite bit of number
+
+class Solution {
+public:
+    struct TrieNode{
+        TrieNode* left;
+        TrieNode* right;
+    };
+
+     TrieNode* root;
+
+    void insert(int num) {
+         TrieNode* crawler = root;
+
+         for(int i=31; i>=0; i--) {
+            int ith_bit = (num >> i) & 1;
+
+            if(ith_bit == 0) {
+               if(crawler -> left == NULL) {
+                crawler->left = new TrieNode();
+               }
+               crawler = crawler->left;
+            } else {
+               if(crawler -> right == NULL) {
+                crawler->right = new TrieNode();
+               }
+               crawler = crawler->right;
+            }
+         }
+    }
+
+    int findMaxXor(int num) {
+        int ans = 0;
+        TrieNode* crawler = root;
+
+        for(int i=31; i>=0; i--) {
+            int ith_bit = (num >> i) & 1;
+            
+             if(ith_bit == 0) {
+               if(crawler -> right != NULL) { // try to go in right direction
+                crawler = crawler->right;
+                ans += pow(2,i);
+               } else {
+               crawler = crawler->left;
+               }
+
+            } else {
+               if(crawler -> left != NULL) {
+                crawler = crawler ->left;
+                ans += pow(2,i);
+               } else {
+               crawler = crawler->right;
+               }
+            }
+
+        }
+
+        return ans;
+    }
+
+    int findMaximumXOR(vector<int>& nums) {
+        root = new TrieNode();
+
+        for(int num : nums) {
+            insert(num);
+        }
+        
+        int ans = 0;
+        for(int num : nums) {
+           ans = max(ans, findMaxXor(num));
+        }
+
+        return ans;
+    }
+};
+
+
+3043. Find the Length of the Longest Common Prefix
+
+Input: arr1 = [1,10,100], arr2 = [1000]
+Output: 3
+Explanation: There are 3 pairs (arr1[i], arr2[j]):
+- The longest common prefix of (1, 1000) is 1.
+- The longest common prefix of (10, 1000) is 10.
+- The longest common prefix of (100, 1000) is 100.
+The longest common prefix is 100 with a length of 3.
+
+
+This is again question which can levarge trie efficiently , initution is to build trie using one of array than take every number in other array traverse trie
+as long as number match we inc count and return same
+
+class Solution {
+public:
+    struct TrieNode{
+       bool endOfNum;
+
+       TrieNode* children[10];
+    };
+    TrieNode * root;
+
+     TrieNode* createNode() {
+        TrieNode* trie = new TrieNode();
+        trie->endOfNum = false;
+        for(int i=0; i<10; i++) {
+            trie->children[i] = NULL;
+        }
+
+        return trie;
+    }
+
+    void insert(int num) {
+       string numStr = to_string(num);
+       TrieNode* crawler = root;
+       
+       for(char c : numStr) {
+         int digit = c - '0';
+
+         if(crawler->children[digit] == NULL) {
+            crawler->children[digit] = createNode();
+         }
+         crawler = crawler->children[digit];
+       }
+       crawler->endOfNum = true;
+    }
+
+    int search(int num) {
+    string numStr = to_string(num);
+    TrieNode* crawler = root;
+    int count = 0;  // Count of matching digits
+    
+    for(char c : numStr) {
+        int digit = c - '0';
+
+        if(crawler->children[digit] != NULL) {
+            count++;
+            crawler = crawler->children[digit];
+        } else {
+            break;
+        }
+    }
+
+    return count;
+   }
+    int longestCommonPrefix(vector<int>& arr1, vector<int>& arr2) {
+        root = createNode();
+
+        for(int num : arr1) {
+            insert(num);
+        }
+        
+        int ans = 0;
+        for(int num : arr2) {
+            ans = max(ans, search(num));
+        }
+
+        return ans;
+    }
+};
+
