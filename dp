@@ -793,6 +793,77 @@ int take_j = arr[j] + min(get(i + 1, j - 1, arr), get(i, j - 2, arr));  // Choos
 
 dp[i][j] = max(take_i, take_j)
 
+***** Decode strings ****************
+
+Here for every char either we can take just it or we can take it and next char if they are together less than 26 , we would use reaching end as count
+that we got answer 
+
+int solve(int idx, int n, string s) {
+        if(idx == n) {
+            return 1; // If able to reach till end its a answer
+        }
+
+        if(s[idx] == '0') {
+            return 0; // Not possible if char is 0
+        }
+
+        if(dp[idx] != -1) return dp[idx];
+
+        int taking_ith_char = solve(idx+1, n, s);
+
+        int taking_ith_plus_one_char = 0;
+        if (idx + 1 < n && (s[idx] == '1' || (s[idx] == '2' && s[idx + 1] <= '6'))) {
+            taking_ith_plus_one_char = solve(idx + 2, n, s);
+        }
+
+        return dp[idx] = taking_ith_plus_one_char + taking_ith_char;
+    }
+
+In the advanced form of this , we are given * as input which can map to any number , changes there would be 
+
+Single Character Decoding: If the character is:
+
+A digit from 1 to 9, it represents itself, so there’s only one way to decode it.
+A '*', it can represent any digit from 1 to 9, giving 9 possible ways to decode it.
+
+Two-Character Decoding: When considering two consecutive characters:
+
+If both characters are digits, they can be decoded in the same way as before.
+If the first character is '*', it can represent either 1 or 2 (since 10-26 are valid ranges).
+If the second character is '*', it can represent any valid number from 0-9, depending on the previous character.
+
+
+647. Palindromic Substrings (count of all palindromic substrings)
+
+Approach
+Define a DP Array:
+
+Let dp[i][j] be a boolean value where dp[i][j] == true if the substring s[i...j] is a palindrome, otherwise dp[i][j] == false.
+Identify the Base Cases:
+
+Single characters are always palindromic. So, dp[i][i] = true for all i, and we increment our count of palindromic substrings by 1 for each character.
+Two consecutive equal characters are also palindromic. So if s[i] == s[i+1], then dp[i][i+1] = true, and we increment our count.
+Fill the DP Table for Longer Substrings:
+
+For substrings longer than two characters, a substring s[i...j] is palindromic if:
+The first and last characters are the same (s[i] == s[j]), and
+The substring within these two characters (s[i+1...j-1]) is also palindromic (i.e., dp[i+1][j-1] == true).
+If both conditions hold, we set dp[i][j] = true and increase the palindromic count.
+
+// Last part code (which is only tricky part)
+
+for (int len = 3; len <= n; ++len) {
+            for (int i = 0; i <= n - len; ++i) {
+                int j = i + len - 1;
+                if (s[i] == s[j] && dp[i + 1][j - 1]) {
+                    dp[i][j] = true;
+                    count++;
+                }
+            }
+        }
+
+
+
 *** Painter partition problem ***
 
 Given a array of n elements partition it into 'k' parts such that sum of maximum sum subarray is minimum
@@ -831,3 +902,5 @@ int painterPartition(const vector<int>& boards, int k) {
 
 
 But let us understand it in DP way (watch techdose video : https://www.youtube.com/watch?v=zNVT8SnGRig from 10 min)
+
+
