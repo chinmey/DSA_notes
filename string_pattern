@@ -16,6 +16,8 @@ vector<int> convertStringToVector(const string& str) {
 stoi/choi -- converts char to int 
 to_string -- converts int to string
 
+string.erase(pos, 1) and string.insert(pos, num_characters, ch) // Insert and delete char in a string
+
 
 **** Reverse words in a string *****
 
