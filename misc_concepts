@@ -317,3 +317,177 @@ int getSum(int a, int b) {
 
         return a;
     }
+
+*** Line sweep https://leetcode.com/problems/maximum-frequency-of-an-element-after-performing-operations-i/description/ ***
+
+
+General concept let say we have a array of 10 element with all zeroes and we get q queries where we are given (l, r) and for each query we inc 1 for range 
+How to find end array ? (https://www.youtube.com/watch?v=29B244gyQJA for explain)
+
+> One way is as queries come we traverse range and inc by 1 (but this takes 0(N))
+> Optimized way is to add 1 in l and -1 in r+1 (now we take prefix sum for answer)
+
+
+*** 2563. Count the Number of Fair Pairs ***
+
+Uses BS upper bound and lower bound now how to visualise what is given by upper bound and lower bound 
+
+lower_bound helps you locate the "first position" in a sorted array where an element can be inserted without breaking the sorting order.
+upper_bound helps you locate the "last position" in a sorted array where an element can be inserted without breaking the sorting order.
+
+Ex array is 1 3 5 7 7 8, lower bound is index = 3 and upper bound is index = 5
+
+*** 862. Shortest Subarray with Sum at Least K ***
+
+Note that tradional sliding window will not work because numbers can be negative ex : (84, -37, 32, 40,95 and k = 165)
+
+one idea that can come in mind is store prefix sum of array in vector than go thru each index (i) for all index (j > i) if prefix sum[j] - prefix[i] >=K 
+we have a candidates but this takes o(N2) ex
+
+int shortestSubarray(vector<int>& nums, int k) {
+        int n = nums.size();
+
+        vector<int> prefix(n, 0);
+
+        for(int i=0; i<n; i++) {
+            if(i == 0) prefix[i] += nums[i];
+            else prefix[i] += prefix[i-1] + nums[i];
+        }
+
+        int ans = INT_MAX;
+
+        for(int i=0; i<n; i++) {
+            if(prefix[i] >= k) ans = min(ans, i+1);
+            for(int j=i+1; j<n; j++) {
+                if(prefix[j] - prefix[i] >= k) {
+                    ans = min(ans, j-i);
+                }
+            }
+        }
+
+        return ans == INT_MAX ? -1 : ans;
+    }
+
+So how can we optimize on this basically we can use a set to store prefixsum[i], i and use its lower bound to get smallest needed value
+
+lower_bound gives an iterator to the "element(not position)" with the smallest value >= given value
+
+*set.rbegin() gives max value in set and *set.begin() gives min value in set
+
+
+1574. Shortest Subarray to be Removed to Make Array Sorted (https://www.youtube.com/watch?v=yOZSUfL-DxQ)
+
+Given an integer array arr, remove a subarray (can be empty) from arr such that the remaining elements in arr are non-decreasing
+
+
+Input: arr = [1,2,3,10,4,2,3,5]
+Output: 3
+
+This is example where some part of array is sorted and some is not sorted , approach is to find a j from behind which is already sorted (here we reach to j=5)
+
+now we start from beginning (till we stay sorted ) and find a j which is bigger than me , and keep on calculating result 
+
+ex 
+ while(i < j && (i == 0 || arr[i] >= arr[i-1])) {
+            
+            while(j < n && arr[j] < arr[i]) j++;
+
+            res = min(res, j-i-1);
+            i++;
+}
+
+*** Monotonic stack/queue patterns ****
+
+These are used when for our answer we maintain something in sorted order in queue/stack
+
+For this type of questions, always create a mountain array and see how where it fails etc 
+
+Ex : 862. Shortest Subarray with Sum at Least K (https://www.youtube.com/watch?v=Z4tH40wH6JA)
+
+(84, -37, 32, 40,95 and k = 165) ans is 3 
+
+Idea is to get prefix array sum : 84 47 79 119 214 , whenever there is a dip in this array we wont have use of those indices because that sum will be 
+created again later which will give shorter prefix so we can store indices based on sum in dequeue as long as sum increases 
+
+402. Remove K Digits 
+
+(Input: num = "1432219", k = 3
+Output: "1219")
+
+Again if we built mountain array we will see whenever we have a drop off that point removal is needed for reducing our total (so basically we need to 
+remove peaks)
+
+To do this effectively we can maintain a stack which will always store the results in increasing order and whenever we see stack top is greater than current
+num we need to pop the top 
+
+ for (int i = 0; i < n; i++) {
+            // Pop the stack while k > 0 and the current digit is smaller than the stack's top
+            while (k > 0 && !stk.empty() && stk.top() > s[i]) {
+                stk.pop();
+                k--;
+            }
+            // Push the current digit onto the stack
+            stk.push(s[i]);
+        }
+
+        // If k > 0, we need to remove the remaining digits from the stack
+while (k > 0 && !stk.empty()) {
+    stk.pop();
+    k--;
+}
+
+316. Remove duplicate letters
+
+Given a string s, remove duplicate letters so that every letter appears once and only once. You must make sure your result is 
+the smallest in lexicographical order among all possible results.
+
+Input: s = "bcabc"
+Output: "abc"
+
+
+Idea is to maintain the answer in queue sorted in lexagraphic order whenever we come to a char if it is lexicographical smaller than back of queue 
+and character at back of queue can come again in string later we remove that 
+
+class Solution {
+public:
+    string removeDuplicateLetters(string s) {
+        vector<int> count(26, 0); // Count of each character
+        vector<bool> inStack(26, false); // Whether a character is in the stack
+
+        for (char c : s) {
+            count[c - 'a']++; // Count occurrences of each character
+        }
+
+        deque<char> d; // Monotonic stack to maintain the result
+
+        for (char c : s) {
+            count[c - 'a']--; // Decrease the count of the current character
+
+            if (inStack[c - 'a']) {
+                // Skip if the character is already in the stack
+                continue;
+            }
+
+            // Remove characters from the stack if:
+            // - They are lexicographically larger than the current character and They can still appear later in the string (count > 0)
+            while (!d.empty() && d.back() > c && count[d.back() - 'a'] > 0) {
+                inStack[d.back() - 'a'] = false; // Mark the character as not in the stack
+                d.pop_back();
+            }
+
+            d.push_back(c); // Add the current character to the stack
+            inStack[c - 'a'] = true; // Mark the character as in the stack
+        }
+
+        // Convert the deque to a string
+        string answer;
+        while (!d.empty()) {
+            answer += d.front();
+            d.pop_front();
+        }
+
+        return answer;
+    }
+};
+
+
