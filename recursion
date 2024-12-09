@@ -37,6 +37,25 @@ Palindrom partitioning : (explain : https://www.youtube.com/watch?v=VOiNexeScLU)
 
 Solved using IBH technique we can partition throughout string , if first part is palindrome we recur for second part and so on and we have to pop_back at last
 
+ void helper(string s, vector<string> local) {
+        if(s.size() == 0) {
+            ans.push_back(local);
+            return;
+        }
+
+        for(int i=0; i<s.size(); i++) {
+            string st = s.substr(0, i+1);
+
+            if(isPalindrom(st)) {
+                local.push_back(st);
+                helper(s.substr(i+1), local);
+                local.pop_back();
+            }
+        }
+    }
+
+In every recursion we need to do 2 calls basically (one taking the number and other not taking the number) here not taking is ensured by isPalindrom check
+
 
 Kth Grammar :: use observation to shorten input  (https://www.youtube.com/watch?v=5P84A0YCo_Y&list=PL_z_8CaSLPWeT1ffjiImo0sYTcnLzo-wY&index=10) , you don't 
 need to generate the all rows and than give answer
@@ -120,3 +139,178 @@ Node *flattenBST(Node *root)
         return leftpart;
     }
 
+https://www.youtube.com/watch?v=9LPdx7wBjxY&list=PLICVjZ3X1AcbI-9LyJ6ss-gB3bNRTQrll&index=1 --> follow this for more recursion problems 
+
+21. Remove linked list elements equal to val
+
+
+The iterative way to do this will be to keep track of element and its previous and if element is equal to val , make previous point to next 
+
+but recursive is easier , just think like this for current element my next will do the work and come back now i only need to check if or not i am equal to val
+
+ListNode* removeElements(ListNode* head, int val) {
+        if(head == NULL) return head;
+
+        head->next = removeElements(head->next, val);
+
+        if(head->val == val) return head->next;
+        return head;
+}
+
+2487. Remove nodes from linked list 
+
+Again this uses similar idea where we assume all work is done and do work only for head node 
+
+ListNode* removeNodes(ListNode* head) {
+        
+        if(head == NULL || head->next == NULL) return head;
+
+        head->next = removeNodes(head->next);
+        
+        bool removeMe = false;
+        ListNode* cur = head->next;
+
+        if(head->val < cur->val) {
+                removeMe = true;
+        }
+
+        if(removeMe)  return head->next;
+        return head;
+        
+}
+
+One question could be why are we checking head with only its next and not whole list ( the reason is the next element is guaranteed to be larger than 
+every other element of list otherwise it would have not been there)
+
+143. Reorder linked list
+
+You are given the head of a singly linked-list. The list can be represented as:
+
+L0 → L1 → … → Ln - 1 → Ln
+Reorder the list to be on the following form:
+
+L0 → Ln → L1 → Ln - 1 → L2 → Ln - 2 →
+
+
+Again this can be solved with recursion the idea is to do for one pair (first and last) and trust that recursion would be able to do for rest and connect 
+the next of last with it ex 
+
+ListNode* helper(ListNode* head) {
+        if(head == NULL || head -> next == NULL) return head;
+
+        ListNode* cur = head;
+        ListNode* prev;
+
+        while(cur -> next) { // finding last and one before it
+           prev = cur;
+           cur = cur ->next;
+        }
+
+        prev->next = NULL;
+
+        ListNode* fut = head->next;
+
+        head->next = cur;
+        cur->next = helper(fut);
+
+        return head;
+}
+
+However here the optimized solution is finding middle of linked list reversing last half and joining but this shows how recursion can do this
+
+
+224. Basic calculator 
+
+
+The default idea for evaluaing expression etc is using stacks but we can also use the magic of recursion here effectively 
+
+forget about () we will use recursion for it just think how we can solve with digits + and - , forming a number is existing * 10 + digit 
+
+class Solution {
+public:
+    int solve(string& s, int& idx) {
+    int res = 0;
+    int cur = 0;
+    int sign = 1;
+
+    while (idx < s.size()) {
+        char c = s[idx];
+        if (c >= '0' && c <= '9') {
+            cur = (cur * 10) + (c - '0');
+        } else if (c == '+' || c == '-') {
+            res += sign * cur;
+            cur = 0;
+            sign = (c == '+') ? 1 : -1;
+        } else if(c == '(') {
+            idx++;
+            int subResult = solve(s, idx);
+            res += sign * subResult;
+            cur = 0;
+        } else if(c == ')') {
+             res += sign * cur;
+             return res;
+        }
+        idx++;
+    }
+
+    res += sign * cur;  // Add the last number
+    return res;
+    }
+    int calculate(string s) {
+        
+        int n = s.size();
+        int res = 0;
+        int current = 0;
+        int idx = 0;
+        int sign = 1;
+
+        string t;
+        for (char c : s) {
+            if(c != ' ') t = t + c;
+        }
+
+        return solve(t, idx);
+    }
+};
+
+
+We use same concept for leetcode 394. Decode strings
+
+class Solution {
+public:
+    string solve(string s, int n, int &idx) {
+
+        if(n == idx) return "";
+        
+        int num = 0;
+        string res;
+        while(idx < n) {
+            char c = s[idx];
+
+            if(c >= '0' && c <= '9') {
+                num = num*10 + (c-'0');
+            } else if(c == '[') {
+                idx++;
+                string temp = solve(s, n, idx);
+                while(num) {
+                    res += temp;
+                    num--;
+                }
+            } else if(c == ']') {
+                return res;
+            }
+            else {
+                res += c;
+            }
+            idx++;
+        }
+
+        return res;
+    }
+    string decodeString(string s) {
+        
+        int n = s.size();
+        int idx = 0;
+        return solve(s, n, idx);
+    }
+};

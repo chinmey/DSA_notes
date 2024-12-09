@@ -35,6 +35,9 @@ that node.
 
 
 First kind of shortest path is finding shortest distance from S and D with some obstacles (https://leetcode.com/problems/shortest-path-in-binary-matrix/)
+
+In BFS for shortest path we can either use level based counting or cell based counting (where we keep track of distance in cell)
+
 Single Source
 
 
@@ -92,7 +95,8 @@ Multi Source
 
 In this we put all of Source in Matrix than we go level by level and populate D 
 
-*** imp : Identify the cells (states) that are already in the target condition or cannot be changed based on the problem constraints, these are put in queue ***
+*** imp : Identify the cells (states) that are already in the target condition or 
+cannot be changed based on the problem constraints, these are put in queue ***
 
 Example problem (Surrond cell : https://leetcode.com/problems/surrounded-regions/) 
 
@@ -181,57 +185,13 @@ Edges with weight 0 are processed first (pushed to the front of the deque).
 Edges with weight 1 are processed later (pushed to the back of the deque).
 This allows you to efficiently find the shortest path in O(V + E) time, where V is the number of vertices and E is the number of edges, by minimizing the cost of traversal using the properties of the deque
 
+Example problem :: https://leetcode.com/problems/minimum-obstacle-removal-to-reach-corner/description/
 
-
-Initution of Dijkstra
-
-In BFS we traverse the nodes level by level , essentially since graph is unit weight , we are pushing nodes at levels + 1(weight) however with weighted
-graph what we need to do is push the nodes at level + weight
-
-
-Start from the source node, marking its distance as 0 (since it costs nothing to reach itself).
-For each neighbor of the current node, calculate the potential new distance (current_distance + edge_weight). If this distance is smaller than the previously
-recorded distance for that neighbor, update the neighbors distance and push it into the priority queue.
-Repeat this process until all nodes have been processed or the priority queue is empty.
-
-void dijkstra(int src, const vector<vector<pair<int, int>>& adj, vector<int>& dist) {
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
-    dist[src] = 0; // Distance to the source is 0
-    pq.push({0, src}); // Push the source into the priority queue
-
-    while (!pq.empty()) {
-        int current_distance = pq.top().first;
-        int current_node = pq.top().second;
-        pq.pop();
-
-        // If the distance is greater than the recorded distance, skip ensures we don't visit visited nodes
-        if (current_distance > dist[current_node]) {
-            continue; // or keep a visisted array and if already visisted proceed [prefared]
-        }
-
-        // Explore neighbors
-        for (const auto& neighbor : adj[current_node]) {
-            int neighbor_node = neighbor.first;
-            int weight = neighbor.second;
-
-            // Calculate potential distance to neighbor
-            int new_distance = current_distance + weight;
-
-            // If found a shorter path to the neighbor
-            if (new_distance < dist[neighbor_node]) {
-                dist[neighbor_node] = new_distance; // Update distance
-                pq.push({new_distance, neighbor_node}); // Push into priority queue
-            }
-        }
-    }
-}
-
-Time complexity = O((V+E)logV)
-
+Interesting problem 
 
 Cheapest flight with 'k' stops (https://leetcode.com/problems/cheapest-flights-within-k-stops/)
 
-Dijkstra but with extra condition of atmost k relaxation done
+BFS but with extra condition of atmost k relaxation done (looks like Dijkstra but is not)
 
  queue<pair<int,int>> q;
         q.push({src,0});
@@ -266,6 +226,115 @@ Dijkstra but with extra condition of atmost k relaxation done
         if(dist[dst] == INT_MAX) return -1;
         return dist[dst];
     }
+
+
+Initution of Dijkstra
+
+In BFS we traverse the nodes level by level , essentially since graph is unit weight , we are pushing nodes at levels + 1(weight) however with weighted
+graph what we need to do is push the nodes at level + weight
+
+
+Start from the source node, marking its distance as 0 (since it costs nothing to reach itself).
+For each neighbor of the current node, calculate the potential new distance (current_distance + edge_weight). If this distance is smaller than the previously
+recorded distance for that neighbor, update the neighbors distance and push it into the priority queue.
+Repeat this process until all nodes have been processed or the priority queue is empty.
+
+void dijkstra(int src, const vector<vector<pair<int, int>>& adj, vector<int>& dist) {
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq; // we can simply put greater<> also
+    dist[src] = 0; // Distance to the source is 0
+    pq.push({0, src}); // Push the source into the priority queue
+
+    while (!pq.empty()) {
+        int current_distance = pq.top().first;
+        int current_node = pq.top().second;
+        pq.pop();
+
+        // If the distance is greater than the recorded distance, skip ensures we don't visit visited/outdated nodes
+        if (current_distance > dist[current_node]) {
+            continue; // or keep a visisted array and if already visisted proceed [not prefared in dijstrea]
+        }
+
+        // Explore neighbors
+        for (const auto& neighbor : adj[current_node]) {
+            int neighbor_node = neighbor.first;
+            int weight = neighbor.second;
+
+            // Calculate potential distance to neighbor
+            int new_distance = current_distance + weight;
+
+            // If found a shorter path to the neighbor
+            if (new_distance < dist[neighbor_node]) {
+                dist[neighbor_node] = new_distance; // Update distance
+                pq.push({new_distance, neighbor_node}); // Push into priority queue
+            }
+        }
+    }
+}
+
+One key point is how dijkstra maintains visited state , its by distance since we only process a node if we are improving the min distance to reach it
+
+Time complexity = O((V+E)logV)
+
+Sample problem : https://leetcode.com/problems/network-delay-time/description/ (easy straight forward )
+
+Dijkstra on grids 
+
+Problem : https://leetcode.com/problems/path-with-minimum-effort/description/ (https://www.youtube.com/watch?v=QIu9HeyEjPc) good problem
+
+The approach for dijkstra on grid remains similar to graphs this is what we do 
+
+> We init a dist vector for whole grid as INF for all cells (basically all cells are like nodes)
+> We push src into pq the pq is usually storing distance, coodinate of cells
+> We traverse the neighbor if the new distance calculated as current distance of top cell + edge improve the distance , we push the node in pq
+
+class Solution {
+public:
+    typedef pair<int, pair<int,int>> P;
+    int minimumEffortPath(vector<vector<int>>& h) {
+
+        int n = h.size();
+        int m = h[0].size();
+
+        vector<vector<int>> dist(n, vector<int> (m, INT_MAX));
+        priority_queue<P, vector<P>, greater<P>> pq;
+
+        dist[0][0] = 0;
+        pq.push({0, {0, 0}});
+
+        vector<int> dir = {0,1,0,-1,0};
+
+        while(!pq.empty()) {
+            P top = pq.top();
+            int diff = top.first;
+            int x = top.second.first;
+            int y = top.second.second;
+
+            if(x == m-1 && y == n-1) return diff;
+            
+            pq.pop();
+
+            for(int i=0; i<4; i++) {
+                int nx = x + dir[i];
+                int ny = y + dir[i+1];
+
+                if(nx >=0 && nx < n && ny >=0 && ny < m) {
+                    int new_diff = max(diff, abs(h[x][y] - h[nx][ny])); // This line is key look below 
+                    if(new_diff < dist[nx][ny]) {
+                        dist[nx][ny] = new_diff;
+                        pq.push({new_diff, {nx, ny}});
+                    }
+                }
+            }
+        }
+
+        return dist[n-1][m-1];
+        
+    }
+};
+
+int new_diff = max(diff, abs(h[x][y] - h[nx][ny])) --> is key for dijkstra with grids based on question conditon we need to figure this out 
+
+Ex for swim in rising water it changes to  int new_time = max(diff, grid[nx][ny]); rest code stays same
 
 
 
@@ -390,6 +459,13 @@ public:
     }
 };
 
+Sample problems : https://leetcode.com/problems/number-of-provinces/ (solve using this)
+https://leetcode.com/problems/number-of-operations-to-make-network-connected/
+
+Union find on 2d grid (https://leetcode.com/problems/number-of-islands-ii/)
+
+We usaully still use a 1-d array for parent rank etc , say we have n rows and m columns cell is x*m + y;
+
 
 Kruskal algo (Minimum Spanning tree)
 
@@ -425,6 +501,8 @@ for (Edge edge : edges) {
         }
     }
 
+Sample problems : Connecting Cities With Minimum Cost , 
+https://leetcode.com/problems/find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree/description/ (https://www.youtube.com/watch?v=gDPh7gsK3F8)
 
 Cycle detection in Undirected graph (using Union-Find)
 

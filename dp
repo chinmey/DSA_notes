@@ -114,6 +114,16 @@ int minDifference(int arr[], int n)  {
         return anss;
 } 
 
+
+Min difference dp solution works as long as number are only positive , for negative sum and numbers we need to use "Meet in Middle algo"
+
+for a given array of size N , partition it into 2 arrays of size (N/2) now keep sum from all combination in both . ex 
+
+1 -5 2 -8 --> 1 and -5 and 2 and -8 
+
+store all combo and elements used in it so example :: 0 --> 0 , 1 --> 1 and -5 2 --> -4 &&&& 0 --> 0, 1 --> 2 and -8 and 2 --> -6 now try every combo 
+from both arrays so (0 of left with 2 of right , 1 of left with 1 of right , 2 of right with 0 of left) see which sum comes closest to half of array summ
+
 Count number of subset with given diff (1 1  2 3 and diff is 1) : This is actually simple we know S1-S2 = 1 , S1+S2 = 7 (Total sum), S1 = 4, we need to find
 count of subrray with sum as 4 (basically subset sum just put + instead of ||)
 
@@ -186,6 +196,32 @@ for(int i=0; i<=N; i++) {
 
 // If ans[N][sum] is still INT_MAX, return -1 as it means no solution was found
 return (ans[N][sum] == INT_MAX) ? -1 : ans[N][sum];
+
+
+Recursive is even easier 
+
+class Solution {
+public:
+    int dp[10001][301];
+    int solve(int idx, int n, vector<int>& coins, int amount) {
+        if(amount == 0) return 0;
+        if(idx == n) return 1e9;
+
+        if(dp[amount][idx] != -1) return dp[amount][idx];
+
+        if(coins[idx] > amount) 
+            return dp[amount][idx] = solve(idx + 1, n, coins, amount);
+
+        return dp[amount][idx] = min(solve(idx + 1, n, coins, amount), 
+                                     1 + solve(idx, n, coins, amount - coins[idx]));
+    }
+
+    int coinChange(vector<int>& coins, int amount) {
+        memset(dp, -1, sizeof(dp));
+        int result = solve(0, coins.size(), coins, amount);
+        return result >= 1e9 ? -1 : result;
+    }
+};
 
 
 *** Longest Common Subsequence ***
@@ -479,7 +515,8 @@ There are some questions which will be around maintain Longest Increasing subseu
 
  Build Array Where You Can Find The Maximum Exactly K Comparisons (1420)
 
- The initution is that search cost(k) is equal to length of LIS and basically we would be trying numbers at every index as long as search cost is inside bounds (watch : https://www.youtube.com/watch?v=YU9IGG5PB2Y&list=PLpIkg8OmuX-JhFpkhgrAwZRtukO0SkwAt&index=15)
+ The initution is that search cost(k) is equal to length of LIS and basically we would be trying numbers at every index as long as search cost is inside bounds 
+ (watch : https://www.youtube.com/watch?v=YU9IGG5PB2Y&list=PLpIkg8OmuX-JhFpkhgrAwZRtukO0SkwAt&index=15)
 
  int solve(int cur_index, int search_cost, int max_so_far, int n, int m, int k) {
     if (cur_index == n) {
@@ -678,7 +715,8 @@ int solve(int k, int n) {
     }
 
 
-This is still O(n2) since we are doing linear search change it to binary search 
+This is still O(k* n2) since we are doing linear search at all floor-egg combo (which are k*n)
+change it to binary search 
 
  while (low <= high) {
             int mid = (low + high) / 2;
@@ -833,34 +871,177 @@ If the first character is '*', it can represent either 1 or 2 (since 10-26 are v
 If the second character is '*', it can represent any valid number from 0-9, depending on the previous character.
 
 
-647. Palindromic Substrings (count of all palindromic substrings)
+*** Digit dp *** (https://www.youtube.com/watch?v=cthI6e5KGgg&list=PLps5s7uQvz8kSh36EwW4_o1Qqjfm2vA1r&index=1)
 
-Approach
-Define a DP Array:
+Used in problems where we are given a range and asked questions around digits of same.
 
-Let dp[i][j] be a boolean value where dp[i][j] == true if the substring s[i...j] is a palindrome, otherwise dp[i][j] == false.
-Identify the Base Cases:
+Let us understand this using for a given range [13, 43] count number of digit 3 which appear (ex in 13 it is 1 and so on)
 
-Single characters are always palindromic. So, dp[i][i] = true for all i, and we increment our count of palindromic substrings by 1 for each character.
-Two consecutive equal characters are also palindromic. So if s[i] == s[i+1], then dp[i][i+1] = true, and we increment our count.
-Fill the DP Table for Longer Substrings:
+This questions are solved with same as finding sum for a range where we have prefix sum so ans = solve(r) - solve(l-1)
 
-For substrings longer than two characters, a substring s[i...j] is palindromic if:
-The first and last characters are the same (s[i] == s[j]), and
-The substring within these two characters (s[i+1...j-1]) is also palindromic (i.e., dp[i+1][j-1] == true).
-If both conditions hold, we set dp[i][j] = true and increase the palindromic count.
+Start with r =43
 
-// Last part code (which is only tricky part)
+Let us understand the initution so our range numbers are 2 digit (__, ___) in first digit can be {0,1,2,3,4} these can be divided into 2 halfs {0,1,2,3} and {4} , but why , 
+this is because if we take a number of first half we are free to put any number in second digit and we are within bound (43) , 
+the same extends to second digit and so on --> this is called as tight or bound 
 
-for (int len = 3; len <= n; ++len) {
-            for (int i = 0; i <= n - len; ++i) {
-                int j = i + len - 1;
-                if (s[i] == s[j] && dp[i + 1][j - 1]) {
-                    dp[i][j] = true;
-                    count++;
-                }
+Why is this a dp ?
+
+Once we choose any number from first half lets say 0 we would get a answer , when we choose any other number from that half our answer 
+remains same so we reuse
+
+
+Digit dp we define as dp[20][2][20] 
+First parameter is called index , which is range of numbers we can get we take 20 so that we account till 10^18 ( which has 19 digits) (mandatory parameter)
+Second parameter is called bound , which if true means we are restrcited in choosing , false we are not (mandatory parameter)
+Third parameter is called count , and this actually keeps count of answer , so for 19 digit number we have possibility that all are true for our condition 
+(This varies by problem)
+
+Also the updateCnt is always created as new variable and sent since if we edit same number it disturbs recusive flow.
+
+int solve(string &s, int idx, int tight, int cnt) {
+    if (idx == s.size()) return cnt;
+    if (dp[idx][tight][cnt] != -1) return dp[idx][tight][cnt];
+    
+    int limit = (tight == 1 ? s[idx] - '0' : 9); // If tight is false we can keep till 9 else keep it digit we are at
+    int ans = 0;
+    
+    for (int i = 0; i <= limit; i++) {
+    int updateCnt = cnt + (i == 3 ? 1 : 0);
+    if (i == limit) {
+        // We are still following the exact prefix of the number, so we keep `tight` as it is
+        ans += solve(s, idx + 1, tight, updateCnt); // Keep `tight` unchanged
+    } else {
+        ans += solve(s, idx + 1, 0, updateCnt);
+    }
+}
+    
+    return dp[idx][tight][cnt] = ans;
+}
+
+Sample problem : 233. Number of digit One
+
+when we calculate updateCnt , the cnt is the count of what we want till previous index.
+
+Classy numbers (codeforces)
+
+For a range (L,R) find all classy numbers (A classy number is a number whose number of non-zero digit is <= 3)
+
+Now the natural inclination would be to take a 4th parameter for count of non-zero digit so far but this is wrong the third parameter we have actually does 
+this already so solution would be something like this , so if update cnt crosses 3 we directly start returning answer
+
+And if we reached end of string it means this is valid number so we return 1
+
+int solve(string &s, int idx, int tight, int cnt) {
+    if (idx == s.size()) return 1;
+    if (dp[idx][tight][cnt] != -1) return dp[idx][tight][cnt];
+    
+    int limit = (tight == 1 ? s[idx] - '0' : 9); // If tight is false we can keep till 9 else keep it digit we are at
+    int ans = 0;
+    
+    for (int i = 0; i <= limit; i++) {
+    int updateCnt = cnt + (i == 0 ? 1 : 0);
+    if (updateCnt < = 3) {
+     if (i == limit) {
+        ans += solve(s, idx + 1, tight, updateCnt); // Keep `tight` unchanged
+     } else {
+        ans += solve(s, idx + 1, 0, updateCnt);
+     }
+    }
+}
+    return dp[idx][tight][cnt] = ans;
+}
+
+G-one Numbers (SPOJ)
+
+For a range (L, R) find all G-one numbers. G-one number is one whose digits sum is prime 
+
+int get(const string &s, int idx, int bound, int sum) {
+    if(idx == s.size()) {
+        return isPrime(sum) ? 1 : 0;
+    }
+    
+    if(dp[idx][bound][sum] != -1) return dp[idx][bound][sum];
+    
+    int ans = 0;
+    int limit = bound ? s[idx] - '0' : 9;
+    
+    for(int i = 0; i <= limit; i++) {
+        int update = sum + i;
+        
+        if(i == limit) {
+            ans += get(s, idx + 1, bound, update);
+        } else {
+            ans += get(s, idx + 1, 0, update);
+        }
+    }
+    
+    return dp[idx][bound][sum] = ans;
+}
+    
+
+2827. Number of beautiful Integers
+
+In a range count no of beautiful integers 
+
+The count of even digits in the number is equal to the count of odd digits.
+The number is divisible by k.
+
+Now keeping count of even and odd digits is easy but keeping count of whole number divisibility is tricky
+
+for this we use digits only : int newRem = (rem * 10 + digit) % k;
+
+ex 96 and 7 
+
+initial rem = 0
+9 --> 0*10 + 9 % 7 = 2
+6 --> 2*10 + 6 % 7 = 5 (ans)
+
+int solve(const string &s, int idx, bool bound, int evenCount, int oddCount, int rem, int k) {
+        if(idx == s.size()) {
+            if(evenCount == oddCount && rem == 0) return 1;
+            return 0;
+        }
+
+        if(dp[idx][bound][evenCount][oddCount][rem] != -1)
+        return dp[idx][bound][evenCount][oddCount][rem];
+
+        int limit = (bound == 1) ? s[idx] - '0' : 9;
+        int ans = 0;
+
+        for(int i=0; i<=limit; i++) {
+            if(idx == 0 && i == 0) continue; // Handle leading 0s
+            int newEvenCount = evenCount;
+            int newOddCount = oddCount;
+            int newRem = (rem * 10 + i) % k;
+
+            if(i%2 == 0) {
+                newEvenCount++;
+            } else {
+                newOddCount++;
+            }
+
+            if(i == limit) {
+                ans += solve(s, idx+1, bound, newEvenCount, newOddCount, newRem, k);
+            } else {
+                ans += solve(s, idx+1, 0, newEvenCount, newOddCount, newRem, k);
             }
         }
+
+        return dp[idx][bound][evenCount][oddCount][rem] = ans;
+}
+
+
+
+    
+
+Another problem could be for a range of numbers , for all numbers count sum of its digits if that is prime number is called perfect , 
+give number of perfect numbers 
+
+Base would be if we reach end of number if the sum so far of digits is prime we would add 1 in answer
+
+let say number is till 10^8 so our third parameter in dp would be till 72 (all 9s)
+
 
 
 

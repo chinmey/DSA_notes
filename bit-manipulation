@@ -1,0 +1,84 @@
+*** Bit Manipulation ***
+
+*** Repeating and missing number in array ***(explain : https://www.youtube.com/watch?v=pnx5JA9LNM4&list=PL-Jc9J83PIiFJRioti3ZV7QabwoJK6eKe&index=9)
+
+Ex : 1 4 2 2 --> answer would be 2 and 3
+
+Xor of number with itself is always zero, take xor of original array and what should be correct array ( 1 -> 4)
+
+We would be left with 2 xor 3 (all other number would get cut )
+ 
+Now get the right-most set bit  = number & -number
+
+The original set (which is array + 1-> n) can be divided into 2 with numbers having right most set bit as on/off and each of our number would be in different bucket 
+Go thru set if & is zero xor seperately and if & is one xor seperately (you have 2 numbers)
+
+
+int ith_bit = (num >> i) & 1 --> remember this or num & (1 << bitpos) 
+
+
+ 
+ *** find a number which appears once in a array where every other number appear thrice ***
+
+The main idea is that if every number appears three times except one unique number, then for each bit position (from 0 to 31 in a 32-bit integer), the sum of all bits in that position across all numbers in the array should be a multiple of 3 — except for the bits in the unique numbe
+
+*** 1829. Maximum XOR for Each Query *** (https://www.youtube.com/watch?v=qDtW0HRvNc0)
+
+The basic idea is max XOR is all 1 bit , so to get what value gives max XOR just take XOR with mask
+
+*** 3133. Minimum Array End *** (https://www.youtube.com/watch?v=eA1xIDUqIDc)
+
+The basic idea is min numnber would be 'x' itself and now we need to play around with 0 bits and keep on increasing it 
+
+
+*** 3097 Shortest Subarray With OR at Least K II ***
+
+Idea here is to use a basic sliding window and keep on calculating OR once we reach a window where OR >=k we need to shrink , now shrinking is not staright 
+forward so we keep a array of setBit at all stages and upon removing a element which makes setBit[i] as 0 remove that pow(2) from OR
+
+class Solution {
+public:
+    void setCountBit(vector<int> &count, int n) {
+        for(int i=0; i<32; i++) {
+            if(n & (1<<i)) count[i]++;
+        }
+        return;
+    }
+    
+    void nullifyStart(vector<int> &count, int n, int &currentOR) {
+        for(int i=0; i<32; i++) {
+            if(n & (1<<i)) {
+                count[i]--;
+                if(count[i] == 0) {
+                   currentOR = currentOR - (1 << i);
+                }
+            }
+        }
+    }
+    int minimumSubarrayLength(vector<int>& nums, int k) {
+
+        for(int num : nums) if(num >= k) return 1;
+        
+        vector<int> count(32, 0);
+
+        int currentOR = 0, n = nums.size(), end = 0, start = 0, ans = n+1;
+
+        while(end < n) {
+           
+           currentOR = currentOR | nums[end];
+           setCountBit(count, nums[end]);
+
+           while(currentOR >= k && end >= start) {
+              ans = min(ans, end - start + 1);
+              nullifyStart(count, nums[start], currentOR);
+              start++;
+           }
+
+           end++;
+        }
+
+        if(ans == n+1) return -1;
+
+        return ans;
+    }
+};

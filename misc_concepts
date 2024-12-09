@@ -225,58 +225,6 @@ So instead change 0 --> 2 (instead of 1) and 1 --> -1(instread of 0) and check f
     }
 
 
-*** Digit dp *** (https://www.youtube.com/watch?v=cthI6e5KGgg&list=PLps5s7uQvz8kSh36EwW4_o1Qqjfm2vA1r&index=1)
-
-Used in problems where we are given a range and asked questions around digits of same.
-
-Let us understand this using for a given range [13, 43] count number of digit 3 which appear (ex in 13 it is 1 and so on)
-
-This questions are solved with same as finding sum for a range where we have prefix sum so ans = solve(r) - solve(l-1)
-
-Start with r =43
-
-Let us understand the initution so our range numbers are 2 digit (__, ___) in first digit can be {0,1,2,3,4} these can be divided into 2 halfs {0,1,2,3} and {4} , but why , this is because if we take a number of first half we are free to put any number in second digit and we are within bound (43) , the same extends to second digit and so on --> this is called as tight or bound 
-
-Why is this a dp ?
-
-Once we choose any number from first half lets say 0 we would get a answer , when we choose any other number from that half our answer remains same so we reuse
-
-
-Digit dp we define as dp[20][2][20] 
-First parameter is called index , which is range of numbers we can get we take 20 so that we account till 10^18 ( which has 19 digits) (mandatory parameter)
-Second parameter is called bound , which if true means we are restrcited in choosing , false we are not (mandatory parameter)
-Third parameter is called count , and this actually keeps count of answer , so for 19 digit number we have possibility that all are true for our condition 
-(This varies by problem)
-
-int solve(string &s, int idx, int tight, int cnt) {
-    if (idx == s.size()) return cnt;
-    if (dp[idx][tight][cnt] != -1) return dp[idx][tight][cnt];
-    
-    int limit = (tight == 1 ? s[idx] - '0' : 9); // If tight is false we can keep till 9 else keep it digit we are at
-    int ans = 0;
-    
-    for (int i = 0; i <= limit; i++) {
-    int updateCnt = cnt + (i == 3 ? 1 : 0);
-    if (i == limit) {
-        // We are still following the exact prefix of the number, so we keep `tight` as it is
-        ans += solve(s, idx + 1, tight, updateCnt); // Keep `tight` unchanged
-    } else {
-        ans += solve(s, idx + 1, 0, updateCnt);
-    }
-}
-    
-    return dp[idx][tight][cnt] = ans;
-}
-
-Sample problem : 233. Number of digit One
-
-Another problem could be for a range of numbers , for all numbers count sum of its digits if that is prime number is called perfect , give number of perfect numbers 
-
-Base would be if we reach end of number if the sum so far of digits is prime we would add 1 in answer
-
-let say number is till 10^8 so our third parameter in dp would be till 72 (all 9s)
-
-
 *** Sieve of Eratosthenes ***
 
 Used to count all prime numbers from i to n 
@@ -490,4 +438,57 @@ public:
     }
 };
 
+3191. Minimum Operations to make all 1
+
+You are given a binary array nums.
+
+You can do the following operation on the array any number of times (possibly zero):
+
+Choose any index i from the array and flip all the elements from index i to the end of the array.
+Flipping an element means changing its value from 0 to 1, and from 1 to 0.
+
+Return the minimum number of operations required to make all elements in nums equal to 1.
+
+Input: nums = [0,1,1,0,1]
+
+Output: 4
+
+Explanation:
+We can do the following operations:
+
+Choose the index i = 1. The resulting array will be nums = [0,0,0,1,0].
+Choose the index i = 0. The resulting array will be nums = [1,1,1,0,1].
+Choose the index i = 4. The resulting array will be nums = [1,1,1,0,0].
+Choose the index i = 3. The resulting array will be nums = [1,1,1,1,1]
+
+
+initution is to realize that we traverse every element and if it is zero we would need to do operation of flip ( why because otherwise it can never be switched)
+
+but if for every switch we do this our complexity becomes o(n2)
+
+better way to do this is to keep a fliped variable , init to false, now if flip == false and element is 0 we know we need to flip the whole array 
+similarly if flip = true and element is 1 we know that in due to some previous operation i would have become zero so i need flipping again
+
+class Solution {
+public:
+    int minOperations(vector<int>& nums) {
+        
+        int n = nums.size();
+        bool flip = false;
+
+        int op = 0;
+
+        for(int i=0; i<n; i++) {
+            if(nums[i] == 0 && flip == false) {
+                op++;
+                flip = true;
+            } else if(nums[i] == 1 && flip == true) {
+                op++;
+                flip = false;
+            }
+        }
+
+        return op;
+    }
+}
 

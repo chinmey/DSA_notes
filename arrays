@@ -60,7 +60,10 @@ Swap wala logic h 0 ko aage , 2 ko peeche , 2 ko peeche le jate time index inc m
 
 Next permutation 
 
-//find the first adacent pair from right side where left is smaller than right
+Think logically , start from end of array find a adjacent element which is not in decreasing form now ensure smallest number which can take the place
+of left element takes it and sort rest of array
+
+//find the first adjacent pair from right side where left is smaller than right
  //if you dont find such a pair, reverse the whole array
 //swap the left element in the pair with the smallest element greater than that to its right
 //then reverse the sub array from the point of swap(after the left element in the pair) till the end
@@ -88,13 +91,17 @@ Basically gives how far a array is from getting sorted (if a[i] > a[j] but i < j
 
 Same as merge sort but in the step where we do merging of array whenever left is bigger we do count + = left.size - index; 
 
+merge(s, m, arr);   merge(m+1, e, arr);  mergeCount(arr, s, m, e);
+
+in mergeCount we do the counting i start from s and goes till m , j start from m+1 and goes till e
+
 Power (x, n) : based on logic that xpn = xpn/2 * xpn/2 (when n is even we need another x when odd just do recursion on same)
 
 n/3 element --> same as n/2 just take 2 candidates  and than run in last loop to verify that answer we got is right
 
 larget Subarray with sum = 0 (running sum niklate jao zero h to check max ,also map me index aur uska running sum store karo same aaya to window me zero sum h)
 
-Number of subarray with sum k (explain : https://www.youtube.com/watch?v=xvNwoz-ufXA)
+Number of subarray with sum k (explain : https://www.youtube.com/watch?v=xvNwoz-ufXA) (See : 974. Count Subarray Sums Divisible by K in misc concepts)
 
 take a loop i(0--> n) and j(i --> n) keep on calculating sum if it matches we count (slightly better than brute)
 
@@ -177,6 +184,48 @@ as its higher than arr[mid] (so no smaller elements force us to return left).
 
 Allocate minimum no of pages (https://www.youtube.com/watch?v=2JSQIhPcHQg&list=PL_z_8CaSLPWeYfhtuKHj-9MpYb6XQJ_f2&index=21)/ Similar concept in Aggressive cows
 
+https://leetcode.com/problems/split-array-largest-sum/ (ALl these are based on concept of maximising min / minimising max which is always BS on answer)
+
+class Solution {
+public:
+    bool isPossible(vector<int> &nums, int m, int k) {
+        int bucket_needed = 1;
+        int r_sum = 0;
+
+        for(int x : nums) {
+            if(x > m) return false;
+            r_sum += x;
+
+            if(r_sum > m) {
+                bucket_needed++;
+                r_sum = x;
+            }
+        }
+
+        return bucket_needed <= k;
+    }
+    int splitArray(vector<int>& nums, int k) {
+        
+        int n = nums.size();
+        int high = accumulate(nums.begin(), nums.end(), 0);
+        int low = 0;
+        int res = 0;
+
+        while(low <= high) {
+           int m = low + (high - low)/2;
+
+           if(isPossible(nums, m, k)) {
+            res = m;
+            high = m-1;
+           } else {
+            low = m + 1;
+           }
+        }
+
+        return res;
+    }
+};
+
 
 Do BS between 0 and sum of all pages 
 Get mid check if that is max a student can read are number of students getting books is equal to all students if yes than that is valid combo we recur for 
@@ -229,51 +278,50 @@ basically by having search space as min, max getting mid and checking in both ar
 
 And sum should be k-1. (note how we update answer when number of elements smaller is more than k as we are counting case where one of those number is mid itself)
 
-int kthElement(int k, vector<int>& arr1, vector<int>& arr2) {
+// See here when we get number we dont return directly reason is we may miss case where numbers repeat
+
+class Solution {
+  public:
+   int count(int target, vector<int>& arr) {
+    int s = 0;
+    int e = arr.size() - 1;
+    
+    while (s <= e) {
+        int m = s + (e - s) / 2;
+        
+        if (arr[m] <= target) {
+            s = m + 1;
+        } else {
+            e = m - 1;
+        }
+    }
+    
+    return s;
+}
+    int kthElement(int k, vector<int>& arr1, vector<int>& arr2) {
+        
         int n = arr1.size();
         int m = arr2.size();
         
-        int low = min(arr1[0], arr2[0]);
-        int high = max(arr1[n-1], arr2[m-1]);
         
-        int ans = -1; // Initialize the answer variable
-        while (low <= high) {
-            int mid = low + (high - low) / 2;
+        int start = min(arr1[0], arr2[0]);
+        int end = max(arr1[n-1], arr2[m-1]);
+        
+         while(start <= end) {
+            int mid = start + (end - start) / 2;
             
-            // Count of elements <= mid in both arrays
-            int smallerInFirst = small(arr1, n, mid);
-            int smallerInSecond = small(arr2, m, mid);
+            int c_a = count(mid, arr1);
+            int c_b = count(mid, arr2);
             
-            int totalSmaller = smallerInFirst + smallerInSecond;
-            
-            if (totalSmaller < k) {
-                low = mid + 1; // Look for larger elements
+            if(c_a + c_b < k) {
+                start = mid + 1;
             } else {
-                ans = mid; // Update answer
-                high = mid - 1; // Continue to search in left half
+                end = mid - 1;
             }
         }
         
-        return ans;
-    }
+        return start;
     
-    int small(vector<int>& arr, int n, int mid) {
-        int low = 0;
-        int high = n - 1;
-        int ans = -1; // Initialize ans
-
-        while (low <= high) {
-            int m = low + (high - low) / 2;
-            
-            if (arr[m] <= mid) { // Change to <= for correct count
-                ans = m; // Update ans to current index
-                low = m + 1; // Search in the right half
-            } else {
-                high = m - 1; // Search in the left half
-            }
-        }
-        
-        return ans + 1; // Return count of elements <= mid
     }
 };
 

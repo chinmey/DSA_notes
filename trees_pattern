@@ -4,6 +4,8 @@ https://leetcode.com/discuss/study-guide/1820334/become-master-in-tree
 pass by value array : normal bhejo normal lo
 pass by ref array : normal bhejo & se lo (same copy reuse hoga tab)
 
+pointer me aise karna hoga : Node* &p
+
 Yeh sab me applicable h ex (*node me ya int me etc)
 
 Binary lifting (see kth ancestor of tree node)

@@ -109,6 +109,52 @@ it simplifies to L1 + x = nC, meaning the distance from the head to the cycle st
         
         return mp[head];
     }
+Even something like this works (https://www.youtube.com/watch?v=deaZgauZVco&t=764s)
+
+class Solution {
+public:
+    map<Node*, Node*> mp;
+    Node* copyRandomList(Node* head) {
+        Node* dummy = new Node(-1);
+        Node* p = dummy;
+
+        Node* cur = head;
+
+        while(cur) {
+            Node* newNode = new Node(cur->val);
+            p->next = newNode;
+            mp[cur] = newNode;
+            cur = cur->next;
+            p = p->next;
+        }
+
+        cur = head;
+        while(cur) {
+            Node* copyNode = mp[cur];
+            copyNode->random = mp[cur->random];
+            cur = cur->next;
+        }
+
+        return dummy->next;
+    }
+};
+
+Copy linked list with next and bottom pointer 
+
+Recursive way 
+
+merge is same as merging two lists (use dummy pointer technique)
+    
+Node *flatten(Node *root)
+{
+   if(root == NULL || root->next == NULL) return root;
+   
+   root->next=flatten(root->next);
+   
+   root= merge(root,root->next);
+   
+   return root;
+}
 
 
 LRU cache : done using map(because we need O(1) get and put) and duoble linked list (for maintaining order and determining what to evict)

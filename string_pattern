@@ -178,6 +178,7 @@ What we do is as soon as we get a mismatch we go to char behind pattern and ask 
 (j-1) --> longest suffix which is proper prefix (not equal to string itself matlab suffix or prefix equal nahi hona chahiye)
 
 so for ABAB --> proper prefixes are A , AB, ABA only in this only AB is a valid suffix also and proper suffix are B AB BAB
+for LPS the suffix and prefix considered should be completely independent of each other i.e. same character should not be part of prefix and suffix
 
 
 for calculate LPS we start with i=1 , length = 0 (LPS[0] = 0 always)
@@ -190,6 +191,8 @@ vector<int> computeLPSArray(const string &pattern) {
     int m = pattern.length();
     vector<int> lps(m, 0); // LPS array
     int i = 1;
+
+    // lps[0] is always 0 because length is 1 so it can either be prefix or suffix not both so answer is always 0
 
     while (i < m) {
         if (pattern[i] == pattern[length]) {

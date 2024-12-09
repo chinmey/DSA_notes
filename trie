@@ -299,3 +299,164 @@ public:
     }
 };
 
+2416. Sum of Prefix Scores of Strings (Here we need to keep a count with each node can be useful for cases like search relevancy etc)
+
+struct trieNode {
+    int countP = 0;
+    trieNode* children[26];
+};
+
+class Solution {
+public:
+
+    trieNode* getTrieNode() {
+        trieNode* newNode = new trieNode();
+        for(int i = 0; i < 26; i++) {
+            newNode->children[i] = nullptr;
+        }
+        newNode->countP = 0;
+        return newNode;
+    }
+
+    void insert(string& word, trieNode* root) {
+        trieNode* crawl = root;
+
+        for(char &ch : word) {
+            int idx = ch - 'a';
+
+            if(!crawl->children[idx]) {
+                crawl->children[idx] = getTrieNode();
+            }
+
+            crawl->children[idx]->countP += 1;
+            crawl = crawl->children[idx];
+        }
+    }
+
+    int getScore(string& word, trieNode* root) {
+        trieNode* crawl = root; //"abc"
+        int score = 0;
+
+        for(char &ch : word) {
+            int idx = ch - 'a';
+            score += crawl->children[idx]->countP;
+
+            crawl = crawl->children[idx]; // now i am at "b" wala node
+        }
+
+        return score;
+    }
+
+    vector<int> sumPrefixScores(vector<string>& words) {
+        int n = words.size();
+
+        trieNode* root = getTrieNode();
+        for(string &word : words) {
+            insert(word, root);
+        }
+
+        vector<int> result(n);
+        //result[i] = sum of scores of prefixes of words[i]
+        for(int i = 0; i < n; i++) {
+            result[i] = getScore(words[i], root);
+        }
+
+        return result;
+    }
+};
+
+
+642. Design autocomplete (https://leetcode.com/problems/design-search-autocomplete-system/)
+
+
+Here we are asked to suggest based on words passing thru prefix to do this we will keep track of all sentences passing thru me
+
+class trie {
+   public:
+    map<char, trie*> children;
+    map<string, int> sentences;
+
+     struct CustomComp {
+        bool operator()(const pair<string, int>& p1, const pair<string, int>& p2) {
+            if (p1.second != p2.second) {
+                return p1.second > p2.second;
+            }
+            return p1.first < p2.first;
+        }
+    };
+
+    void insert(const string& sentence, int frequency, trie* root) {
+        trie* current = root;
+        for (char ch : sentence) {
+            if (current->children.find(ch) == current->children.end()) {
+                current->children[ch] = new trie();
+            }
+            current = current->children[ch];
+            current->sentences[sentence] += frequency;
+        }
+    }
+
+    void search(string word, vector<string> &ans, trie* root) {
+        trie* current = root;
+
+        for (char ch : word) {
+        if (current->children.find(ch) == current->children.end()) {
+            return;
+        }
+        current = current->children[ch];
+        }
+
+        priority_queue<pair<int, string>, vector<pair<int, string>>, CustomComp> pq;
+
+    for (const auto& it : current->sentences) {
+        pq.push({it.second, it.first});
+        if (pq.size() > 3) pq.pop();
+    }
+
+    // Collect results in reverse order (from lowest to highest frequency)
+    vector<string> result;
+    while (!pq.empty()) {
+        result.push_back(pq.top().second);
+        pq.pop();
+    }
+
+    // Reverse to get highest frequency first
+    reverse(result.begin(), result.end());
+
+
+    ans = result;
+
+    }
+};
+
+
+class AutocompleteSystem {
+public: 
+    trie* root = new trie();
+    string prefix = "";
+
+    AutocompleteSystem(const vector<string>& sentences, const vector<int>& times) {
+        for (size_t i = 0; i < sentences.size(); ++i) {
+            const string& sentence = sentences[i];
+            int frequency = times[i];
+            
+            // Insert the whole sentence
+            root->insert(sentence, frequency, root);
+        }
+    }
+    
+    vector<string> input(char c) {
+        vector<string> ans;
+        prefix = prefix + c;
+        if(c == '#') {
+            root->insert(prefix, 1, root);
+            prefix = "";
+        } else {
+            root->search(prefix, ans, root);
+        }
+
+        return ans;
+    }
+};
+
+

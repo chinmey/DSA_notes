@@ -29,6 +29,17 @@ When true is returned, it means the order is NOT correct and swapping of element
 When false is returned, it means the order is correct and NO swapping of elements takes place.
 *** This is opposite behavior to custom sort comparator ****
 
+*** basically in heap we return true for lower priority** ex to sort on basis of higher frequency first
+
+  class CustomComp{
+       public: 
+       bool operator()(pair<int,int> &a, pair<int,int> &b){
+           if(a.first > b.first) return false;
+           return true;
+       }
+    };
+Heap use type so greater<int> but sort uses function so greater<int>()
+
 Heaps are commonly implemented as binary trees that maintain the heap property, but instead of using explicit tree structures like linked nodes, 
 they are typically implemented using arrays. This array-based implementation allows for efficient index-based access to parent and child nodes.
 

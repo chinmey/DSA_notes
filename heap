@@ -32,7 +32,7 @@ it’s impossible to arrange without adjacent duplicates.
 
 
 Minimum cost to hire 'k' workers
-https://www.youtube.com/watch?v=kxR52OB_I8k
+https://www.youtube.com/watch?v=kxR52OB_I8k or https://www.youtube.com/watch?v=o8emK4ehhq0
 
 Sort Workers:
 
@@ -56,3 +56,62 @@ How does Heap sort work ?
 Take unsorted array convert it to max heap , the top number is maximum of array remove it (place it at last) remake a heap and go on 
 
 Heap sort is inplace takes no extra space , its unstable that similar element can looose their starting position
+
+
+Leetcode 1383. Maximum performance of team 
+
+You are given two integers n and k and two integer arrays speed and efficiency both of length n. There are n engineers numbered from 1 to n. speed[i] and efficiency[i] represent the speed and efficiency of the ith engineer respectively.
+
+Choose at most k different engineers out of the n engineers to form a team with the maximum performance.
+
+The performance of a team is the sum of its engineers' speeds multiplied by the minimum efficiency among its engineers.
+
+Input: n = 6, speed = [2,10,3,1,5,8], efficiency = [5,4,3,9,7,2], k = 2
+Output: 60
+Explanation: 
+We have the maximum performance of the team by selecting engineer 2 (with speed=10 and efficiency=4) and engineer 5 (with speed=5 and efficiency=7). That is, performance = (10 + 5) * min(4, 7) = 60.
+
+
+so our answer is contribution of effienciency and sum of speed and both can vary , so we need to make one of them constant so we can optimize it is easier 
+to make effieciency constant 
+
+Sort enginners by thier effienciency, by storing (effienciency, speed)
+
+now go thru array and for all i try and select other enginners with higher speed it would be true since we would always be selecting one from lower efficiency
+
+ int maxPerformance(int n, vector<int>& speed, vector<int>& efficiency, int k) {
+        
+        vector<pair<int,int>> v(n);
+
+        long long maxPerf = 0, sum = 0;
+
+        for(int i=0; i<n; i++) {
+            int spd = speed[i];
+            int efc = efficiency[i];
+            v[i] = {efc, spd};
+        }
+
+        priority_queue<int, vector<int>, greater<int>> q;
+
+        sort(v.rbegin(), v.rend());
+
+        for (int i = 0; i < n; i++)	{
+            sum += v[i].second;
+            q.push(v[i].second);
+            if(q.size() > k) {
+                sum -= q.top();
+                q.pop();
+            }
+            long curr = sum *v[i].first;
+            if(maxPerf < curr) {
+                maxPerf = curr;
+            }
+        }
+
+        long long MOD = 1e9 + 7;
+
+        return maxPerf%MOD;
+
+
+        
+    }

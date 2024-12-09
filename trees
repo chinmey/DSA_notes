@@ -89,6 +89,10 @@ bool areMirror(TreeNode* left, TreeNode* right) {
         && areMirror(left->left, right->right);
 }
 
+bool isSymmetric(TreeNode* root) {
+    return areMirror(root->left, root->right);
+}
+
 Invert a tree ? 
 
 void invertHelper(TreeNode* node) {
@@ -252,6 +256,63 @@ bool hasPathSum(TreeNode* root, int targetSum) {
     return hasPathSum(root->left, targetSum) || hasPathSum(root->right, targetSum);
 }
 
+Boundary traversal of tree 
+
+
+Problem can be broken down into left/leaves/right
+
+Idea for left is to go as left as possible if we reach leave we return if we reach a node with only right child than we go right
+
+class Solution {
+public:
+    void populateLeft(vector<int> &ans, TreeNode* root) {
+        if(root == NULL) return;
+
+        if(root->left == NULL && root->right == NULL) return;
+
+        ans.push_back(root->val);
+
+        if(root->left != NULL) populateLeft(ans, root->left);
+        else if(root->right != NULL) populateLeft(ans, root->right);
+    }
+
+     void populateRight(vector<int> &ans, TreeNode* root) {
+        if(root == NULL) return;
+
+        if(root->left == NULL && root->right == NULL) return;
+
+        if(root->right != NULL) populateRight(ans, root->right);
+        else if(root->left != NULL) populateRight(ans, root->left);
+        ans.push_back(root->val);
+    }
+
+    void populateLeaves(vector<int> &ans, TreeNode* root) {
+        if(root == NULL) return;
+        
+        if(root->left == NULL && root->right == NULL) {
+            ans.push_back(root->val);
+            return;
+        }
+
+        populateLeaves(ans, root->left);
+        populateLeaves(ans, root->right);
+    }
+    vector<int> boundaryOfBinaryTree(TreeNode* root) {
+        
+        vector<int> ans;
+
+        ans.push_back(root->val);
+
+        if(root->left == NULL && root->right == NULL) return ans;
+
+        populateLeft(ans, root->left);
+        populateLeaves(ans, root);
+        populateRight(ans, root->right);
+
+        return ans;
+    }
+};
+
 
 Check if a given tree is subTree for another given tree 
 
@@ -308,7 +369,7 @@ public:
     }
 };
 
-For postorder and inorder start traversing postorder array from reverse rest same code
+For postorder and inorder start traversing postorder array from reverse and build right tree first
 
 
 Convert tree to DLL (watch codeStoryWithMIk binary tree to sorted linked list recursion video for inituition just follow same)
@@ -368,6 +429,140 @@ int isSumProperty(Node *root)
       
     }
 
+979. Distribute candies (https://www.youtube.com/watch?v=FmHxY2104hc)
+
+You are given the root of a binary tree with n nodes where each node in the tree has node.val coins. There are n coins in total throughout the whole tree.
+
+In one move, we may choose two adjacent nodes and move one coin from one node to another. A move may be from parent to child, or from child to parent.
+
+Return the minimum number of moves required to make every node have exactly one coin.
+
+
+This is a classical problem which is hard to think on its own we need to trust recusion here and its similar to max-sum or diameter problem where we need to 
+ask from each node something and base our answer on something 
+
+class Solution {
+public:
+    int moves = 0;
+    int solve(TreeNode* root) {
+        if(root == NULL) return 0;
+        
+        if(root->left == 0 && root->right == 0) return root->val - 1;
+
+        int left_extra_candy_left = solve(root->left);
+        int right_extra_candy_left = solve(root->right);
+
+        moves = moves + abs(left_extra_candy_left) + abs(right_extra_candy_left); // abs because both direction movement is allowed
+
+        int total_candies_i_have = left_extra_candy_left + right_extra_candy_left + root->val;
+
+        return total_candies_i_have - 1;
+    }
+    int distributeCoins(TreeNode* root) {
+        
+        solve(root);
+
+        return moves;
+    }
+};
+
+968. Cameras in a tree (https://www.youtube.com/watch?v=uoFrIIrp5_g)
+
+class Solution {
+public:
+    // 1 i am covered , 0 i have camera , -1 i need camera
+    int count =0;
+    int helper(TreeNode* root)
+    {
+        if(root == NULL) return 1;
+        
+        int l =helper(root->left);
+        int r=helper(root->right);
+        
+        if(l == -1 || r == -1) {
+            count++;
+            return 0;
+        }
+        
+        if(l == 0 || r== 0) return 1;
+        
+        return -1;
+        // if(l==1 && r == 1)
+        
+    }
+    int minCameraCover(TreeNode* root) {
+        int d =helper(root);
+        if(d==-1) count++;
+        return count;
+    }
+};
+
+863. All Nodes Distance K in Binary Tree
+
+The question is fairly simple to calculate for my child the issue is in parent we solve this by doing a traversal and populating parents in map 
+and than doing queue based BFS 
+
+class Solution {
+public:
+    unordered_map<TreeNode*, TreeNode*> parent;
+    
+    void fillParent(TreeNode* root) {
+        if(root == NULL) return;
+        
+        if(root->left) {
+            parent[root->left] = root;
+            fillParent(root->left);
+        }
+        if(root->right) {
+            parent[root->right] = root;
+            fillParent(root->right);
+        }
+    }
+    
+    vector<int> distanceK(TreeNode* root, TreeNode* target, int k) {
+        fillParent(root);
+        
+        queue<TreeNode*> q;
+        unordered_set<TreeNode*> visited;
+        
+        q.push(target);
+        visited.insert(target);
+        
+        vector<int> result;
+        int distance = 0;
+        
+        while(!q.empty() && distance <= k) {
+            int size = q.size();
+            
+            for(int i = 0; i < size; i++) {
+                TreeNode* node = q.front();
+                q.pop();
+                
+                if(distance == k) {
+                    result.push_back(node->val);
+                }
+                
+                if(node->left && visited.find(node->left) == visited.end()) {
+                    q.push(node->left);
+                    visited.insert(node->left);
+                }
+                if(node->right && visited.find(node->right) == visited.end()) {
+                    q.push(node->right);
+                    visited.insert(node->right);
+                }
+                if(parent.find(node) != parent.end() && visited.find(parent[node]) == visited.end()) {
+                    q.push(parent[node]);
+                    visited.insert(parent[node]);
+                }
+            }
+            
+            distance++;
+        }
+        
+        return result;
+    }
+};
+
 Kth Ancestor of a Tree Node (binary lifting) (https://leetcode.com/problems/kth-ancestor-of-a-tree-node/description/) (https://www.youtube.com/watch?v=PE-kQVZxvWA)
 
 
@@ -379,30 +574,32 @@ Key is to represent a number (k) in its binary form so k = 11 is (1+ 2+ 8), so a
 
 class TreeAncestor {
 public:
-    vector<vector<int> > P; // P[i][node] :::: [node] 's [2^i]th parent
+    vector<vector<int>> dp;
+    int LOG = 20;
     TreeAncestor(int n, vector<int>& parent) {
-        // initialize
-        P.resize(20, vector<int>(parent.size(), -1));
-        
-        // 2^0
-        for(int i = 0; i < parent.size(); i++){
-            P[0][i] = parent[i];
+        dp.resize(LOG, vector<int> (n, -1));
+
+        for(int i=0; i<n; i++) {
+            dp[0][i] = parent[i];
         }
-        
-        // 2^i
-        for(int i = 1; i < 20; i++){
-            for(int node = 0; node < parent.size(); node ++){
-                int nodep = P[i-1][node];
-                if(nodep != -1) P[i][node] = P[i-1][nodep];
+
+        for(int i=1; i<LOG; i++) {
+            for(int j=0; j<n; j++) {
+                // The 2048th ancestor of j is the 1024th ancestor of j's 1024th ancestor
+                int immediate_parent = dp[i-1][j];
+                if(immediate_parent != -1)
+                dp[i][j] = dp[i-1][immediate_parent];
             }
         }
     }
     
     int getKthAncestor(int node, int k) {
-        for(int i = 0; i < 20; i++){
-            if(k & (1 << i)){
-                node = P[i][node];
+        
+        for(int i=0; i<LOG; i++) {
+            int mask = (1 << i);
+            if (mask & k) {
                 if(node == -1) return -1;
+                node = dp[i][node];
             }
         }
 
@@ -584,14 +781,42 @@ struct Node {
 
         bool isNodeBst = left.isBst && right.isBst && root->val < right.min && root->val > left.max;
 
-        int Max = max(root->val, max(left.max, right.max));
-        int Min = min(root->val, min(left.min, right.min));
+        int Max = max(root->val, right.max);
+        int Min = min(root->val, left.min);
 
        return {isNodeBst, Min, Max}; }
+
+one improtant question is since we only max of left and right of min why are we asking for both info (answer is to calculate my min and max)
 
 
 To solve largest bst in B-tree take the same Node add a size property which is largest BST inside me with this condition 
 when i am bst its size is l-bstSize + r-bstSize + 1 when i am not it is max(l-bstSize, r-bstSize)
+
+kth largest element in BST 
+
+for kth smallest we can simply do inorder traversal and keep count of all nodes seen as we kth node we get answer 
+for kth largest we can do similar just need to rely on traversing right first 
+
+class Solution {
+  public:
+    int solve(Node* root, int &x, int &runner) {
+        if(root == NULL) return -1;
+        
+        int right = solve(root->right, x, runner);
+        if(right != -1) return right;
+        
+        if(x == runner) return root->data;
+        runner++;
+        
+        return solve(root->left, x, runner);
+    }
+    int kthLargest(Node *root, int k) {
+        int runner = 1;
+        
+        return solve(root, k, runner);
+        
+    }
+};
 
 
 Pair of numbers which sum to target in BST 

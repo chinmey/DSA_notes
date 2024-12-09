@@ -193,7 +193,9 @@ int binarySearch(const vector<int>& arr, int target) {
     return -1;  // Return -1 if the target is not found
 }
 
-BS on answer --> for cases for even unsorted array we apply BS , by getting a element checking if it matches our criteria and discarding array half in each step
+BS on answer --> for cases for even unsorted array we apply BS , by getting a element checking if it matches our criteria and discarding array half in each step 
+
+Line on this :: Minimize the maximum or maximize the minimum (https://leetcode.com/problems/minimum-limit-of-balls-in-a-bag/)
 
 
 
