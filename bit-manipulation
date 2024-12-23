@@ -1,3 +1,29 @@
+to get ith bit 
+1. 1 << i & num
+2. num >> i & 1
+
+(1 << 1)
+This is a bitwise left shift operation.
+
+1 in binary is: 0001
+Left shifting by 1 means moving all bits one position to the left, and filling the rightmost bit with 0.
+Step-by-step process:
+0001  << 1 = 0010
+In decimal, 0010 equals 2.
+
+2. (2 >> 1)
+This is a bitwise right shift operation.
+
+2 in binary is: 0010
+Right shifting by 1 means moving all bits one position to the right, and filling the leftmost bit with 0 (for unsigned or non-negative integers).
+Step-by-step process:
+
+yaml
+Copy code
+0010  >> 1 = 0001
+In decimal, 0001 equals 1.
+
+
 *** Bit Manipulation ***
 
 *** Repeating and missing number in array ***(explain : https://www.youtube.com/watch?v=pnx5JA9LNM4&list=PL-Jc9J83PIiFJRioti3ZV7QabwoJK6eKe&index=9)
@@ -80,5 +106,58 @@ public:
         if(ans == n+1) return -1;
 
         return ans;
+    }
+};
+
+2939. Maximum XOR product (https://www.youtube.com/watch?v=rCnELsv6L2I&list=PLpIkg8OmuX-I-t2eiSxfO0UjiLhmNGfon&index=6)
+
+
+one fact if we are xoring 2 numbers and we get to know a particular bit is set we can do this --> (axorb) xor (1 << i) --> this give result 
+
+Answer is calculated bit by bit (if a bit of a and b is same , x would have that bit as opposite to them)
+ (if they are different we need to try both and check max what we will notice is that for multiplication to be maximum numbers should be close 
+ so always if bit is differet we take the bit so that lower one gets 1)
+
+
+class Solution {
+public:
+    int mod = 1e9 + 7;
+    typedef long long ll;
+    int maximumXorProduct(long long a, long long b, int n) {
+        
+        ll xXora = 0;
+        ll xXorb = 0;
+
+        for(ll i = 49; i >= n; i--) {
+            if(a >> i & 1) {
+                xXora = xXora ^ (1ll << i);
+            }
+            
+            if(b >> i & 1) {
+                xXorb = xXorb ^ (1ll << i);
+            }
+        }
+
+        for(ll i = n-1; i >=0; i--) {
+             ll a_ith = (a >> i) & 1;
+             ll b_ith = (b >> i) & 1;
+
+             if(a_ith == b_ith) {
+                xXora = xXora ^ (1ll << i);
+                xXorb = xXorb ^ (1ll << i);
+                continue;
+             }
+
+             if(xXora > xXorb) {
+                xXorb = xXorb ^ (1ll << i);
+             } else {
+                xXora = xXora ^ (1ll << i);
+             }
+        }
+
+        xXora = xXora % mod;
+        xXorb = xXorb % mod;
+
+        return (xXora * xXorb) % mod;
     }
 };

@@ -739,7 +739,7 @@ int inOrderTraversal(TreeNode* node, int k, int& count) {
         return inOrderTraversal(node->right, k, count);
 }
 
-Valid BST 
+Valid BST (same is used in Preorder to BST)
 
 bool isValidBST(TreeNode* root, long minVal = LONG_MIN, long maxVal = LONG_MAX) {
     if (root == NULL) return true;  // An empty tree is a valid BST
@@ -823,6 +823,7 @@ Pair of numbers which sum to target in BST
 
 > do inorder traversal store result in array than its 2-sum
 > One other way is to push all left nodes in a stack and all right nodes in a another stack (than again we do 2 sum type)
+while popping from left add all its right child , while popping from right add all its left child
 
 
 BST iterator (iterator for inorder traversal of BST)
@@ -897,3 +898,201 @@ TreeNode* buildTree(std::vector<int>& preorder, int& index, int minVal, int maxV
         
         return root; // Return the root of the subtree
  }
+
+
+
+ *** Segment Trees ****
+
+
+ Used for range based queries where we need to find results for a range and update range etc (ex range sum/ max/ min etc)
+
+ How it works :: ex 5 6 2 3 and we are building a segment tree for sum nodes , root will contain (0, 3) and its sum (16) now we will calculate m = (l + r)/2
+ and make a left child for (l, m) (0, 1) (11) and (m+1,r) (2, 3) (5) and so on 
+
+ Leafes will be all individual elements 
+
+ Height of tree is logN and its a balanced binary tree (meaning max diff between height of 2 child is <= 1)
+ number of nodes in a segment tree is always 2*N (N for all leaf, than N/2 --> N/4 and so on )
+
+ The code representation of this can be done in form of array where 2i+1 and 2i+2 are child for every i node
+
+Build tree is easy we rely on recursion to build left and right and i just create root itself 
+
+vector<int> segTree(4n, -1); // take 4n always to avoid overflow etc
+
+
+Void buildTree(int index, int left, int right) {
+
+if(left == right) {
+segTree[index] = nums[left];
+Return; }
+
+Int m = (left + right)/2;
+
+buildTree(2*index+1, left, m);
+buildTree(2*index+2, m+1, right);
+
+segTree[index] = segTree[2*index+1] + segTree[2*index+2];
+
+return;
+
+}
+
+Second thing is if update comes to us --> find the correct leaf to update (since all nodes are at leaf and than we propagate similar to build)
+
+void update(int index_update, int val, int index, int left, int right) {
+    if (left == right) {
+        segTree[index] = val;
+        return;
+    }
+
+    Int mid = (left + right)/2;
+
+    if (index_update <= mid) {
+        update(index_update, val, 2 * index + 1, left, mid);
+    } else {
+        update(index_update, val, 2 * index + 2, mid + 1, right);
+    }
+
+    segTree[index] = segTree[2 * index + 1] + segTree[2 * index + 2];
+}
+
+Query the tree 
+
+
+In this we will be given range ex [0,2] and we need to find sum for range , every node of our tree represents a range [start, end] 
+the trick is again that we can have 3 cases of interaction between this
+
+
+The node i represent is completely out of bound → return 0
+
+The node i represent is completely inside query → return myval
+
+Else i query on my left and rightChild
+
+int sum(int start, int end, int index, int left, int right) {
+    if (left > end || right < start) {
+        return 0; // Out of bound case
+    }
+
+    if (left >= start && right <= end) {
+        return segTree[index]; // Current segment is fully within range
+    }
+
+    int mid = left + (right - left) / 2;
+
+    return sum(start, end, 2 * index + 1, left, mid) + 
+           sum(start, end, 2 * index + 2, mid + 1, right);
+}
+
+
+Range update (instead of changing a index we change a range of indexes ) (If we follow point update for all it becomes logN for all numbers so NlogN)
+watch :: https://www.youtube.com/watch?v=FB_LjtTQwlw&list=PLpIkg8OmuX-K1qUIQToCllUO0UIKXt8dB&index=7
+
+void update(int start, int end, int val, int index, int left, int right) {
+
+    if(lazy[index] != 0) {
+        seg[index] = (right - left + 1) * lazy[i];
+        if (left != right) {
+         seg[2*index + 1] = lazy[i];
+         seg[2*index + 2] = lazy[i]
+        }
+        lazy[i] = 0;
+    }
+
+    if(start > right || end < left)  return;
+
+    if(left >= start && right <= end) {
+        seg[index] = (right - left + 1) * lazy[i];
+         lazy[2*index + 1] = val;
+         lazy[2*index + 2] = val;
+    }
+
+    call recursion
+}
+
+315. Count of numbers smaller after self 
+
+This question is a smart application of segment tree 
+
+> compression is done to save space not entirely necessary for issue (basically if array is 0 --> 220 --> 400) we convert to (0 --> 1 --> 2) and tree is 
+smaller but result is same
+
+We basically want to count number of elements in range [0, number - 1] , so consider it same problem as segmentTree sum basically with sum as 1 for each node
+
+class Solution {
+private:
+    vector<int> segTree; // Segment Tree Array
+
+    // Function to update the segment tree at a specific index
+    void updateTree(int idx, int value, int index, int left, int right) {
+        if (left == right) {
+            segTree[index] += value; // Update the count at the leaf node
+            return;
+        }
+
+        int mid = left + (right - left) / 2;
+        if (idx <= mid) {
+            updateTree(idx, value, 2 * index + 1, left, mid);
+        } else {
+            updateTree(idx, value, 2 * index + 2, mid + 1, right);
+        }
+
+        // Update the current node's value after updating children
+        segTree[index] = segTree[2 * index + 1] + segTree[2 * index + 2];
+    }
+
+    // Function to query the segment tree for a range sum
+    int queryTree(int start, int end, int index, int left, int right) {
+        if (left > end || right < start) {
+            return 0; // Out of range
+        }
+
+        if (left >= start && right <= end) {
+            return segTree[index]; // Completely within range
+        }
+
+        int mid = left + (right - left) / 2;
+        int leftSum = queryTree(start, end, 2 * index + 1, left, mid);
+        int rightSum = queryTree(start, end, 2 * index + 2, mid + 1, right);
+
+        return leftSum + rightSum;
+    }
+
+    // Function for coordinate compression
+    vector<int> compressCoordinates(const vector<int>& nums) {
+        vector<int> sortedNums = nums;
+        sort(sortedNums.begin(), sortedNums.end());
+        vector<int> compressed(nums.size());
+
+        for (size_t i = 0; i < nums.size(); ++i) {
+            compressed[i] = lower_bound(sortedNums.begin(), sortedNums.end(), nums[i]) - sortedNums.begin();
+        }
+        maxVal = sortedNums.size(); // Set maxVal for the segment tree range
+        return compressed;
+    }
+
+public:
+    vector<int> countSmaller(vector<int>& nums) {
+        if (nums.empty()) return {};
+
+        // Step 1: Coordinate Compression
+        vector<int> compressed = compressCoordinates(nums);
+        int maxVal = nums.size();
+
+        // Step 2: Initialize Segment Tree
+        segTree.resize(4 * maxVal, 0); // All nodes are initialized to 0
+
+        // Step 3: Process the array in reverse order
+        vector<int> result(nums.size());
+        for (int i = nums.size() - 1; i >= 0; --i) {
+            // Query for the count of numbers smaller than current number
+            result[i] = queryTree(0, compressed[i] - 1, 0, 0, maxVal - 1);
+
+            // Update the segment tree to include the current number
+            updateTree(compressed[i], 1, 0, 0, maxVal - 1);
+        }
+
+        return result;
+    }
+};

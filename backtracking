@@ -410,3 +410,57 @@ vector<vector<int>> res;
         
         return res;
     }
+
+
+M coloring problem 
+
+class Solution {
+public:
+    bool isSafeToColor(vector<vector<int>>& adj, int current, int colorToAssign, vector<int>& color) {
+        // Check if adjacent nodes already have the same color
+        for (int neighbor : adj[current]) {
+            if (color[neighbor] == colorToAssign) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    bool solve(vector<vector<int>>& adj, int v, int m, int current, vector<int>& color) {
+        // Base case: if all vertices are colored
+        if (current == v) return true;
+        
+        // Try all colors for the current vertex
+        for (int col = 0; col < m; col++) {
+            if (isSafeToColor(adj, current, col, color)) {
+                color[current] = col; // Assign the color
+                
+                // Recurse for the next vertex
+                if (solve(adj, v, m, current + 1, color)) {
+                    return true;
+                }
+                
+                // Backtrack if assigning the color doesn't lead to a solution
+                color[current] = -1;
+            }
+        }
+        
+        // If no color can be assigned to this vertex, return false
+        return false;
+    }
+    
+    bool graphColoring(int v, vector<pair<int, int>>& edges, int m) {
+        // Create adjacency list from the edges
+        vector<vector<int>> adj(v);
+        for (pair<int, int> p : edges) {
+            adj[p.first].push_back(p.second);
+            adj[p.second].push_back(p.first);
+        }
+        
+        // Initialize the color array with -1 (uncolored)
+        vector<int> color(v, -1);
+        
+        // Start solving from the first vertex
+        return solve(adj, v, m, 0, color);
+    }
+};

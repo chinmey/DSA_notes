@@ -33,6 +33,57 @@ unordered_set<string> f;
         return;
     }
 
+
+These can also be solved by keeping single ref and solving (here we would need to take care of this copy the basic flow is include element explore 
+pop element out than do flow where you dont include element)
+
+ void solve(vector<int>& nums, int idx, int n, vector<int>& temp) {
+        if (idx == n) {
+            ans.push_back(temp);
+            return;
+        }
+
+        // Include the current element
+        temp.push_back(nums[idx]);
+        solve(nums, idx + 1, n, temp);
+        temp.pop_back();
+
+        // Skip duplicates by advancing the index to the next distinct number
+        while (idx + 1 < n && nums[idx] == nums[idx + 1]) {
+            idx++;
+        }
+
+        // Exclude the current element
+        solve(nums, idx + 1, n, temp);
+    }
+
+46. Permutation
+
+[1,2] --> [1,2] [2,1]
+
+Here the point is we dont use a idx because even if we did not include a index in beginning we still can later (ex 2 1) so instead we use a loop now 
+having a loop makes not taking reduntant because if you take and explore and than simply pop back the next time that loop runs is the not taken part ex
+
+void solve(vector<int> &nums, int n, set<int> &included, vector<int> &temp) {
+
+        if(temp.size() == nums.size()) {
+            ans.push_back(temp);
+            return;
+        }
+
+        for(int i=0; i<n; i++) {
+            if(included.find(nums[i]) == included.end()) {
+                included.insert(nums[i]);
+                temp.push_back(nums[i]);
+                solve(nums, n, included, temp);
+                temp.pop_back();
+                included.erase(nums[i]);
+            }
+        }
+
+        return;
+    }
+
 Palindrom partitioning : (explain : https://www.youtube.com/watch?v=VOiNexeScLU) aditya has this covered in DP too
 
 Solved using IBH technique we can partition throughout string , if first part is palindrome we recur for second part and so on and we have to pop_back at last
@@ -138,6 +189,7 @@ Node *flattenBST(Node *root)
         
         return leftpart;
     }
+
 
 https://www.youtube.com/watch?v=9LPdx7wBjxY&list=PLICVjZ3X1AcbI-9LyJ6ss-gB3bNRTQrll&index=1 --> follow this for more recursion problems 
 

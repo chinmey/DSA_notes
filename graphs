@@ -93,7 +93,7 @@ int shortestPathBinaryMatrix(vector<vector<int>>& grid) {
 Second common type is when in a matrix we only have (S and D) and we are asked to convert D into S in shortest time (ex Rotten Oranges) 
 Multi Source
 
-In this we put all of Source in Matrix than we go level by level and populate D 
+In this we put all of Source in queue than we go level by level and populate D 
 
 *** imp : Identify the cells (states) that are already in the target condition or 
 cannot be changed based on the problem constraints, these are put in queue ***
@@ -336,6 +336,8 @@ int new_diff = max(diff, abs(h[x][y] - h[nx][ny])) --> is key for dijkstra with 
 
 Ex for swim in rising water it changes to  int new_time = max(diff, grid[nx][ny]); rest code stays same
 
+Hidden dijkstra problem : https://leetcode.com/problems/digit-operations-to-make-two-integers-equal/description/
+
 
 
 Detect cycle in undirected graph 
@@ -373,6 +375,49 @@ Cycle Detection:
 During the DFS traversal, if we encounter a node that is already in the "visiting" state (i.e., its in the recursion stack), it means there is a back edge
  leading to a node that is currently being visited, which indicates a cycle.
 Once a node and all its descendants have been fully explored, we mark it as visited (fully processed).
+
+
+We can also extend this to find longest cycle in graph (ex : https://leetcode.com/problems/longest-cycle-in-a-graph/)
+
+Just while traversing need to maintain a count array which gives what is number of nodes we have visited and once we see a cycle cycle length would be 
+count[current_node] - count[visting_node] + 1
+
+class Solution {
+public:
+    int res = -1;
+    
+    void dfs(int u, vector<int> &edges, vector<int> &state, vector<int> &count) {
+        if(u != -1) {
+            
+            state[u] = 1;
+            int v = edges[u];
+
+            if(v != -1 && state[v] == 0) {
+                count[v] = count[u] + 1;
+                dfs(v, edges, state, count);
+            } else if(v != -1 && state[v] == 1) { // cycle detected
+                res = max(res, count[u] - count[v] + 1);
+            }
+
+            state[u] = 2;
+
+        }
+    }
+    int longestCycle(vector<int>& edges) {
+        int n = edges.size();
+
+        vector<int> state(n, 0); // 0 unvisited 1 visiting 2 visited
+        vector<int> count(n, 1);
+
+        for(int i=0; i<n; i++) {
+            if(state[i] == 0) {
+                dfs(i, edges, state, count);
+            }
+        }
+
+        return res;
+    }
+};
 
 
 Topological sorting for Directed Acyclic Graph (DAG) is a linear ordering of vertices such that for every directed edge u -> v, 
@@ -459,8 +504,13 @@ public:
     }
 };
 
+Each union or find operation is amortized O(α(N)), which is effectively constant in practical scenarios due to the extremely slow growth of  alpha
+
+Inverse ackerman constant
+
 Sample problems : https://leetcode.com/problems/number-of-provinces/ (solve using this)
 https://leetcode.com/problems/number-of-operations-to-make-network-connected/
+https://leetcode.com/problems/most-stones-removed-with-same-row-or-column/ (Good problem showing union in a cell)
 
 Union find on 2d grid (https://leetcode.com/problems/number-of-islands-ii/)
 
@@ -559,7 +609,7 @@ bool isBipartite(vector<vector<int>>& adj, int n) {
 }
 
 
-Bellman Ford (Shortest path from single source to all vertices in weighted graph with negative edge weight)
+Bellman Ford (Shortest path from single source to all vertices in weighted graph with negative edge weight)qa
 
 
 Says for a graph with V vertices if its is relaxed V-1 times we will get answer 
@@ -695,3 +745,96 @@ public:
         }
     }
 };
+
+
+reconstruct itinerary (https://leetcode.com/problems/reconstruct-itinerary/) --> this is based on eulerian path
+and https://leetcode.com/problems/valid-arrangement-of-pairs/
+
+Euler path in Undirected graph (code story with mik)
+
+For undirected graph indegree == outdegree
+
+A path of edges which visits all edge in graph exactly once (Not all graphs have eulerian path)
+A eulieran path which starts and ends on same node is called eulerian circuit or cycle, a graph having eulerian circuit is called eulerian graph
+
+
+All vertices with non-zero indegree need to be in same component of graph if this does not happen graph will not have a euler path ex 
+
+A--B          C---> D  ::: This graph does not have euler path
+
+If all vertices have even-indegree than graph has eulerian circuit. (basically kyuki ek nikalne wala edge chahiye aur ek ghusne wala)
+in this case any node can be source
+
+A graph having euler path but no euler circuit will have its source and end vertex with odd indegree and rest with even indegree 
+(basically baaki sab se nikal aur ghus pa rahe do se nahi hoga ek se sirf nikal payenge aur ek me sirf ghus)
+
+A graph with more than 2 nodes with odd indegree will have no euler path 
+
+First check if non-zero indegree nodes are connected 
+
+if(oddInDegree == 2) return "Ep";
+else if(oddInDegree == 0) return "Ec";
+else if(oddInDegree > 2) return "none"
+
+
+Euler in directed graph
+
+Just extendeing concept from undirected graph for euler graph to exist here 
+outdegree - indegree == 1 for one node (source), indegree - outdegree == 1 for one node (end), rest all will have same indregree and outdegree
+
+
+Finding euler path in directed graph (ex problem : https://leetcode.com/problems/valid-arrangement-of-pairs/)
+
+> Find starting node (outdegree - indegree == 1)
+> Do DFS from this node for every unvisited edge push it in stack once all paths are explored pop it from stack 
+> Reverse what we got here that is answer
+
+
+
+Hamiltoninan cycle (Travelling businessnessman problem) (https://www.youtube.com/watch?v=JE0JE8ce1V0&t=19s)
+
+A Hamiltonian Cycle is a path in a graph that:
+
+Visits every vertex exactly once, and
+Starts and ends at the same vertex
+
+o/p of travelling salesman problem is minimum weight hamiltoninan cycle
+
+// no of states is 2pow(n) for mask and n for pos
+    
+    map<pair<int,int>, int> mp;
+    int solve(vector<vector<int>>& cost, int current_mask, int final_mask, int pos) {
+        int n = cost.size();
+        
+        if(current_mask == final_mask) {
+            return cost[pos][0];
+        }
+        
+        if(mp.find({current_mask, pos}) != mp.end()) return mp[{current_mask, pos}];
+        
+        int ans = INT_MAX;
+        
+        for(int city = 0; city < n; city++) {
+            if((current_mask & (1 << city)) == 0) {
+                int new_ans =  cost[pos][city] 
+                + solve(cost, current_mask | (1 << city), final_mask, city);
+                
+                ans = min(ans, new_ans);
+            }
+        }
+        
+        return mp[{current_mask, pos}] = ans;
+    }
+    int tsp(vector<vector<int>>& cost) {
+        int n = cost.size();
+
+        // We store which city has been traversed in a mask (ex 0000 means no one is visited and 1111 all visited)
+        
+        int visit_all_mask = (1 << n) - 1;
+        
+        int current_mask = 1;
+        
+        return solve(cost, current_mask, visit_all_mask, 0);
+        
+        
+    }

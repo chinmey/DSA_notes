@@ -116,25 +116,140 @@ class Solution {
 public:
     vector<int> maxSlidingWindow(vector<int>& nums, int k) {
         int n = nums.size();
+
         vector<int> ans;
-        deque<pair<int,int>> q; // number, index
 
-        for(int i=0; i<n ; i++) {
-            if(q.empty() || q.back().first >= nums[i]) {
-                q.push_back({nums[i], i});
-            } else {
-                while(!q.empty() && q.back().first <= nums[i]) {
-                    q.pop_back();
-                }
-                q.push_back({nums[i], i});
+        deque<int> dq; // index
+
+        for(int i=0; i<n; i++) {
+            while(!dq.empty() && dq.front() <= i - k) { // remove index not in window
+                dq.pop_front();
             }
 
-            if(i >= k - 1) {
-                ans.push_back(q.front().first);
-                while(!q.empty() && q.front().second <= i-k+1) q.pop_front();
+            while(!dq.empty() && nums[dq.back()] <= nums[i]) { // remove number smaller than me that occur before me
+                dq.pop_back(); 
             }
+
+            dq.push_back(i);
+
+            if(i >= k-1) {
+                ans.push_back(nums[dq.front()]);
+            }
+
+            
         }
 
         return ans;
     }
 };
+
+
+Trapping rain mater 
+
+Calculate max left seen , calculate max right seen , ans = ans + min(max_left, max_right) - arr[i];
+
+To do in in O(1) space , we need 2 pointers approach keep 2 pointers , i (start) and j(end) of array and keep track of max_left and max_right 
+
+Water stored formulae is still same but whoever is limiting (less between these two) move that pointer only
+
+int trap(vector<int>& h) {
+    int n = h.size();
+    if (n == 0 || n == 1) return 0;
+
+    int i = 0, j = n - 1, ans = 0;
+    int maxL = 0, maxR = 0;
+
+    while (i <= j) {
+        maxL = max(maxL, h[i]);
+        maxR = max(maxR, h[j]);
+
+        if (maxL < maxR) {
+            ans += maxL - h[i];
+            i++;
+        } else {
+            ans += maxR - h[j];
+            j--;
+        }
+    }
+
+    return ans;
+}
+
+
+Trapping rain water - 2 (https://www.youtube.com/watch?v=fywyCy6Fyoo&t=30s)
+
+Here the initution is a little different we cant rely on above logic what we will do push all boundary elements in pq (basically those who cant keep water)
+
+Now take the min of this (why min because if it can trap water all others can also do)
+
+for every element check its neighbour we have 3 cases 
+
+> neg is smaller than me (than we can store myHeight - neigbour height water) and push neg into queue with neg height + water stored (which is its new height)
+> neg is equal or greater (no warer added) and push neg in queue
+
+class Solution {
+public:
+    typedef pair<int, pair<int, int>> pp;
+    int trapRainWater(vector<vector<int>>& heightMap) {
+        int m = heightMap.size();
+        int n = heightMap[0].size();
+
+        priority_queue<pp, vector<pp>, greater<pp>> pq;
+
+        vector<vector<bool>> vis(m, vector<bool>(n, false));
+
+        // Add boundary cells to the priority queue and mark them as visited
+        for (int i = 0; i < n; i++) {
+            pq.push({heightMap[0][i], {0, i}});
+            vis[0][i] = true;
+            pq.push({heightMap[m - 1][i], {m - 1, i}});
+            vis[m - 1][i] = true;
+        }
+
+        for (int i = 0; i < m; i++) {
+            pq.push({heightMap[i][0], {i, 0}});
+            vis[i][0] = true;
+            pq.push({heightMap[i][n - 1], {i, n - 1}});
+            vis[i][n - 1] = true;
+        }
+
+        // Directions for moving to adjacent cells (right, down, left, up)
+        vector<int> dir = {0, 1, 0, -1, 0};
+
+        int water = 0;
+
+        while (!pq.empty()) {
+            pp top = pq.top();
+            pq.pop();
+
+            int h = top.first; // Current height of the cell
+            int x = top.second.first; // x-coordinate
+            int y = top.second.second; // y-coordinate
+
+            // Process the neighbors
+            for (int i = 0; i < 4; i++) {
+                int nx = x + dir[i];
+                int ny = y + dir[i + 1];
+
+                if (nx >= 0 && nx < m && ny >= 0 && ny < n && !vis[nx][ny]) {
+                    // If the neighboring cell is lower than the current height, water can be trapped
+                    if (heightMap[nx][ny] < h) {
+                        water += h - heightMap[nx][ny];
+                    }
+
+                    // Push the neighbor into the priority queue with the updated height
+                    pq.push({max(heightMap[nx][ny], h), {nx, ny}});
+                    vis[nx][ny] = true;
+                }
+            }
+        }
+
+        return water;
+    }
+};
+
+
+Celebrity problem 
+
+On the graph representation, a celebrity is a person who has exactly n - 1 directed edges going in (everybody knows them) 
+and 0 edges going out (they know nobody).

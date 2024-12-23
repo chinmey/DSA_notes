@@ -243,7 +243,30 @@ vector<int> computeLPSArray(const string &pattern) {
         }
 
 
-Minimum Insertion Steps to Make a String Palindrome --> take lcs of string with its reverse answer is length of string - lcs
+Minimum Insertion Steps to Make a String Palindrome --> take lcs of string with its reverse answer is length of string - lcs (O(n2))
+
+There are other approaches too for this 
+
+KMP-Based Solution
+Concatenate the string and its reverse:
+
+Let the given string be s and its reverse be rev(s).
+Concatenate s and rev(s) using a delimiter that doesn't appear in the string, e.g., s + '#' + rev(s).
+Calculate the Longest Prefix-Suffix (LPS) Array:
+
+Use the KMP preprocessing algorithm to compute the LPS array of the concatenated string.
+The LPS array provides the length of the longest prefix of the concatenated string that is also a suffix.
+Determine the minimum characters to insert:
+
+The longest palindromic prefix corresponds to the length stored in the last entry of the LPS array.
+Subtract this length from the total length of the string s. This difference gives the number of characters that need to be inserted at the beginning.
+
+
+2. Greedy + Two Pointers:
+Use two pointers, i at the start and j at the end.
+If s[i] == s[j], move both pointers inward.
+Otherwise, move the pointer where the characters don't match, simulating an insertion.
+Keep track of the number of insertions
 
 One common point in strings is map can be kept in a array (if characters are only lowercase or uppercase for example)
 

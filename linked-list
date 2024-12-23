@@ -5,6 +5,8 @@ Iterative : keep cur, prev = null , next ptr move them and return next at last
 
 Recursively : remember we can traverse a link list backwards using same logic 
 
+either follow below or follow our natural inituition of giving work to child thing 
+
   ListNode* reverseList(ListNode* head) {
         // Base case: If the list is empty or has only one node, return it
         if (head == nullptr || head->next == nullptr) {
@@ -47,6 +49,9 @@ Similarly, when ptr2 reaches the end of a list, redirect it to the head1.
 Once both of them go through reassigning, they will be at equal distance from the collision point.
 If at any node ptr1 meets ptr2, then it is the intersection node.
 After the second iteration if there is no intersection node , returns NULL.
+
+
+List is a palindrom or not --> reverse second half (than compare those two) or use recursion to traverse backward
 
 
 Reverse list in size of k (uses recursion , idea is pehla reverse karo baaki recurse karo)
@@ -248,35 +253,3 @@ To get unique only answer one naive way is to use set but if array is sorted we 
 Ex : like this once numbers match 
 while (j < k && arr[j] == arr[j - 1]) j++;
 while (j < k && arr[k] == arr[k + 1]) k--;
-
-
-Trapping rain mater 
-
-Calculate max left seen , calculate max right seen , ans = ans + min(max_left, max_right) - arr[i];
-
-To do in in O(1) space , we need 2 pointers approach keep 2 pointers , i (start) and j(end) of array and keep track of max_left and max_right 
-
-Water stored formulae is still same but whoever is limiting (less between these two) move that pointer only
-
-int trap(vector<int>& h) {
-    int n = h.size();
-    if (n == 0 || n == 1) return 0;
-
-    int i = 0, j = n - 1, ans = 0;
-    int maxL = 0, maxR = 0;
-
-    while (i <= j) {
-        maxL = max(maxL, h[i]);
-        maxR = max(maxR, h[j]);
-
-        if (maxL < maxR) {
-            ans += maxL - h[i];
-            i++;
-        } else {
-            ans += maxR - h[j];
-            j--;
-        }
-    }
-
-    return ans;
-}

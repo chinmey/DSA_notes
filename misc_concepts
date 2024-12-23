@@ -1,3 +1,34 @@
+*** Upper bound/lower bound *****
+
+
+lower_bound(key): Returns an iterator to the first element that is not less than the key (i.e., greater than or equal to the key).
+
+upper_bound(key): Returns an iterator to the first element that is strictly greater than the key.
+
+Here are a few more examples to reinforce this:
+
+For vector<int> v = {1, 3, 3, 5, 7}; or map<int, int> m = {{1,1}, {3,3}, {5,5}, {7,7}};:
+
+For key 3:
+
+lower_bound(3) points to the first 3
+upper_bound(3) points to 5
+For key 4:
+
+lower_bound(4) points to 5
+upper_bound(4) also points to 5
+For key 7:
+
+lower_bound(7) points to 7
+upper_bound(7) points to end
+For key 8:
+
+lower_bound(8) points to end
+upper_bound(8) points to end
+
+
+
+
 *** Counting Sort ***
 
 
@@ -491,4 +522,282 @@ public:
         return op;
     }
 }
+
+
+843. Guess the word
+
+
+The basic idea is easy choose a random word feed it to matcher see how many match go thru list and eliminate all words that dont have exact same match
+with my guess. Repeat till we get answer 
+
+This is good but we need a better way to pick a number what we should do is use minimax technique 
+
+For each potential guess word:
+
+Simulate matching it against all remaining words.
+Count how many words would give 0 matches, 1 match, 2 matches, ..., up to 6 matches.
+Find the largest of these counts. This is the "worst-case" scenario for this word.
+Among all potential guess words:
+
+Choose the one with the smallest "worst-case" count.
+Example: Lets say we have two potential guess words, A and B:
+
+Word A results in:
+
+10 words with 0 matches
+5 words with 1 match
+15 words with 2 matches
+2 words with 3 matches
+0 words with 4, 5, or 6 matches Worst case for A: 15
+Word B results in:
+
+8 words with 0 matches
+8 words with 1 match
+8 words with 2 matches
+8 words with 3 matches
+0 words with 4, 5, or 6 matches Worst case for B: 8
+We would choose Word B, because its worst case (8) is better than As worst case (15).
+
+int selectWord(const vector<string>& words) {
+    int n = words.size();
+    int result = INT_MAX;
+    int selected = 0;
+
+    for(int i = 0; i < n; i++) {
+        vector<int> count(7, 0);
+        for(int j = 0; j < n; j++) {
+            int match = mymatcher(words[i], words[j]);
+            count[match]++;
+        }
+        
+        int maxCount = *max_element(count.begin(), count.end());
+        if(maxCount < result) {
+            result = maxCount;
+            selected = i;
+        }
+    }
+
+    return selected;
+}
+
+
+3351. Sum of good subsequences
+
+The difference between the "take/no take" approach and the "take-remove-taken/no-take" approach in recursion often depends on the nature of the problem 
+and how items or states need to be handled during the recursion. Heres an explanation of when and why you might use each approach:
+
+1. Take / No Take
+In this approach, you decide whether to include an item in the current subset (or decision path) or not, without modifying the original structure.
+
+When to Use:
+The input remains unchanged between recursive calls.
+The problem does not require altering the input to exclude what has already been "taken."
+The recursion state inherently handles the progression through the input, such as moving an index forward to avoid reprocessing the same items.
+
+
+Examples:
+Subsets generation (e.g., Leetcode 78): No need to remove an item since recursion ensures it won’t be revisited.
+Knapsack problems (where items can’t be reused): The index progression ensures each item is considered once.
+
+2. Take-Remove-Taken / No Take
+In this approach, you explicitly remove the "taken" item from the structure before recursing further.
+
+When to Use:
+The input structure (e.g., a list or set) needs to shrink dynamically as items are processed.
+The problem explicitly requires backtracking to undo modifications and explore other possibilities.
+You need to ensure the current state reflects only unprocessed options during subsequent recursive calls.
+
+
+Examples:
+Permutations (e.g., Leetcode 46): You remove the "taken" element from the list so it won’t be reused.
+Problems involving non-linear relationships or graphs, where states need to be explicitly restored and modified.
+Why the First Approach Worked in Leetcode 3351
+Leetcode 3351 (Combinations With Constraints) has rules that naturally lend themselves to the "take/no-take" approach because:
+
+Progression by Index: The problem processes elements in order, meaning once an index is moved forward, 
+it guarantees the element at that index wont be reused in the same path.
+Combination vs. Permutation: Unlike permutations, combinations do not require rearranging or removing items dynamically.
+
+
+727. Minimum Window subsequences
+
+Idea
+Precompute next occurrence indices:
+
+Create a next array of size n×26, where next[i][c] gives the next index of character c in s1 starting from position i.
+
+This allows skipping irrelevant characters efficiently.
+Find subsequences:
+
+Use a two-pointer approach to efficiently find the start and end indices of each valid subsequence of s1 that matches s2.
+
+Input: s1 = "abcdebdde", s2 = "bde"
+Output: "bcde"
+
+class Solution {
+public:
+    string minWindow(string s1, string s2) {
+        int n = s1.size(), m = s2.size();
+        
+        vector<vector<int>> next(n + 1, vector<int>(26, -1));
+        for (int i = n - 1; i >= 0; --i) {
+            next[i] = next[i + 1];
+            next[i][s1[i] - 'a'] = i;
+        }
+        
+        int minLen = INT_MAX, start = -1;
+        for (int i = 0; i < n; ++i) {
+            if (s1[i] != s2[0]) continue;
+
+            int end = i;
+            for (char c : s2) {
+                end = next[end][c - 'a'];
+                if (end == -1) break;
+                ++end;
+            }
+            
+            if (end != -1 && end - i < minLen) {
+                minLen = end - i;
+                start = i;
+            }
+        }
+
+        return start == -1 ? "" : s1.substr(start, minLen);
+
+
+    }
+};
+
+
+
+LIS but at most k greater than  me 
+
+
+> one way is to do LIS but store next greater element in map so that when  ever you take a number you know which number to take next rather than linear search
+> but ideal way to do is using segment Tree
+
+
+1547. Minimum Cost to Cut a Stick (https://leetcode.com/problems/minimum-cost-to-cut-a-stick/description/)
+
+
+Using this problem to understand lower bound erase and insert in c++
+
+> What we have is a initial range what we want is when we make a cut find out which range that number belongs to that is our cost and remove that range 
+and add 2 ranges in that 
+> We can use lower_bound to find that out 
+> In vector of cuts also if we know index we can use that to insert and delete effectively 
+
+
+class Solution {
+public:
+    int ans = INT_MAX;
+
+    void solve(set<pair<int, int>> &ranges, vector<int> &cuts, int cost) {
+        if (cuts.empty()) {
+            ans = min(ans, cost);
+            return;
+        }
+
+        for (int i = 0; i < cuts.size(); i++) {
+            auto it = ranges.lower_bound({cuts[i], cuts[i]});
+            if (it == ranges.end() || it->first > cuts[i]) it--;
+
+            pair<int, int> range = *it;
+
+            ranges.erase(it);
+            ranges.insert({range.first, cuts[i]});
+            ranges.insert({cuts[i], range.second});
+
+            int removedCut = cuts[i];
+            cuts.erase(cuts.begin() + i);
+
+            solve(ranges, cuts, cost + range.second - range.first);
+
+            // Restore ranges and cuts
+            ranges.erase({range.first, removedCut});
+            ranges.erase({removedCut, range.second});
+            ranges.insert(range);
+            cuts.insert(cuts.begin() + i, removedCut);
+        }
+    }
+
+    int minCost(int n, vector<int> &cuts) {
+        set<pair<int, int>> ranges;
+        ranges.insert({0, n});
+        solve(ranges, cuts, 0);
+        return ans;
+    }
+};
+
+
+818. Race Car 
+
+This shows how effectively we can use BFS (to find minimum value ) even when its not obvious that BFS is the way to go for this problem 
+
+class Solution {
+public:
+    struct Node {
+        int pos;
+        int speed;
+        int moves;
+    };
+
+    int racecar(int target) {
+        queue<Node> q;
+
+        q.push({0, 1, 0});
+
+        while(!q.empty()) {
+            Node f = q.front();
+            q.pop();
+
+            int pos = f.pos;
+            int speed = f.speed;
+            int moves = f.moves;
+
+            if(pos == target) return moves;
+
+            if(pos + speed <= 2*target && pos + speed >= 0) {
+                q.push({pos + speed, speed *2, moves + 1});
+            }
+
+            if(speed > 0 && pos + speed > target) {
+                q.push({pos, -1, moves + 1});
+            }
+
+            if(speed <= 0 && pos + speed < target) {
+                q.push({pos, 1, moves + 1});
+            }
+        }
+
+        return -1;
+    }
+};
+
+Time complexity -- O(tlogt) t --> target
+
+Same concept is used in another problem where we need to convert a number x to y in minimum steps each time changing only one digit that is also a case 
+of BFS with one digit change being my neighnour
+
+
+https://leetcode.com/problems/find-the-safest-path-in-a-grid/description/ --> BFS + binary search
+
+2872. https://leetcode.com/problems/maximum-number-of-k-divisible-components/ (Combines Trees with graphs very well) (https://www.youtube.com/watch?v=NfrA7Bem4DI&t=945s)
+
+The idea is to a post order traversal type thing where we first calculate childs(because they have lesser dependency)
+
+if at any point a node sum + its child sum becomes divisable by k we return 0 to parent and increase components to simulate cutting tree off
+
+
+>>> Did not remember first time 
+peak element/ rotated sorted list
+string tokensition
+KMP 
+LRU cache
+linked list is palindrom or not better method (using 0(n) space and without modifying ll)
+basic calculator
+h index
+
+
+
 

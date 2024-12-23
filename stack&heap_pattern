@@ -27,17 +27,20 @@ class Compare {
 };
 When true is returned, it means the order is NOT correct and swapping of elements takes place.
 When false is returned, it means the order is correct and NO swapping of elements takes place.
-*** This is opposite behavior to custom sort comparator ****
+*** This is opposite behavior to custom sort comparator ***
 
-*** basically in heap we return true for lower priority** ex to sort on basis of higher frequency first
+ex:
+struct Compare {
+    bool operator()(const pair<int, int>& a, const pair<int, int>& b) {
+        // Ascending order for the first element
+        if (a.first != b.first) 
+            return a.first > b.first;
+        // Descending order for the second element
+        return a.second < b.second;
+    }
+};
 
-  class CustomComp{
-       public: 
-       bool operator()(pair<int,int> &a, pair<int,int> &b){
-           if(a.first > b.first) return false;
-           return true;
-       }
-    };
+MinHeap comparator to sort ascending on first and descending on second ((1, 4) (2, 10) (2, 8))
 Heap use type so greater<int> but sort uses function so greater<int>()
 
 Heaps are commonly implemented as binary trees that maintain the heap property, but instead of using explicit tree structures like linked nodes, 

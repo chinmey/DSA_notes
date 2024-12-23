@@ -116,6 +116,7 @@ int minDifference(int arr[], int n)  {
 
 
 Min difference dp solution works as long as number are only positive , for negative sum and numbers we need to use "Meet in Middle algo"
+(https://www.youtube.com/watch?v=JUFHwaZjO_M)
 
 for a given array of size N , partition it into 2 arrays of size (N/2) now keep sum from all combination in both . ex 
 
@@ -123,6 +124,96 @@ for a given array of size N , partition it into 2 arrays of size (N/2) now keep 
 
 store all combo and elements used in it so example :: 0 --> 0 , 1 --> 1 and -5 2 --> -4 &&&& 0 --> 0, 1 --> 2 and -8 and 2 --> -6 now try every combo 
 from both arrays so (0 of left with 2 of right , 1 of left with 1 of right , 2 of right with 0 of left) see which sum comes closest to half of array summ
+
+> For getting all subsets of a array we use recursion but we can also use bitmask (ex if array size is 3 , we use mask till 8 and 1s would reprsent presence)
+
+class Solution {
+public:
+    int minimumDifference(vector<int>& nums) {
+        
+        int n = nums.size();
+
+        int arr_sum = accumulate(nums.begin(), nums.end(), 0);
+
+        int sz = n/2;
+        int sz2 = n - sz;
+
+        vector<int> left;
+        vector<int> right;
+
+        for(int i=0; i<sz; i++) {
+            left.push_back(nums[i]);
+        }
+
+        for(int i=0; i< sz2; i++) {
+            right.push_back(nums[i + sz]);
+        }
+
+        map<int, vector<int>> mp; // number of elements --> sum
+        int res = INT_MAX;
+
+        for(int i=0; i < (1 << sz); i++) {
+            int mask = i;
+            int sum = 0;
+            int count = 0;
+
+            for(int j=0; j<sz; j++) {
+                if(mask & (1 << j)) { // Check if j-th bit in i is set
+                   sum += left[j];
+                   count++;
+                }
+            }
+            mp[count].push_back(sum);
+        }
+
+        for(int i=0; i < (1 << sz2); i++) {
+            int mask = i;
+            int sum = 0;
+            int count = 0;
+
+            for(int j=0; j<sz2; j++) {
+                if(mask & (1 << j)) {
+                   sum += right[j];
+                   count++;
+                }
+            }
+            
+            int remain = sz - count;
+            vector<int> sums = mp[remain];
+            for(int s : sums) {
+                int mySum = sum + s;
+                res = min(res, abs(arr_sum - 2*mySum));
+            }
+        }
+
+        return res;
+
+
+    }
+};
+
+vector<vector<int>> generateSubsets(vector<int>& nums) {
+    int n = nums.size();
+    vector<vector<int>> subsets;
+
+    // Iterate over all possible bitmasks
+    for (int mask = 0; mask < (1 << n); ++mask) {
+        vector<int> subset;
+
+        // Check each bit in the mask
+        for (int i = 0; i < n; ++i) {
+            if (mask & (1 << i)) {  // If the i-th bit is set, include nums[i]
+                subset.push_back(nums[i]);
+            }
+        }
+
+        subsets.push_back(subset);
+    }
+
+    return subsets;
+}
+
+
 
 Count number of subset with given diff (1 1  2 3 and diff is 1) : This is actually simple we know S1-S2 = 1 , S1+S2 = 7 (Total sum), S1 = 4, we need to find
 count of subrray with sum as 4 (basically subset sum just put + instead of ||)
@@ -133,7 +224,7 @@ Target sum is this problem only in twisted way
 **Unbounded Knapsack ****
 
 Only difference is we have unlimited duplicate items so we can select same items again and again , this would be represented in code is when we select 
-a item we don't decrement (N) or increment (current_index) as we can pick it again rest is same
+a item we dont decrement (N) or increment (current_index) as we can pick it again rest is same
 
 Question based on it : rod cutting , coin change (minimum and no of ways)
 
@@ -273,7 +364,7 @@ Printing LCS : fill the table with above code now start from last row and last c
 
 if chars match take that char in answer and move to (i-1,j-1) , if chars don't match move towards (max of a[i-1][j] and a[i][j-1])
 
-Longest Common Substring :: The difference between this and LCS is we can't take chars seperated from each other basically discontinunity is not allowed
+Longest Common Substring :: The difference between this and LCS is we cant take chars seperated from each other basically discontinunity is not allowed
 
 So as soon as string don't match we need to store 0 as answer , so fill table using this and max value in table is answer
 
@@ -445,7 +536,8 @@ int lengthOfLIS(vector<int>& nums) {
 But there are better ways to do this (which is called Patience sorting) (ONLogN)
 
 We initialize an empty array piles.
-For each element in the input array nums, we perform a binary search to find the first pile whose top card is greater than or equal to the current element. If no such pile exists, it means the current element can extend the sequence, so we add it to the end of the array.
+For each element in the input array nums, we perform a binary search to find the first pile whose top card is greater than or equal to the current element. 
+If no such pile exists, it means the current element can extend the sequence, so we add it to the end of the array.
 If such a pile exists, we replace the top card of that pile with the current element. This helps us maintain the smallest possible top cards, which is crucial for the longest increasing subsequence.
 
 int lengthOfLIS(vector<int>& nums) {
@@ -727,7 +819,7 @@ change it to binary search
             ans = min(ans, worst_case);
 
             if (egg_broke > egg_not_broke) {
-                high = mid - 1; // If the egg breaks, reduce the search space
+                high = mid - 1; // If the egg breaks, reduce the search space or // egg broke is more we started from too high
             } else {
                 low = mid + 1; // If the egg doesn't break, increase the search space
             }
@@ -869,6 +961,137 @@ Two-Character Decoding: When considering two consecutive characters:
 If both characters are digits, they can be decoded in the same way as before.
 If the first character is '*', it can represent either 1 or 2 (since 10-26 are valid ranges).
 If the second character is '*', it can represent any valid number from 0-9, depending on the previous character.
+
+
+
+**** Cherry-pickup problems (DP on grids with 2 entries) **************
+
+
+Cherry-pickup 2 (https://leetcode.com/problems/cherry-pickup-ii/)
+
+> in this we have 2 important points we need to consider all choices made by one robot for every choice made by other one so if one robot goes straight down
+the other can go straight down/left down/right down so we have 9 choices 
+
+> Always add cherries collected from current cell at end to ensure that max works fine 
+
+Recursive code 
+
+class Solution {
+public:
+    int solve(vector<vector<int>>& grid, int row, int col_a, int col_b, int m, int n) {
+
+        int cherries_a = 0;
+        int cherries_b = 0;
+
+        if(row >= m || col_a < 0 || col_b < 0 || col_a >= n || col_b >= n) return 0;
+
+        cherries_a += grid[row][col_a];
+
+        if(col_a != col_b) {
+            cherries_b += grid[row][col_b];
+        }
+        
+        int ans = 0;
+
+        for(int i = -1; i <= 1; i++) {
+            for(int j = -1; j <= 1; j++) {
+                int next_col_a = col_a + i;
+                int next_col_b = col_b + j;
+
+                ans = max(ans, solve(grid, row+1, next_col_a, next_col_b, m, n));
+            }
+        }
+
+        return ans + cherries_a + cherries_b;
+    }
+    int cherryPickup(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        return solve(grid, 0, 0, n-1, m, n);
+    }
+};
+
+If we memo this it is a 3d dp (row, col_a, col_b). We need to reduce space we would need to use concept of 2d dps 
+
+class Solution {
+public:
+    int cherryPickup(vector<vector<int>>& grid) {
+        int m = grid.size();
+        int n = grid[0].size();
+
+        // Two 2D DP arrays for the current and previous rows
+        vector<vector<int>> prev(n, vector<int>(n, 0));
+        vector<vector<int>> curr(n, vector<int>(n, 0));
+
+        // Process rows from bottom to top
+        for (int row = m - 1; row >= 0; row--) {
+            for (int col_a = 0; col_a < n; col_a++) {
+                for (int col_b = 0; col_b < n; col_b++) {
+                    int cherries_a = grid[row][col_a];
+                    int cherries_b = (col_a != col_b) ? grid[row][col_b] : 0;
+
+                    int max_cherries = 0;
+
+                    // Explore all moves for both robots
+                    for (int move_a = -1; move_a <= 1; move_a++) {
+                        for (int move_b = -1; move_b <= 1; move_b++) {
+                            int next_col_a = col_a + move_a;
+                            int next_col_b = col_b + move_b;
+
+                            if (next_col_a >= 0 && next_col_a < n &&
+                                next_col_b >= 0 && next_col_b < n) {
+                                max_cherries = max(max_cherries, prev[next_col_a][next_col_b]);
+                            }
+                        }
+                    }
+
+                    curr[col_a][col_b] = cherries_a + cherries_b + max_cherries;
+                }
+            }
+
+            // Swap current and previous rows for the next iteration
+            swap(curr, prev);
+        }
+
+        // The result is stored in the top row when both robots start at (0, n-1)
+        return prev[0][n - 1];
+    }
+};
+
+Cherry-pickup (https://leetcode.com/problems/cherry-pickup/)
+
+In this we need to collect cherries and go back 
+
+For both robot start from 0,0
+
+int solve(vector<vector<int>>& grid, int row1, int col1, int row2, int col2, int n) {
+    // Base case: If out of bounds or on a thorn cell (-1)
+    if (row1 >= n || col1 >= n || row2 >= n || col2 >= n || 
+        grid[row1][col1] == -1 || grid[row2][col2] == -1) {
+        return INT_MIN; // Invalid path
+    }
+
+    if (row1 == n - 1 && col1 == n - 1) {
+        return grid[row1][col1];
+    }
+
+    int cherries = grid[row1][col1];
+    if (row1 != row2 || col1 != col2) {
+        cherries += grid[row2][col2]; 
+    }
+
+    // Explore all combinations of moves for the two robots
+    int maxCherries = INT_MIN;
+    maxCherries = max(maxCherries, solve(grid, row1 + 1, col1, row2 + 1, col2, n)); // Down-Down
+    maxCherries = max(maxCherries, solve(grid, row1 + 1, col1, row2, col2 + 1, n)); // Down-Right
+    maxCherries = max(maxCherries, solve(grid, row1, col1 + 1, row2 + 1, col2, n)); // Right-Down
+    maxCherries = max(maxCherries, solve(grid, row1, col1 + 1, row2, col2 + 1, n)); // Right-Right
+
+    return cherries + maxCherries; // Total cherries collected
+}
+
+Backtracking is also a option where we explore all paths to reach end first and corresponding to it all paths to reach start again
 
 
 *** Digit dp *** (https://www.youtube.com/watch?v=cthI6e5KGgg&list=PLps5s7uQvz8kSh36EwW4_o1Qqjfm2vA1r&index=1)

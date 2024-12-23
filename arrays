@@ -58,7 +58,7 @@ Sort 0s, 1s , 2s
 Swap wala logic h 0 ko aage , 2 ko peeche , 2 ko peeche le jate time index inc mat karo (because of case like 1 2 0)
 
 
-Next permutation 
+Next permutation (2 1 5 4 3 0 0 ) ---> [2,3,0,0,1,4,5]
 
 Think logically , start from end of array find a adjacent element which is not in decreasing form now ensure smallest number which can take the place
 of left element takes it and sort rest of array
@@ -71,6 +71,8 @@ of left element takes it and sort rest of array
 
 Repeating and missing number in array (explain : https://www.youtube.com/watch?v=pnx5JA9LNM4&list=PL-Jc9J83PIiFJRioti3ZV7QabwoJK6eKe&index=9)
 
+PS -- Exactly one number is missing and one number appears twice in range (1--> N)
+
 Ex : 1 4 2 2 --> answer would be 2 and 3
 
 Xor of number with itself is always zero, take xor of original array and what should be correct array ( 1 -> 4)
@@ -81,6 +83,43 @@ Now get the right-most set bit  = number & -number
 
 The original set (which is array + 1-> n) can be divided into 2 with numbers having right most set bit as on/off and each of our number would be in different bucket 
 Go thru set if & is zero xor seperately and if & is one xor seperately (you have 2 numbers)
+
+
+41. Missing number (https://leetcode.com/problems/first-missing-positive)
+
+Here the numbers could be duplicate we can have negative etc so above approach wont work 
+
+Here one approach is to use cyclic sort (place the number in their correct position) this relies on using number as index 
+
+so for num[i] its correct positions is num[i] - 1 ( ex 2 correct position is 1)
+
+class Solution {
+public:
+    int firstMissingPositive(vector<int>& nums) {
+        int n = nums.size();
+        
+        for (int i = 0; i < n; ) {
+            if (nums[i] > 0 && nums[i] <= n && nums[i] != nums[nums[i] - 1]) {
+                swap(nums[i], nums[nums[i] - 1]);
+            } else {
+                i++;
+            }
+        }
+        
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != i + 1) {
+                return i + 1;
+            }
+        }
+        
+        return n + 1;
+    }
+};
+
+Another approach could be first check if 1 exists or not in array ( we will use 1 as delimiter) if it does go thru array if we see numbers <=0 || > N
+convert them to 1
+
+Now traverse array for every number go ahead and mark number as num[i]-1 (correct position of number as negative showing its presence)
 
 
 Rotate matrix : think about final solution like what would ans[i][j] could be than figure out operation ( ex clockwise --> transpose + row reverse)
@@ -98,6 +137,50 @@ in mergeCount we do the counting i start from s and goes till m , j start from m
 Power (x, n) : based on logic that xpn = xpn/2 * xpn/2 (when n is even we need another x when odd just do recursion on same)
 
 n/3 element --> same as n/2 just take 2 candidates  and than run in last loop to verify that answer we got is right
+
+class Solution {
+public:
+    vector<int> majorityElement(vector<int>& nums) {
+        int n = nums.size();
+        int a = 0, b = 1, ca = 0, cb = 0;  // Initialize a and b to different values
+        vector<int> result;
+
+        if(nums.size() < 3) {
+            sort(nums.begin(), nums.end());
+            nums.erase(unique(nums.begin(), nums.end()), nums.end());
+            return nums;
+        }
+
+        for(int x : nums) {
+            if(x == a) {
+                ca++;
+            } else if(x == b) {
+                cb++;
+            } else if(ca == 0) {
+                a = x;
+                ca = 1;
+            } else if(cb == 0) {
+                b = x;
+                cb = 1;
+            } else {
+                ca--;
+                cb--;
+            }
+        }
+
+        ca = cb = 0;
+        for (int num : nums) {
+            if (num == a) ca++;
+            else if (num == b) cb++;
+        }
+
+        // Check if candidates appear more than n/3 times
+        if (ca > n/3) result.push_back(a);
+        if (cb > n/3) result.push_back(b);
+
+        return result;
+    }
+};
 
 larget Subarray with sum = 0 (running sum niklate jao zero h to check max ,also map me index aur uska running sum store karo same aaya to window me zero sum h)
 
@@ -146,6 +229,8 @@ First and last occurance of element in sorted array
 
 Do binary search when you get number go for either side to get first and last
 
+--> Rotated sorted array etc (we discard based on endElements) , peak element (array is unsorted so we rely only on neighbours)
+
 Number of times sorted array is rotated : ex 5 1 2 3 4 is rotated once 
 
 number of times array rotated is index of minimum element(pivot)
@@ -183,6 +268,10 @@ as its higher than arr[mid] (so no smaller elements force us to return left).
 
 
 Allocate minimum no of pages (https://www.youtube.com/watch?v=2JSQIhPcHQg&list=PL_z_8CaSLPWeYfhtuKHj-9MpYb6XQJ_f2&index=21)/ Similar concept in Aggressive cows
+
+Do BS between 0 and sum of all pages 
+Get mid check if that is max a student can read are number of students getting books is equal to all students if yes than that is valid combo we recur for 
+better answer in each case
 
 https://leetcode.com/problems/split-array-largest-sum/ (ALl these are based on concept of maximising min / minimising max which is always BS on answer)
 
@@ -225,11 +314,6 @@ public:
         return res;
     }
 };
-
-
-Do BS between 0 and sum of all pages 
-Get mid check if that is max a student can read are number of students getting books is equal to all students if yes than that is valid combo we recur for 
-better answer in each case
 
 
 Median in a row wise sorted matrix (note it is not sorted column wise)
@@ -327,7 +411,7 @@ class Solution {
 
 
 
-Median of 2 sorted arrays (https://www.youtube.com/watch?v=jDJuW7tSxio)
+Median of 2 sorted arrays (https://www.youtube.com/watch?v=jDJuW7tSxio) / prefer watching code story with mik one instead
 
 
 Finding the Correct Partition: Let’s say we partition arr1 at index i and arr2 at index j. The total number of elements in the left part of both arrays will 
@@ -346,9 +430,137 @@ This condition ensures that the partition is correct.
 
 Binary Search on Smaller Array: We perform binary search on the smaller array (to keep the time complexity low). At each step of the binary search:
 
+l = 0 h = length of smaller array 
+
+Px (elements from smaller array) is mid , Py elements from bigger array is (m + n + 1)/2 - Px
+
 We compute the partition indices for both arrays.
 We check if the partition condition is satisfied.
 If the condition is satisfied, we compute the median.
 If not, we adjust the binary search range (move left or right).
+
+
+719. https://leetcode.com/problems/find-k-th-smallest-pair-distance/description/ (checks multiple array concepts watch code story video for idea)
+
+
+Quick sort (https://www.youtube.com/watch?v=4eEWCQveqk8)
+
+Inplace algo all changes are done in original array itself
+
+basic idea is to choose any element as pivot (like last first etc)
+partition array based on it (meaning all elements less than it are at one side and all elemets more than it are at other side)
+Repeat the process
+
+
+Quicksort(arr, low, high) {
+    if(low > high) return;
+
+    int pi = partitioning(arr, low, high);
+    Quicksort(arr, low, pi-1);
+    Quicksort(arr, pi+1, high);
+}
+
+int partitioning (int arr[], int low, int high) {
+        int pivot      = arr[high];
+        int pivotIndex = low;
+        
+        for(int i = low; i < high; i++) {
+            if(arr[i] <= pivot) {
+                swap(arr[i], arr[pivotIndex]);
+                pivotIndex++;
+            }
+        }
+        
+        swap(arr[pivotIndex], arr[high]);
+        
+        return pivotIndex;
+    }
+
+
+** Minimum swaps to make array sorted (https://www.youtube.com/watch?v=wwwd_tvfQGE) ****
+
+ int countSwaps(vector<int>& values) {
+        int swaps = 0;
+        vector<int> sorted = values;
+        sort(sorted.begin(), sorted.end());
+
+        unordered_map<int, int> mp;
+        for (int i = 0; i < values.size(); i++) {
+            mp[values[i]] = i;
+        }
+
+        for (int i = 0; i < values.size(); i++) {
+            if (values[i] != sorted[i]) {
+                swaps++;
+                int existingPos = mp[sorted[i]];
+                mp[values[i]] = existingPos;
+                mp[sorted[i]] = i;
+                swap(values[existingPos], values[i]);
+            }
+        }
+        return swaps;
+    }
+
+
+PigeonHole principal (can be in maths)
+
+If we have n holes and n+1 pigeons atleast one hole will have 2 pigeons etc
+
+used in https://leetcode.com/problems/maximum-gap/
+
+Given an integer array nums, return the maximum difference between two successive elements in its sorted form. 
+If the array contains less than two elements, return 0. (in linear time)
+
+class Solution {
+public:
+    int maximumGap(vector<int>& nums) {
+        int n = nums.size();
+        if (n < 2) return 0;
+
+        int min_val = *min_element(nums.begin(), nums.end());
+        int max_val = *max_element(nums.begin(), nums.end());
+
+        int gap = (max_val - min_val) / (n - 1);
+
+        int bucket_count = (max_val - min_val) / gap  + 1;
+        vector<pair<int, int>> buckets(bucket_count, {INT_MAX, INT_MIN});
+
+        for (int num : nums) {
+            int index = (num - min_val) / gap;
+            buckets[index].first = min(buckets[index].first, num);
+            buckets[index].second = max(buckets[index].second, num);
+        }
+
+        int max_gap = 0;
+        int prev_max = min_val;
+
+        for (auto& bucket : buckets) {
+            if (bucket.first == INT_MAX) continue;
+            max_gap = max(max_gap, bucket.first - prev_max);
+            prev_max = bucket.second;
+        }
+
+        return max_gap;
+    }
+};
+
+Given an array find out if there exists a subarray whose sum is divisable by N (size of array)
+
+ex 1 3 2 4 5  answer is yes (1 3 2 4 or 3 2)
+
+use prefix sum array and keep count of sum%N in a map , if same number appears we return true
+we can show same number will come (why : because for a array of size N possible unqiue remainder is N only ex : for N = 5 it is 0 1 2 3 4 so it will repeat)
+
+If we have 2 find number of subarray with sum = k we can use maps and store frequency 
+
+We can use nC2 for all combos (n is frequency of repeating mod)
+ex if 1 repeats 3 times and 0 2 times --> 3C2 + 2C2 and so on 
+nC2 --> n * n-1/ 2
+
+
+Given N 64 bit integers such that any 2 successive numbers differ by exactly 1 bit , find out if there exists 4 successive numbers whose xor is 0
+
+if N >= 130 answer is yes (due to pigeonhole understanding not clear saw aryan mittal video)
+else i will bruteforce (basically o(n4) using 4 loops) 
 
 
