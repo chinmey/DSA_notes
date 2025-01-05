@@ -124,3 +124,40 @@ public:
         return ans;
     }
 };
+
+
+2543. Check if Point Is Reachable
+
+we are 1,1 we need to reach some tx, ty
+
+
+In one step, you can move from point (x, y) to any one of the following points:
+
+(x, y - x)
+(x - y, y)
+(2 * x, y)
+(x, 2 * y)
+
+
+ bool isReachable(int targetX, int targetY) {
+        /**
+        https://www.youtube.com/watch?v=KiVZRzPfKnQ
+        This is the initution to the problem 
+        since we dont need minimum we just need to know if we can reach or not 
+
+        (2x, y) --> (2^n*x, y)
+        (x, 2y) ---> (x, 2^m*y)
+
+        we can merge this into one (2^n*x, 2^m*y)
+
+        now gcd of this will always be some power of 2 (since both are power of 2)
+
+        also even if subtract x or y the number is still always divisable by some power of 2 
+
+        so from 1,1 we can reach x, y if and only if their gcd is some power of 2 
+        **/
+
+        int gcd = __gcd(targetX, targetY);
+
+        return (gcd & (gcd - 1)) == 0;
+}

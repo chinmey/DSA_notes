@@ -1,0 +1,60 @@
+LRU cache : done using map(because we need O(1) get and put) and duoble linked list (for maintaining order and determining what to evict)
+
+Video -- https://www.youtube.com/watch?v=Hi5obC_CwIU
+
+Why we need iterator in map ? because i want to know without traversing list that it exists or not
+
+Why we use DLL and not SLL ? So map would give me ref to node , now i need to have ref to node behind me so that it can point to node in front of me ,
+essentially deleting me and i can move to front for that it is easier if i use DLL
+
+What exactly is refresh doing ? Read above point , basically it removes existing key from list and puts it in front 
+
+class LRUCache {
+    list<int> lruList; // Doubly linked list to store only keys
+    unordered_map<int, pair<int, list<int>::iterator>> cacheMap; // Map: key -> {value, iterator to lruList}
+    int capacity;
+
+    // Move the accessed key to the front of the list (most recently used)
+    void refreshPosition(int key) {
+        lruList.erase(cacheMap[key].second);  // Remove old position
+        lruList.push_front(key);              // Add key to front
+        cacheMap[key].second = lruList.begin(); // Update iterator in map
+    }
+
+public:
+    LRUCache(int capacity) {
+        this->capacity = capacity;
+    }
+
+    int get(int key) {
+        if (cacheMap.find(key) != cacheMap.end()) {
+            // Key found, refresh its position and return the value
+            refreshPosition(key);
+            return cacheMap[key].first; // Return the value associated with the key
+        }
+        return -1; // Key not found
+    }
+
+    void put(int key, int value) {
+        if (cacheMap.find(key) != cacheMap.end()) {
+            // Key already exists, update its value and refresh position
+            cacheMap[key].first = value;
+            refreshPosition(key);
+        } else {
+            // Key does not exist, add new key-value pair
+            lruList.push_front(key); // Add key to front
+            cacheMap[key] = {value, lruList.begin()}; // Store value and iterator to the list
+
+            if (cacheMap.size() > capacity) {
+                // Evict the least recently used item (back of the list)
+                int lruKey = lruList.back();
+                cacheMap.erase(lruKey);  // Remove from map
+                lruList.pop_back();      // Remove from list
+            }
+        }
+    }
+};
+
+
+432. All O`one Data Structure (https://www.youtube.com/watch?v=GJJ2OWKHADs)
+

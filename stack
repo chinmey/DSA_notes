@@ -253,3 +253,17 @@ Celebrity problem
 
 On the graph representation, a celebrity is a person who has exactly n - 1 directed edges going in (everybody knows them) 
 and 0 edges going out (they know nobody).
+
+Practice good problems 
+
+2751. Robot Collisions
+
+Think about how R moving and L moving interact
+
+1249. Minimum Remove to Make Valid Parentheses
+
+1717. Maximum Score From Removing Substrings (https://www.youtube.com/watch?v=WTAjAcjSTqM&list=PLpIkg8OmuX-IA6_cJxfTYCmnv1jkqox47&index=19)
+
+2 pass solution --> with stacks easy 
+
+2 pass without stack uses cool technique (of using a pointer for reading and one for writing)

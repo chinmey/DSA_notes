@@ -1,3 +1,85 @@
+*** Top-down to optimized bottom up technique ****
+
+https://www.youtube.com/watch?v=-uQGzhYj8BQ&list=PLgUwDviBIf0qUlt5H_kiKYaNSqJ81PMMY&index=38 --> watch this to understand how to convert top-down to bottom-up
+
+https://takeuforward.org/data-structure/buy-and-sell-stock-iii-dp-37/
+
+
+Problem : https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/
+
+
+Top-down code 
+
+ int solve(vector<int> &prices, int idx, bool currentlyBought, int k) {
+        if(idx >= prices.size() || k <= 0) return 0;
+
+        if(dp[idx][currentlyBought][k] != -1) return dp[idx][currentlyBought][k];
+
+        if(currentlyBought) {
+            int do_nothing = solve(prices, idx+1, true, k);
+            int sell = prices[idx] + solve(prices, idx+1, false, k-1);
+
+            return dp[idx][currentlyBought][k] = max(do_nothing, sell);
+        }
+
+        int do_nothing = solve(prices, idx+1, false, k);
+        int buy = -prices[idx] + solve(prices, idx+1, true, k);
+
+        return dp[idx][currentlyBought][k] = max(do_nothing, buy);
+}
+
+return solve(prices, 0, 0, 2);
+
+
+For bottom-up we handle base same as before 
+Now, traverse the array in the opposite direction of that of the memoization technique. We will start from ind = n-1 -> ind =0.
+
+
+vector<vector<vector<int>>> dp(n + 1, vector<vector<int>>(2, vector<int>(3, 0)));
+
+        for(int idx = n-1; idx >=0; idx--) {
+            for(int currentlyBought = 0; currentlyBought <=1 ; currentlyBought++) {
+                for(int k = 1; k <=2 ; k++) {
+                    if(currentlyBought) {
+                        dp[idx][currentlyBought][k] = max(dp[idx+1][1][k], prices[idx] + dp[idx+1][0][k-1]);
+                    } else {
+                        dp[idx][currentlyBought][k] = max(dp[idx+1][0][k], -prices[idx] + dp[idx+1][1][k]);
+                    }
+                }
+            }
+        }
+
+        return dp[0][0][2];
+
+
+We can optimize it further since idx at best depends on idx+1 so we dont need to store whole array 
+
+int maxProfit(vector<int>& prices) {
+    int n = prices.size();
+    if (n == 0) return 0;
+
+    vector<vector<int>> curr(2, vector<int>(3, 0)); // Current day's DP states
+    vector<vector<int>> next(2, vector<int>(3, 0)); // Next day's DP states
+
+    for (int idx = n - 1; idx >= 0; idx--) {
+        for (int currentlyBought = 0; currentlyBought <= 1; currentlyBought++) {
+            for (int k = 1; k <= 2; k++) {
+                if (currentlyBought) {
+                    curr[currentlyBought][k] = max(next[1][k], prices[idx] + next[0][k - 1]);
+                } else {
+                    curr[currentlyBought][k] = max(next[0][k], -prices[idx] + next[1][k]);
+                }
+            }
+        }
+        next = curr; // Update next day's states to current day's states
+    }
+
+    return curr[0][2]; // Max profit starting at day 0 with no stock and 2 transactions allowed
+}
+
+
+
+
 *** 0/1 Knapsack and its types ***
 
 
@@ -219,6 +301,8 @@ Count number of subset with given diff (1 1  2 3 and diff is 1) : This is actual
 count of subrray with sum as 4 (basically subset sum just put + instead of ||)
 
 Target sum is this problem only in twisted way
+
+https://leetcode.com/problems/minimum-difficulty-of-a-job-schedule/description/ --> Same format but twisted
 
 
 **Unbounded Knapsack ****
@@ -558,6 +642,10 @@ int lengthOfLIS(vector<int>& nums) {
     // The size of the 'piles' vector is the length of the longest increasing subsequence
     return piles.size();
 }
+
+This is used in problem russian doll : https://leetcode.com/problems/russian-doll-envelopes/ 
+
+Here we sort by one parameter and apply lis on other
 
 The lower_bound function returns an iterator to the first element in the range [first, last) that is greater than or equal to value
 
@@ -964,6 +1052,38 @@ If the second character is '*', it can represent any valid number from 0-9, depe
 
 
 
+10. Regular expression matching
+
+
+The key idea is x* --> nothing, x, xx, xxx etc so we need to handle this carefully 
+
+whenever * comes either we dont take it that is (move to i, j+2) or we need to incrementally take it if precending character matched one by one (so i+1, j)
+
+bool solve(int i, int j) {
+        if(i >= text.size() && j >= pattern.size()) return true;
+
+        if(j >= pattern.size()) return false;
+
+        if(dp[i][j] != -1) return dp[i][j];
+
+        bool match = i < text.size() && (text[i] == pattern[j] || pattern[j] == '.');
+
+        if(j + 1 < pattern.size() && pattern[j+1] == '*') {
+            bool leave = solve(i, j+2);
+            bool take = match && solve(i+1, j);
+
+            return dp[i][j] = leave || take;
+        }
+
+        if(match) {
+            return dp[i][j] = solve(i+1, j+1);
+        }
+
+        return dp[i][j] = false;
+    }
+
+
+
 **** Cherry-pickup problems (DP on grids with 2 entries) **************
 
 
@@ -1093,7 +1213,6 @@ int solve(vector<vector<int>>& grid, int row1, int col1, int row2, int col2, int
 
 Backtracking is also a option where we explore all paths to reach end first and corresponding to it all paths to reach start again
 
-
 *** Digit dp *** (https://www.youtube.com/watch?v=cthI6e5KGgg&list=PLps5s7uQvz8kSh36EwW4_o1Qqjfm2vA1r&index=1)
 
 Used in problems where we are given a range and asked questions around digits of same.
@@ -1141,6 +1260,32 @@ int solve(string &s, int idx, int tight, int cnt) {
     
     return dp[idx][tight][cnt] = ans;
 }
+
+ANother case is of leading zero we may need to be handle those example same problem but with d = 0 instead of 3 than we would need to handle that 
+sample code would be 
+
+int count(int idx, string &s, bool tight, int cnt, int d, bool isLeadingZero) {
+        if (idx == s.size()) return cnt;
+
+        if (dp[idx][tight][cnt] != -1 && !isLeadingZero) return dp[idx][tight][cnt];
+
+        int limit = tight ? s[idx] - '0' : 9;
+        int ans = 0;
+
+        for (int i = 0; i <= limit; i++) {
+            // Check if the current digit is still part of leading zeros
+            bool nextLeadingZero = isLeadingZero && (i == 0);
+            // Count `d` only if it's not a leading zero
+            int updateCnt = cnt + ((i == d && !nextLeadingZero) ? 1 : 0);
+
+            ans += count(idx + 1, s, tight && (i == limit), updateCnt, d, nextLeadingZero); // this is way to write above condition without if else
+        }
+
+        if (!isLeadingZero) {
+            dp[idx][tight][cnt] = ans;
+        }
+        return ans;
+    }
 
 Sample problem : 233. Number of digit One
 
@@ -1265,6 +1410,8 @@ Base would be if we reach end of number if the sum so far of digits is prime we 
 
 let say number is till 10^8 so our third parameter in dp would be till 72 (all 9s)
 
+
+Interesting problem : https://leetcode.com/problems/number-of-ways-of-cutting-a-pizza/description/ (watch code story with mik)
 
 
 

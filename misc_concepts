@@ -789,6 +789,113 @@ The idea is to a post order traversal type thing where we first calculate childs
 if at any point a node sum + its child sum becomes divisable by k we return 0 to parent and increase components to simulate cutting tree off
 
 
+689. Maximum sum of 3 overlaps (https://www.youtube.com/watch?v=aGmHF7Rs0R8)
+
+The idea is again whether to take or not take a indices we have this choice only which we need to make 
+
+class Solution {
+private:
+    int t[20001][4];
+
+    int helper(vector<int>& sums, int k, int idx, int rem) {
+        if (rem == 0) return 0;
+        if (idx >= sums.size()) {
+            return INT_MIN;
+        }
+
+        if (t[idx][rem] != -1) {
+            return t[idx][rem];
+        }
+
+        int take = sums[idx] + helper(sums, k, idx + k, rem - 1); // if we take we move to next subarray
+        int not_take = helper(sums, k, idx + 1, rem);
+
+        t[idx][rem] = max(take, not_take);
+        return t[idx][rem];
+    }
+
+    void solve(vector<int>& sums, int k, int idx, int rem, vector<int>& indices) {
+        if (rem == 0) return;
+        if (idx >= sums.size()) return;
+
+        int take     = sums[idx] + helper(sums, k, idx + k, rem - 1);
+        int not_take = helper(sums, k, idx + 1, rem);
+
+        if (take >= not_take) {
+            indices.push_back(idx);
+            solve(sums, k, idx + k, rem - 1, indices);
+        } else {
+            solve(sums, k, idx + 1, rem, indices);
+        }
+    }
+
+public:
+    vector<int> maxSumOfThreeSubarrays(vector<int>& nums, int k) {
+        memset(t, -1, sizeof(t));
+
+        int n = nums.size() - k + 1;
+
+        vector<int> sums;
+        int windowSum = 0;
+        int i = 0, j = 0;
+
+        while (j < nums.size()) {
+            windowSum += nums[j];
+            
+            if (j - i + 1 == k) {
+                sums.push_back(windowSum);
+                windowSum -= nums[i]; 
+                i++;
+            }
+            j++;
+        }
+
+        vector<int> indices;
+
+        solve(sums, k, 0, 3, indices);
+
+        return indices;
+    }
+};
+
+
+790. Domino Tiling 
+
+class Solution {
+public:
+    int M = 1000000007;
+    int t[1001];
+    int solve(int n) {
+         if(n == 1 || n == 2)
+            return n;
+        if(n == 3)
+            return 5;
+        
+        if(t[n] != -1)
+            return t[n];
+        
+        return t[n] = (2*solve(n-1)%M + solve(n-3)%M)%M;
+    }
+
+    int numTilings(int n) {
+        /**
+        https://www.youtube.com/watch?v=Iwmn-gFL3c0&list=PLpIkg8OmuX-L_QqcKB5abYynQbonaNcq3&index=12
+
+        f(N) = f(N-1) + f(N-2) + 2f(N-3) + 2f(N-4) ........ 2f(0)
+        f(N-1) = f(N-2) + f(N-3) + 2f(N-4) ......
+
+        f(N) - f(N-1) = f(N-1) + f(N-3)
+
+        f(N) = 2f(N-1) + f(N-3);
+        **/
+        memset(t, -1, sizeof(t));
+        return solve(n);
+
+
+    }
+};
+
+
 >>> Did not remember first time 
 peak element/ rotated sorted list
 string tokensition

@@ -26,6 +26,25 @@ either follow below or follow our natural inituition of giving work to child thi
         return newHead;
     }
 
+Natural inituition
+
+ ListNode* newHead;
+    ListNode* solve(ListNode* head) {
+
+        if(head->next == NULL) {
+            newHead = head;
+            return head;
+
+        }
+
+        ListNode* reverse = solve(head->next);
+
+        reverse->next = head;
+        head->next = NULL;
+
+        return head;
+    }
+
 
 Middle of linked list/ Cycle in linked list :: slow pointer + fast pointer
 

@@ -68,6 +68,8 @@ of left element takes it and sort rest of array
 //swap the left element in the pair with the smallest element greater than that to its right
 //then reverse the sub array from the point of swap(after the left element in the pair) till the end
 
+https://leetcode.com/problems/longest-repeating-character-replacement/ (https://www.youtube.com/watch?v=_eNhaDCr6P0) --> Good sliding window problem
+
 
 Repeating and missing number in array (explain : https://www.youtube.com/watch?v=pnx5JA9LNM4&list=PL-Jc9J83PIiFJRioti3ZV7QabwoJK6eKe&index=9)
 
@@ -233,7 +235,50 @@ Do binary search when you get number go for either side to get first and last
 
 Number of times sorted array is rotated : ex 5 1 2 3 4 is rotated once 
 
+Min in rotated sorted array
+class Solution {
+public:
+    int findMin(vector<int>& arr) {
+        int left = 0;
+        int right = arr.size() - 1;
+
+        while(left < right) {
+            int mid = left + (right - left)/2;
+
+            if(arr[mid] > arr[right]) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+
+        return arr[left];
+    }
+};
+
 number of times array rotated is index of minimum element(pivot)
+
+class Solution {
+public:
+    int findMin(vector<int>& arr) {
+        int left = 0;
+        int right = arr.size() - 1;
+
+        while(left <= right) {
+            int mid = left + (right - left)/2;
+
+            if(arr[mid] > arr[right]) {
+                left = mid + 1;
+            } else if ( arr[mid] < arr[right]){
+                right = mid;
+            } else {
+                right--;
+            }
+        }
+
+        return arr[left];
+    }
+};
 
 This follows the Initution of BS where we need to discard a side based on our selection(mid), here the pivot element would be one which is lesser than both 
 of its neighbor, if this is not the case we need to check if arr[m] > arr[high] because one half of array would be sorted and other half would be unsorted , 
@@ -479,6 +524,47 @@ int partitioning (int arr[], int low, int high) {
 
 ** Minimum swaps to make array sorted (https://www.youtube.com/watch?v=wwwd_tvfQGE) ****
 
+Simple version 
+
+class Solution {
+  public:
+    // Function to find the minimum number of swaps required to sort the array.
+    int findIndex(vector<int> &arr, int n, int x) {
+        for(int i=0; i<n; i++) {
+            if(arr[i] == x) return i;
+        }
+        
+        return -1;
+    }
+    int minSwaps(vector<int>& arr) {
+        int n = arr.size();
+        
+        vector<int> sorted = arr;
+        
+        sort(sorted.begin(), sorted.end());
+        
+        int swaps = 0;
+        
+        int i=0;
+        
+        while(i < n) {
+            if(arr[i] == sorted[i]) {
+                i++;
+                continue;
+            }
+            
+            int find = findIndex(arr, n, sorted[i]);
+            
+            swap(arr[i], arr[find]);
+            swaps++;
+        }
+        
+        return swaps;
+    }
+};
+
+FindIndex is time consuming we can simply store that in a map to make computations faster
+
  int countSwaps(vector<int>& values) {
         int swaps = 0;
         vector<int> sorted = values;
@@ -494,7 +580,7 @@ int partitioning (int arr[], int low, int high) {
                 swaps++;
                 int existingPos = mp[sorted[i]];
                 mp[values[i]] = existingPos;
-                mp[sorted[i]] = i;
+               // mp[sorted[i]] = i; --> not needed strictly since we dont come back to this 
                 swap(values[existingPos], values[i]);
             }
         }

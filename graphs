@@ -227,6 +227,7 @@ BFS but with extra condition of atmost k relaxation done (looks like Dijkstra bu
         return dist[dst];
     }
 
+Hidden BFS : https://leetcode.com/problems/open-the-lock/description/
 
 Initution of Dijkstra
 
@@ -336,6 +337,8 @@ int new_diff = max(diff, abs(h[x][y] - h[nx][ny])) --> is key for dijkstra with 
 
 Ex for swim in rising water it changes to  int new_time = max(diff, grid[nx][ny]); rest code stays same
 
+Good dijkstra problem : https://leetcode.com/problems/second-minimum-time-to-reach-destination/description/
+
 Hidden dijkstra problem : https://leetcode.com/problems/digit-operations-to-make-two-integers-equal/description/
 
 
@@ -438,6 +441,77 @@ Check for Cycles: If the number of processed nodes is equal to the number of ver
 Otherwise, the graph contains a cycle (since there are nodes with non-zero indegree left).
 
 
+**** Bidirectional BFS (https://leetcode.com/problems/minimum-knight-moves/description/)***
+
+Specially used in infinite board/grid search type problems (it reduces search space to half so time complexity is N/2 which is still linear)
+
+Knight tour on infinity board 
+
+These are solved optimally by Bidirectional BFS we maintain 2 queue one from src and one from dest and we always do exploration from queue with lesser size
+
+int bidirectionalBFS(Point start, Point target) {
+    // Initialize two queues and visited sets
+    queue<Point> q1, q2;
+    unordered_set<Point> visited1, visited2;
+
+    // Push start and target points into respective queues
+    q1.push(start);
+    q2.push(target);
+    visited1.insert(start);
+    visited2.insert(target);
+
+    int steps = 0;
+
+    while (!q1.empty() && !q2.empty()) {
+        // Always expand the smaller queue
+        if (q1.size() > q2.size()) {
+            swap(q1, q2);
+            swap(visited1, visited2);
+        }
+
+        int size = q1.size();
+        for (int i = 0; i < size; i++) {
+            Point current = q1.front();
+            q1.pop();
+
+            // Check if the current node is in the other visited set
+            if (visited2.count(current)) {
+                return steps; // Found the meeting point
+            }
+
+            // Explore neighbors
+            for (Point neighbor : getNeighbors(current)) {
+                if (visited1.count(neighbor)) continue;
+
+                visited1.insert(neighbor);
+                q1.push(neighbor);
+            }
+        }
+
+        steps++;
+    }
+
+    return -1; // If no path exists
+}
+
+
+1036. Escape a Large Maze (https://leetcode.com/problems/escape-a-large-maze/description/)
+
+2 points in inifnite grid (with blocks) find out if we can reach from a to b or not.
+
+If we do our standard BFS since grid is infinite its complexity is also infinite so we need to come up with something else.
+Ref : https://www.youtube.com/watch?v=bZqIfxD902c
+
+The no of blocked cells is given it is (N) we can only not reach if these completely surrond s or t 
+
+We need to find a shape with perimeter N with max area (it is a right triangle with hypotenuse being made by block and other two sides by grid boundaries)
+This would be max because if we consider any other shape like square or circle we would need to waste blocks in making their boundary thus reducing area
+
+Area : 200 blocks + 199 + 198 ...1 --> n(n-1)/2 blcoks or n2/2 blocks 
+
+SO we will do a normal BFS and if at point our BFS has travelled (size of visited set) is more than n2/2 blocks we can reach the target
+
+
 
 Union Find and the initution behind same (https://www.youtube.com/watch?v=L1T4AB8xBcw)
 
@@ -513,6 +587,11 @@ https://leetcode.com/problems/number-of-operations-to-make-network-connected/
 https://leetcode.com/problems/most-stones-removed-with-same-row-or-column/ (Good problem showing union in a cell)
 
 Union find on 2d grid (https://leetcode.com/problems/number-of-islands-ii/)
+
+Graph + Tree , check if given relations form a valid tree (https://leetcode.com/problems/validate-binary-tree-nodes/description/)
+> it should have no cycle (use Union find for it)
+> it should have only one root (use Union find for it)
+> it should have indegee of atmost 1 for all nodes 
 
 We usaully still use a 1-d array for parent rank etc , say we have n rows and m columns cell is x*m + y;
 
@@ -612,7 +691,7 @@ bool isBipartite(vector<vector<int>>& adj, int n) {
 Bellman Ford (Shortest path from single source to all vertices in weighted graph with negative edge weight)qa
 
 
-Says for a graph with V vertices if its is relaxed V-1 times we will get answer 
+Says for a graph with V vertices if its is relaxed V-1 times we will get answer for shortest path
 
 bool findShortestPaths(int n, vector<Edge>& edges, int src) {
         // Step 1: Initialize distances from src to all other vertices as INF
@@ -838,3 +917,79 @@ o/p of travelling salesman problem is minimum weight hamiltoninan cycle
         
         
     }
+
+Similar question :: 847. Shortest Path Visiting All Nodes
+
+
+*** Bridges in a graph **** (https://leetcode.com/problems/critical-connections-in-a-network/)
+
+
+A bridge is a edge if removed will make a undirected graph no longer connected 
+
+Initution :: If a edge is a part of cycle, than it will never be critical (because some other edge exists than only cycle happens)
+
+for the algo we do DFS and we will keep track of 2 things one is discovery_time of node (that is when it is seen first time) and second is minimum discovery time 
+among all its neigbours apart from its parent
+
+If low of a adjacency node is more than discovery time of parent three is a critical edge
+
+An edge (u, v) is a bridge if: low[v] > disc[u]
+
+There is no way for the subtree rooted at v to reach an ancestor of u (or u itself) except via the edge (u, v). 
+In other words, removing (u, v) would disconnect the graph.
+
+class Solution {
+public:
+    int timer = 1;
+    vector<vector<int>> ans;
+
+    void dfs(int v, vector<vector<int>> &adj, vector<int> &vis, vector<int> &discovery, 
+    vector<int> &low, int parent) {
+
+        vis[v] = 1;
+
+        discovery[v] = timer;
+        low[v] = timer;
+        timer++;
+
+        for(int neg : adj[v]) {
+            if(neg == parent) continue;
+
+            if(vis[neg] == 0) {
+                dfs(neg, adj, vis, discovery, low, v);
+
+                low[v] = min(low[v], low[neg]);
+
+                if(low[neg] > discovery[v]) {
+                    ans.push_back({neg, v});
+                }
+            } else {
+                 low[v] = min(low[v], low[neg]);
+            }
+        }
+
+    }
+
+    vector<vector<int>> criticalConnections(int n, vector<vector<int>>& con) {
+        vector<vector<int>> adj(n);
+
+        for(auto it : con) {
+            int a = it[0];
+            int b = it[1];
+
+            adj[a].push_back(b);
+            adj[b].push_back(a);
+        }
+
+        vector<int> vis(n, 0);
+        vector<int> discovery(n, 0);
+        vector<int> low(n, 0);
+
+        dfs(0, adj, vis, discovery, low, -1);
+        return ans;
+    }
+};
+
+**** Articulation point ****
+
+Same as bridge but with node 

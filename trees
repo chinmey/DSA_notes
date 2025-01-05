@@ -201,6 +201,13 @@ public:
 };
 
 
+Diameter of undirected graph 
+
+Property to remember is that if we do BFS from any node and find its farthest node it will always be one end of diameter of graph , so doing BFS from this 
+will find actual diameter
+
+This does not hold true for tree since tree is directed 
+
 LCA of 2 nodes in tree
 
 One way is to get path for root->node of both and see where it differes 
@@ -237,24 +244,24 @@ Path sum , given a sum find out if there exists any path between root->leaf whic
 
 One way is to get all path sums and see if one matches , better is this 
 
-bool hasPathSum(TreeNode* root, int targetSum) {
-    // Base case: If the tree is empty, there's no path, so return false.
-    if (root == nullptr) {
-        return false;
+class Solution {
+public:
+    bool hasPathSum(TreeNode* root, int targetSum) {
+        // Base case: if the root is null, return false
+        if (root == nullptr) {
+            return false;
+        }
+        
+        // If it's a leaf node and its value equals the remaining sum, we found a valid path
+        if (root->left == nullptr && root->right == nullptr && root->val == targetSum) {
+            return true;
+        }
+        
+        // Recursively check left and right subtrees with updated targetSum
+        return hasPathSum(root->left, targetSum - root->val) || 
+               hasPathSum(root->right, targetSum - root->val);
     }
-
-    // Subtract the current node's value from the target sum.
-    targetSum -= root->val;
-
-    // If we reach a leaf node (both left and right are null), check if the target sum is 0.
-    if (root->left == nullptr && root->right == nullptr) {
-        return targetSum == 0;
-    }
-
-    // Recursively check the left and right subtrees.
-    // If either subtree has a path that results in the target sum, return true.
-    return hasPathSum(root->left, targetSum) || hasPathSum(root->right, targetSum);
-}
+};
 
 Boundary traversal of tree 
 
@@ -371,6 +378,13 @@ public:
 
 For postorder and inorder start traversing postorder array from reverse and build right tree first
 
+But why we create right tree first ?
+
+Reading Postorder from End: We process the postorder traversal in reverse from (end to start). This means we encounter elements in the order: 
+root, right subtree, left subtree.
+
+Alignment with Postorder: By creating the right subtree first, we align our tree construction with how were reading the postorder traversal from the end.
+
 
 Convert tree to DLL (watch codeStoryWithMIk binary tree to sorted linked list recursion video for inituition just follow same)
 
@@ -452,9 +466,9 @@ public:
         int left_extra_candy_left = solve(root->left);
         int right_extra_candy_left = solve(root->right);
 
-        moves = moves + abs(left_extra_candy_left) + abs(right_extra_candy_left); // abs because both direction movement is allowed
+        moves = moves + abs(left_extra_candy_left) + abs(right_extra_candy_left); // abs because both direction movement is allowed and we need to calc movemet
 
-        int total_candies_i_have = left_extra_candy_left + right_extra_candy_left + root->val;
+        int total_candies_i_have = left_extra_candy_left + right_extra_candy_left + root->val; // no absolute here since we need value of surplus
 
         return total_candies_i_have - 1;
     }
@@ -474,20 +488,19 @@ public:
     int count =0;
     int helper(TreeNode* root)
     {
-        if(root == NULL) return 1;
+        if(root == NULL) return 1; // i am covered
         
         int l =helper(root->left);
         int r=helper(root->right);
         
-        if(l == -1 || r == -1) {
+        if(l == -1 || r == -1) { // if either of my child need camera i will give
             count++;
             return 0;
         }
         
-        if(l == 0 || r== 0) return 1;
+        if(l == 0 || r== 0) return 1; // if both did not need camera and either have camera means i am covered
         
-        return -1;
-        // if(l==1 && r == 1)
+        return -1; // i need camera
         
     }
     int minCameraCover(TreeNode* root) {
@@ -888,17 +901,20 @@ TreeNode* buildTree(std::vector<int>& preorder, int& index, int minVal, int maxV
             return nullptr;
         }
         
-        // Create the root node with the current value
-        TreeNode* root = new TreeNode(preorder[index]);
-        index++; // Move to the next element
-        
-        // Recursively build the left and right subtrees
-        root->left = buildTree(preorder, index, minVal, root->val); // Restrict max for left subtree
-        root->right = buildTree(preorder, index, root->val, maxVal); // Restrict min for right subtree
-        
-        return root; // Return the root of the subtree
+        int val = preorder[index];
+        TreeNode* root = new TreeNode(val);
+        index++;
+
+        root->left = solve(preorder, left, val - 1, index);
+        root->right = solve(preorder, val + 1, right, index);
+
+        return root;
  }
 
+
+https://leetcode.com/problems/sum-of-distances-in-tree/ 
+
+Answer of child = Answer of parent + no of nodes connected to child - (rest nodes)
 
 
  *** Segment Trees ****
@@ -921,6 +937,7 @@ Build tree is easy we rely on recursion to build left and right and i just creat
 vector<int> segTree(4n, -1); // take 4n always to avoid overflow etc
 
 
+buildTree(0, 0, n - 1)
 Void buildTree(int index, int left, int right) {
 
 if(left == right) {
@@ -985,6 +1002,10 @@ int sum(int start, int end, int index, int left, int right) {
            sum(start, end, 2 * index + 2, mid + 1, right);
 }
 
+
+> For leetcode 308 which is same question but on a 2d matrix
+
+We create a vector of vector of segTree where each vector correspond to one row only
 
 Range update (instead of changing a index we change a range of indexes ) (If we follow point update for all it becomes logN for all numbers so NlogN)
 watch :: https://www.youtube.com/watch?v=FB_LjtTQwlw&list=PLpIkg8OmuX-K1qUIQToCllUO0UIKXt8dB&index=7
@@ -1070,6 +1091,21 @@ private:
         }
         maxVal = sortedNums.size(); // Set maxVal for the segment tree range
         return compressed;
+
+        or 
+
+        vector<int> sorted = nums;
+        sort(sorted.begin(), sorted.end());
+
+        map<int,int> mp;
+
+        for(int i =0; i<n; i++) {
+            sorted[i] = i;
+        }
+
+        for(int i=0; i<n; i++) {
+            nums[i] = mp[nums[i]];
+        }
     }
 
 public:
@@ -1091,6 +1127,74 @@ public:
 
             // Update the segment tree to include the current number
             updateTree(compressed[i], 1, 0, 0, maxVal - 1);
+        }
+
+        return result;
+    }
+};
+
+
+Good problem 
+
+Skyline problem : https://leetcode.com/problems/the-skyline-problem/description/
+
+There are other ways also to solve this problem (https://www.youtube.com/watch?v=POUMNJou4vc ref)
+
+here we use segmentTree our range is [0, righestBuilding] and we findMax of all intervals of whole range 
+
+class Solution {
+public:
+    void update(int left, int right, int segIndex, int index_update, int val, vector<int>& segTree) {
+        if (left == right) {
+            segTree[segIndex] = max(segTree[segIndex], val);
+            return;
+        }
+
+        int mid = (left + right) / 2;
+        if (index_update <= mid) {
+            update(left, mid, 2 * segIndex + 1, index_update, val, segTree);
+        } else {
+            update(mid + 1, right, 2 * segIndex + 2, index_update, val, segTree);
+        }
+
+        segTree[segIndex] = max(segTree[2 * segIndex + 1], segTree[2 * segIndex + 2]);
+    }
+
+    int query(int left, int right, int segIndex, int start, int end, vector<int>& segTree) {
+        if (left > end || right < start) return 0; 
+        if (left >= start && right <= end) return segTree[segIndex]; 
+
+        int mid = (left + right) / 2;
+        int leftMax = query(left, mid, 2 * segIndex + 1, start, end, segTree);
+        int rightMax = query(mid + 1, right, 2 * segIndex + 2, start, end, segTree);
+
+        return max(leftMax, rightMax);
+    }
+
+    vector<vector<int>> getSkyline(vector<vector<int>>& buildings) {
+        int maxCoordinate = 0;
+        for (const auto& building : buildings) {
+            maxCoordinate = max(maxCoordinate, building[1]);
+        }
+
+        vector<int> segTree(4 * maxCoordinate, 0);
+
+        for (const auto& building : buildings) {
+            int start = building[0], end = building[1], height = building[2];
+            for (int i = start; i < end; i++) {
+                update(0, maxCoordinate - 1, 0, i, height, segTree);
+            }
+        }
+
+        vector<vector<int>> result;
+        int prevHeight = 0;
+
+        for (int x = 0; x <= maxCoordinate; x++) {
+            int currHeight = query(0, maxCoordinate - 1, 0, x, x, segTree);
+            if (currHeight != prevHeight) {
+                result.push_back({x, currHeight});
+                prevHeight = currHeight;
+            }
         }
 
         return result;
