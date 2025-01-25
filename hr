@@ -1,0 +1,354 @@
+*** Tell me about yourself ***
+
+
+I'm Chinmey, a Software Development Engineer (SDE-2) at Amazon, with around 4 years of experience in designing and developing scalable and customer-centric solutions. In my current role, I've built highly scalable APIs capable of handling over 500,000 transactions per second, ensuring reliability and efficiency in mission-critical systems.
+
+Beyond backend development, I've also contributed to user-facing applications, creating Android apps for Fire TV that serve more than 600,000 daily users, enabling seamless entertainment experiences. My work has allowed me to blend technical expertise with customer obsession—ensuring scalability while keeping end-user satisfaction at the core of my solutions
+
+Extension to this why microsoft or why the switch from amazon ?
+
+What excites me about this opportunity at Microsoft is the chance to solve large-scale, impactful problems while collaborating with diverse team
+
+At this point in my career, I'm looking to diversify my experiences by exploring different work cultures and approaches to problem-solving
+
+
+*** Conflict with Manager ***
+
+*** Can also go in insist on high standards(Integ test) ***
+
+Question: Tell me about a time you had a conflict with your manager. (Integ test story)
+
+Situation:
+In my previous project at Amazon, we were developing a new system in Euclid. Since the features we were working on were not yet exposed to end users, my manager decided that integration test coverage was not a priority at the time. The rationale was that these were internal flows, so any changes would be propagated manually through MCM processes.
+
+Task:
+However, the new functionality was part of the same API that served production traffic. I was concerned that skipping integration tests for these changes increased the risk of inadvertently affecting production features. I wanted to ensure the stability of our production systems without slowing down the team’s development progress.
+
+Action:
+I voiced my concerns to my manager in a one-on-one meeting, highlighting the potential risk of code changes impacting production flows. While the manager initially maintained their stance due to time constraints, I suggested a middle ground: implementing lightweight integration tests specifically for the production-critical parts of the API while leaving the rest for later. Unfortunately, due to competing priorities, the proposal was not pursued immediately.
+
+Soon after, during a refactoring effort, an untested change impacted a production-critical flow, causing blank tiles to appear for end users, resulting in a Sev-2 incident. During the post-incident analysis, I worked collaboratively with my manager and the team to fix the issue, ensuring proper rollback and adding integration tests to prevent similar incidents.
+
+Result:
+The incident highlighted the importance of integration tests, and as a team, we established a policy to prioritize tests for any code interacting with production traffic, regardless of its immediate visibility to end users. This not only improved system stability but also built a stronger consensus on balancing speed and quality in future projects
+
+
+*** Insisted on high quality (EMR) ***
+
+Situation:
+Our system initially relied on a centralized EMR job for reducing data and populating the database. This setup ensured all services stayed in sync. However, we later transitioned to processing data on a per-stream basis to improve scalability and flexibility. While this transition brought several benefits, it also introduced the potential for discrepancies between the new per-stream flows and the EMR job.
+
+This was particularly concerning for the prelaunch workflow, where results from the new flow were compared against the old EMR-based flow asynchronously. Any discrepancies could lead to a drop in match rates, but some of these mismatches were acceptable as "false positives." However, without visibility into these discrepancies, it was challenging to measure the reliability of the new flow accurately.
+
+Task:
+I needed to ensure that we had a mechanism to detect and log mismatches between the EMR job and the new flow, without forcing EMR to remain the source of truth. The goal was to identify and classify "false positives" while providing insights to maintain confidence in the new flow's quality.
+
+Action:
+I proposed and implemented a Stream Syncer Service designed to monitor and log discrepancies rather than enforce strict consistency. Here's how I approached it:
+
+Discrepancy Detection:
+
+The syncer compared outputs from the new per-stream processing system against the EMR job for overlapping data sets.
+Discrepancies were identified using checksums or field-level comparisons.
+Classification of False Positives:
+
+Instead of treating all mismatches as failures, we categorized certain discrepancies as "false positives." For example, changes that resulted from legitimate differences in processing logic were marked as acceptable.
+These classifications were based on predefined business rules or metadata provided by the teams.
+Logging and Reporting:
+
+Every mismatch, including false positives, was logged in a central repository with details about the discrepancy (e.g., affected IDs, type of mismatch).
+The system generated reports summarizing match rates, highlighting acceptable mismatches (false positives) and true discrepancies.
+Integration with Prelaunch:
+
+For prelaunch, mismatched IDs flagged as "false positives" were excluded from impacting match rate metrics, ensuring fair evaluation of the new system.
+Result:
+This approach allowed us to transition to the new per-stream processing system without compromising quality. We gained visibility into discrepancies, understood the impact of false positives on match rates, and ensured that legitimate mismatches did not create noise in our metrics. Ultimately, this solution maintained confidence in the reliability of the new flow while enabling faster development cycles.
+
+
+*** Tell me about a time when you improved testing strategies or helped QA(Time travel testing) ***
+
+Situation:
+Our system began processing live airing data for items, but we encountered a significant challenge with testing and debugging. Often, the QA team would report an issue, but by the time developers looked into it, the airing in question had disappeared due to its transient nature. This made it impossible to reproduce or investigate the reported issues effectively.
+
+Task:
+I needed to devise a solution that allowed developers to analyze historical airing data even after the airing had disappeared from live systems. This required maintaining historical airing data in our database while ensuring efficient storage and query performance.
+
+Action:
+I proposed and implemented a time-travel override feature that enabled us to fetch airings from a specific past timestamp for debugging purposes. Here’s how I approached the solution:
+
+Data Storage Design:
+
+To store historical airings, I extended our Airings DB schema. Each airing was versioned with a valid_from and valid_to timestamp to represent its active time range.
+The schema used a slowly changing dimension Type 2 strategy, where new rows were added for updates or deletions instead of overwriting existing data. This preserved the complete history of changes.
+Choosing the Database:
+
+Given the need for high write throughput and efficient range queries, I selected Amazon DynamoDB (or another NoSQL DB like Cassandra) with the following keys:
+Partition Key: airing_id (or composite keys like item_id#airing_id).
+Sort Key: valid_from timestamp.
+DynamoDB’s TTL (time-to-live) feature was leveraged to automatically clean up old historical airings beyond a retention period (e.g., 30 days).
+
+
+*** Tell me about a problem you are proud of solving(Station airings) ***
+
+
+Situation:
+Our system processes station airings—data that represents all the videos scheduled to air on a particular station. However, we lacked a dedicated stream for station airings. The default solution was to iterate through the video airing objects, extract station information, and either append the video airing to an existing station entry in the database or create a new one.
+
+This approach caused two major issues:
+
+Inefficient Scaling: The size of station airings increased linearly with the number of video airings, leading to excessive and redundant database reads and writes.
+High Latency: Processing all station airings end-to-end (E2E) took up to 3 hours, which severely impacted system responsiveness.
+Task:
+I was tasked with reducing the processing latency and optimizing the system's efficiency by eliminating unnecessary database operations.
+
+Action:
+I proposed and implemented a new approach using RocksDB to handle station airings more efficiently. The key steps were:
+
+Reorganizing Data Structure:
+I modified the schema for station airings storage in RocksDB:
+
+Keys:
+MAP_PREFIX_stationId to index unique station IDs.
+stationId_endTime to associate station IDs with airings at specific end times.
+Values:
+Empty strings for the station ID index.
+Serialized Airing objects for the station and end-time keys.
+This structure allowed us to efficiently look up, group, and merge airings without redundant reads or writes.
+
+Implementing Efficient Write Operations:
+
+The populateStationAirings method ensured each station and airing was written to RocksDB in a write-once manner, reducing the need to overwrite or update existing records.
+Streamlining Reads with Merge Logic:
+
+The mergeAndLoadStationAirings method leveraged RocksDB prefix streams to batch-process and merge station airings.
+Airings for each station were grouped incrementally using helper functions, ensuring that only one read was performed per station ID prefix.
+Bulk Loading and Local State Management:
+
+I integrated the logic with a bulk loader (rocksBulkLoader) to efficiently merge RocksDB entries into local state while maintaining incremental progress tracking.
+Used lightweight in-memory structures like StreamEx to process grouped airings, improving both readability and performance.
+Result:
+The changes had a profound impact:
+
+Reduced Latency: The E2E processing time for station airings dropped from 3 hours to 20-30 minutes—an 85-90% improvement.
+Fewer Database Reads: The new data structure and prefix-based processing eliminated redundant reads, improving system scalability and reducing infrastructure costs.
+Improved Maintainability: The modular and reusable code made the logic easier to debug and extend for future enhancements.
+
+
+/**
+	      * Populates a RocksDB instance with station airings data from a GroupedAirings object.
+	      * This method creates two types of entries in the database:
+	      * 1. A mapping of station IDs to empty strings, serving as an index of unique stations.
+	      * 2. A mapping of station ID and end time combinations to individual Airing objects.
+	      * Data structure in RocksDB after population:
+	      * - Keys of the form "MAP_PREFIX_stationId" with empty string values for each unique station.
+	      * - Keys of the form "stationId_endTime" with Airing objects as values.
+	      *
+	      * @param groupedAirings A GroupedAirings object containing the airings data to be stored.
+	      *                       The airings are grouped by their end times.
+	      * @param rocksInstance The RocksDB instance where the data will be stored.
+	      *
+	      */
+	     public static void populateStationAirings(GroupedAirings groupedAirings, RocksInstance rocksInstance) {
+	         if (groupedAirings == null || groupedAirings.getAirings() == null) {
+	             return;
+	         }
+	 
+	         for (Map.Entry<Long, List<Airing>> entry : groupedAirings.getAirings().entrySet()) {
+	             Long endTime = entry.getKey();
+	             List<Airing> airingsList = entry.getValue();
+	             for (Airing airing : airingsList) {
+	                 String mergedStationId = airing.getMergedStationId();
+	                 if (mergedStationId != null) {
+	                     String mapStationVideoKey = AiringsUtils.createStationKey(mergedStationId);
+	                     rocksInstance.put(mapStationVideoKey, "");
+	 
+	                     String mapStationVideoTimeKey = AiringsUtils.createStationEndTimeKey(mergedStationId, endTime);
+	                     rocksInstance.put(mapStationVideoTimeKey, airing);
+	                 }
+	             }
+	         }
+	     }
+	 
+
+/**
+	      * Merges and loads station airings from a source RocksDB instance into the local state.
+	      * This method processes station airings data, merges them by station, and loads the result into the local state.
+	      * The method performs the following steps:
+	      * 1. Scans the source RocksDB for entries with the MAP_PREFIX.
+	      * 2. For each station found:
+	      *    a. Retrieves all airings for that station.
+	      *    b. Merges the airings into a single GroupedAirings object.
+	      * 3. Loads the merged GroupedAirings objects into the local state.
+	      *
+	      * @param source The source RocksDB instance containing the station airings data to be processed.
+	      */
+	     private void mergeAndLoadStationAirings(RocksInstance source) {
+	         BaseProgress loadAndMergeStationAiringsProgress = rocksBulkLoader.loadEntriesMultiMap(
+	                 localState, source.getPrefixStream(AiringsUtils.MAP_PREFIX), entry -> {
+	                 AtomicBoolean isFirstAiring = new AtomicBoolean(true);
+	                 AtomicReference<GroupedAirings> groupedAirings = new AtomicReference<>();
+	                 String mergedStationId = AiringsUtils.extractPartFromKey(entry.getKeyAsString(), 1);
+	 
+	                 // Processing each entry from the prefix stream
+	                 source.getPrefixStream(mergedStationId).forEach(sourceEntry -> {
+	                     String keyWithEndTime = sourceEntry.getKeyAsString();
+	                     Airing sourceAiring = sourceEntry.getValueAs(Airing.class);
+	                     String endTimeStr = AiringsUtils.extractPartFromKey(keyWithEndTime, 1);
+	                     Long endTime = Long.parseLong(endTimeStr);
+	 
+	                     if (isFirstAiring.getAndSet(false)) {
+	                         // Create a new GroupedAirings on the first encounter
+	                         groupedAirings.set(GroupedAiringsBuilder.createNewMergedStationAiring(
+	                                 endTime, sourceAiring, mergedStationId));
+	                     } else {
+	                         // Merge the new airing into the existing GroupedAirings
+	                         GroupedAiringsBuilder.mergeExistingStationAiring(groupedAirings.get(), endTime, sourceAiring);
+	                     }
+	                 });
+	 
+	                 GroupedAirings airings = groupedAirings.get();
+	                 if (airings != null) {
+	                     LOG.debug("loading grouped airings for merged station {} with size {}",
+	                             airings.getKey(), airings.getAirings().size());
+	                     return StreamEx.of(airings);
+	                 }
+	                 return StreamEx.empty();
+	             }, "StationAiringsToLocalState");
+	     }
+
+
+*** Collabrated with PM story (ALD story ) ***
+
+Situation:
+While developing an Android app designed to detect and help users remove storage-hogging apps, I noticed some significant gaps in the app's user experience (UX) that could negatively impact users, especially when they were dealing with low storage situations. The app was intended to make the storage management process simpler, but its design left users with limited options and unclear guidance on how to proceed, leading to inefficiency and confusion.
+
+Task:
+I was tasked with improving the app’s UX to make it more intuitive, faster, and aligned with user needs. Specifically, I had to collaborate with the Product Manager (PM) to identify pain points in the current flow and propose solutions that would make the storage management process smoother, more efficient, and better aligned with user expectations.
+
+Action:
+Collaborating with PM: I worked closely with the PM to understand user pain points and shared my observations about the limitations of the app’s current design. We discussed potential improvements to enhance the overall UX.
+
+Proposed UX Enhancements:
+
+I suggested introducing a "Remove All Apps" button to allow users to quickly clear all selected apps, simplifying the process, especially in critical storage situations.
+I proposed disabling the back button during low-storage scenarios to ensure that users wouldn't exit the cleanup process prematurely and leave the system in an unstable state.
+I recommended that the app should track which criteria users prefer when selecting apps to remove (either unused apps or the largest apps), allowing the app to adapt to user preferences.
+Implementation: I collaborated with the design and engineering teams to implement the changes, including:
+
+Adding the “Remove All Apps” button.
+Disabling the back button in critical situations.
+Collecting metrics on user preferences regarding app selection criteria.
+Testing and Feedback: After implementation, I worked with the QA team to conduct A/B testing, gathering feedback from users on the new features. We adjusted the app based on their feedback to ensure the improvements were effective.
+
+Result:
+Improved User Experience: The introduction of the "Remove All Apps" button and disabling the back button during critical storage situations led to a smoother, more intuitive user experience.
+Higher Satisfaction: 60% of users preferred the "unused apps" criterion for selection, allowing us to tailor the default behavior to meet user needs.
+Reduced Failures: Disabling the back button during the cleanup process prevented users from exiting prematurely, ensuring better results and stability during critical low-storage situations.
+Positive Feedback: The improvements significantly enhanced the app's functionality, and user feedback was overwhelmingly positive, validating the effectiveness of the changes.
+
+
+*** Collabrate with cross-functional teams (SPY CDK) {could also serve as mentored team} ***
+
+Situation:
+Our team was using an old deployment system based on LPT+CFN, which had limitations in terms of flexibility and ease of management. FireTV’s base team, Spy, was in charge of providing infrastructure needs across teams, but due to bandwidth constraints, they couldn't directly support our transition to a more efficient solution.
+
+I realized that moving to CDK (Cloud Development Kit) would provide several significant advantages over the old system, but we needed Spy’s support to implement it. With Spy's limited bandwidth, I saw an opportunity to step up and help bridge the gap.
+
+Task:
+I was tasked with transitioning our team from LPT+CFN to CDK to take advantage of its flexibility and efficiency. This required coordinating with the Spy team for support, but because of their resource constraints, I needed to implement the changes on our own while ensuring the benefits of the new system could be leveraged across the entire FireTV ecosystem, not just our team.
+
+Action:
+Initial Collaboration: I reached out to Spy to discuss our transition plans and the benefits of using CDK for deployment. Given their bandwidth issues, they recommended that we take the lead on implementing the changes within our team’s code base.
+
+Implementation: I worked closely with our development and infrastructure teams to implement CDK into our deployment pipeline. This involved:
+
+Adapting our existing infrastructure to CDK’s programming model.
+Writing CDK code to define resources, apply conditionals, and ensure efficient stack definitions.
+Testing and validating the deployment process to ensure it met all necessary requirements.
+Cross-Team Collaboration: While Spy could not provide direct support, I ensured that the implementation was extensible for other teams in FireTV. I designed it in a way that allowed Spy and other teams to easily adopt the new deployment method.
+
+Knowledge Sharing: I documented the process and advantages of using CDK and shared it with other teams to make the transition smoother for them, ensuring the entire FireTV ecosystem could benefit from the improvements.
+
+Result:
+Cross-Team Adoption: Our team successfully transitioned to CDK, and by sharing our work and process, we enabled other FireTV teams to adopt the same deployment system. This led to a more consistent and efficient infrastructure across FireTV.
+
+Improved Deployment Efficiency: CDK provided several advantages, including:
+
+Programming Language Support: Using an actual programming language for resource definitions led to more compact and efficient stack definitions.
+Early Issue Resolution: With CDK, issues were caught at build time through tests and manual inspection, reducing deployment errors.
+Personalized Stacks: Teams could deploy to personal stacks using either long-lived or burner AWS accounts, providing flexibility in resource management.
+Better Debugging and Testing: CDK enabled attaching a debugger, inspecting CloudFormation stacks, and seeing a full rendered view of the stack before deployment.
+Impact Assessment with cdk diff: Using cdk diff, we could preview potential changes before code reviews, ensuring the deployment was always safe and well-understood.
+Wider Benefits for FireTV: The decision to implement CDK was beneficial not only to our team but also to the entire FireTV organization, enabling more streamlined and efficient deployment processes across multiple teams.
+
+*** Mentored a junior/managed a team (SPY-CDK/ Station Airings/ RocksDB) ****
+
+> Use SPY-CDK story or station airing story (Twist the narrative) or we can also talk about how we came up with doc to list down all issues when adopting 
+Spy-CDK 
+
+While explaining station airing story , deep dive on structure of rocksdb and how it is less efficinet when you read your own writes )
+
+S & T would be different , Action (is sample)
+
+Action:
+Onboarding and Mentorship:
+
+Conducted detailed knowledge-sharing sessions to explain the content hierarchy, RocksDB design, and relevant parts of the codebase.
+Broke down the feature into smaller, manageable tasks and paired with them on the most challenging aspects.
+Encouraged the engineer to ask questions and provided constructive feedback during code reviews.
+Hands-On Guidance:
+
+Guided them in implementing a method to filter and optimize TvHierarchy objects, ensuring correct handling of season and episode IDs.
+Helped debug complex RocksDB queries that caused performance bottlenecks, teaching them debugging techniques in the process.
+Building Confidence:
+
+Gave them ownership of the final testing phase and supported them in writing comprehensive unit tests.
+Facilitated their presentation of the feature to the team, showcasing their work.
+Result:
+The feature was delivered on time and improved content processing performance by 30%.
+The junior engineer gained a strong understanding of the system and became more confident, contributing independently to future projects.
+
+*** Conflict resolution(Cassandra v rockdb and streams v long polling) ***
+
+Situation:
+While working on a project requiring real-time syncing of changes from S3, our team faced a conflict about which mechanism to use: streams or long polling. Most stakeholders and team members favored streams because of their perceived modernity and scalability. Separately, we also encountered a debate over database technology—whether to use Cassandra or an in-memory database like RocksDB—for managing our data.
+
+Task:
+My task was to evaluate the proposed solutions objectively, address the concerns of all stakeholders, and recommend a feasible, cost-effective approach while ensuring the system met functional and scalability requirements.
+
+Action:
+For S3 Syncing:
+
+Analyzed the requirements and highlighted that while streams could be powerful, they added significant implementation complexity, required more infrastructure management, and might introduce latency due to backpressure in our use case.
+Proposed starting with long polling as a simpler preliminary solution, which could meet our requirements without overengineering. This would also allow us to gather data on actual usage patterns before deciding if streams were necessary.
+Conducted a proof-of-concept to demonstrate how long polling could handle initial syncing needs with lower latency and resource consumption.
+For Database Selection:
+
+Pointed out that using Cassandra would require distributed locking and additional effort to maintain quorum consistency, which could be overkill given our dataset size and access patterns.
+Suggested an alternative: using RocksDB, an in-memory database, after dividing the dataset by splitting the service into smaller, independent components.
+Demonstrated how reducing the dataset size would eliminate the need for distributed databases, allowing us to achieve faster queries and simplified infrastructure.
+Conflict Resolution Approach:
+
+Held a discussion with stakeholders and team members to present my findings, backed by metrics and proof-of-concept results.
+Acknowledged the strengths of streams and Cassandra but emphasized the importance of balancing complexity with practicality for our specific needs.
+Created a roadmap: implement the simpler solutions (long polling and RocksDB) first, with the flexibility to scale to streams or a distributed database later if needed
+
+*** Failures and Learning from Mistakes (or missing a deadline) {FOS change FTV storage calculator }***
+
+{baaki small changes around load testing ke time deployment wo sab bol sakte ho}
+
+
+During implementation of ALD which figures out devices with low storage the algo to detect low storage (basically size calculator) was changed in android 11
+
+However our systems run on FOS (which is a wrapper upon AOSP) and than still used older implementation and our code worked fine on it 
+
+We were not aware that of any ongoing initiave around same 
+
+We developed the feature and around a week before its release org wide we gather all changes(that will go in next release), there we got to know about it 
+
+> too late was for us to make any change and since we had no devices yet which worked on this FOS version, we felt we were okay since none of FTV devices followed this version of FOS, we thought we would complete this via Fast followup, however due to other competing projects we could not come back to this
+and it was pointed out when team launching new device came up with bugs around feature not working there , this caused delay in new device launch
+
+Lerning could be got to learn to make design scalable more better understand dependenices and reach out to them for any changes before hand 
+
+> another direction could be , because we got to know late we had to delay release to accomodate the changes 
