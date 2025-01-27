@@ -35,6 +35,9 @@ The incident highlighted the importance of integration tests, and as a team, we 
 
 *** Insisted on high quality (EMR) ***
 
+
+wrong story mention about how we wanted to prelaunch our services seperately and not club them in that case we want complete sync so we did vending stream syncer 
+
 Situation:
 Our system initially relied on a centralized EMR job for reducing data and populating the database. This setup ensured all services stayed in sync. However, we later transitioned to processing data on a per-stream basis to improve scalability and flexibility. While this transition brought several benefits, it also introduced the potential for discrepancies between the new per-stream flows and the EMR job.
 
