@@ -161,3 +161,11 @@ In one step, you can move from point (x, y) to any one of the following points:
 
         return (gcd & (gcd - 1)) == 0;
 }
+
+365. Water and Jug problem 
+
+capacities are x and y , target is z , this is solved by if z % GCD(x,y) ==0
+
+
+Whenever we have linear combination of 2 variables and we are asked if a eventual state can be reached or not gcd is always something which should be 
+kept in mind

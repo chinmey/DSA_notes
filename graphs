@@ -512,7 +512,6 @@ Area : 200 blocks + 199 + 198 ...1 --> n(n-1)/2 blcoks or n2/2 blocks
 SO we will do a normal BFS and if at point our BFS has travelled (size of visited set) is more than n2/2 blocks we can reach the target
 
 
-
 Union Find and the initution behind same (https://www.youtube.com/watch?v=L1T4AB8xBcw)
 
 
@@ -993,3 +992,116 @@ public:
 **** Articulation point ****
 
 Same as bridge but with node 
+
+
+*** Good problem ***
+
+Given an undirected graph, Alice and Bob are standing somewhere (node index is given), 
+They want to reach a common destination D such that the number of unique edges they traverse is as minimum as possible. 
+
+It can be solved in 3 passes of BFS and a final scan over all nodes. Let the min cost path be
+
+Alice (A) moves to some common node (C)
+Bob (B) moves to the same common node
+then they both travel from the common node to the destination node (D)
+
+
+So we calculate minimum distance from D to all nodes, Alice to all nodes, Bob from all nodes (the sum of these distances when minimised is answer)
+
+
+Maximum bipartite matching : https://www.geeksforgeeks.org/problems/maximum-bipartite-matching/1 (new concept)
+
+Bipartite is a graph in which we can divide nodes into 2 sets where there is no edge between nodes of same set
+
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+unordered_map<int, int> job_people;
+
+bool canAssignJob(int person, vector<vector<int>>& G, vector<bool>& visited) {
+    int jobs = G[0].size();
+
+    for (int job = 0; job < jobs; ++job) {
+        if (G[person][job] && !visited[job]) {
+            // Mark this job as visited
+            visited[job] = true;
+
+            // If the job is unassigned or if we can reassign the current person
+            if (job_people.find(job) == job_people.end() || 
+                canAssignJob(job_people[job], G, visited)) {
+                // Assign the job to the current person
+                job_people[job] = person;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+int maximumMatch(vector<vector<int>>& G) {
+    int people = G.size();
+    int maxMatch = 0;
+
+    for (int person = 0; person < people; ++person) {
+        // Track visited jobs for this person in the current DFS
+        vector<bool> visited(G[0].size(), false);
+
+        // Try to find a job for this person
+        if (canAssignJob(person, G, visited)) {
+            ++maxMatch;
+        }
+    }
+
+    return maxMatch;
+}
+
+
+*** Shortest path between all nodes to all nodes ***
+
+
+#include <iostream>
+#include <climits>
+using namespace std;
+
+// Number of vertices in the graph
+#define V 4
+
+// The Floyd-Warshall algorithm
+void floydWarshall(int graph[V][V]) {
+    // dist[][] will be the shortest distance between every pair of vertices
+    int dist[V][V];
+
+    // Initialize the distance matrix same as the input graph matrix
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            dist[i][j] = graph[i][j];
+        }
+    }
+
+    // Applying the Floyd-Warshall Algorithm
+    for (int k = 0; k < V; k++) {           // Intermediate vertex
+        for (int i = 0; i < V; i++) {       // Source vertex
+            for (int j = 0; j < V; j++) {   // Destination vertex
+                // If the path from i to j through k is shorter than the direct path from i to j
+                if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX && dist[i][j] > dist[i][k] + dist[k][j]) {
+                    dist[i][j] = dist[i][k] + dist[k][j];
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    // Let’s consider a graph with 4 nodes and some weighted edges
+    // If there’s no direct edge between two nodes, we use INT_MAX (infinity)
+    int graph[V][V] = {
+        {0, 3, INT_MAX, 7},
+        {8, 0, 2, INT_MAX},
+        {5, INT_MAX, 0, 1},
+        {2, INT_MAX, INT_MAX, 0}
+    };
+
+    floydWarshall(graph);
+    return 0;
+}

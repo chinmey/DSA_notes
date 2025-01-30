@@ -115,18 +115,20 @@ Top view of tree : track horizontol distance each one for a level is to be retur
 
 If we have independent copies than we dont need to care about backtracking etc 
 
-void fillMap(Node* root, int d) {
-        if (root == NULL) return;
+*** Later gyaan *** --> This alone is insufficience we also need to store depth of nodes also to ensure only nodes with less depth are taken in
+
+   map<int, pair<int,int>> mp; // { hd, depth, val }
+    void solve(Node* root, int hd, int depth) {
+        if(root == NULL) return;
         
-        // Only add the node if it is the first one encountered at that distance
-        if (mp.find(d) == mp.end()) {
-            mp[d] = root->data;
+        if(mp.find(hd) == mp.end() || depth < mp[hd].first) {
+            mp[hd] = {depth, root->data};
         }
         
-        // Correctly propagate the horizontal distance
-        fillMap(root->left, d - 1);  // Left child goes to d - 1
-        fillMap(root->right, d + 1); // Right child goes to d + 1
-}
+        solve(root->left, hd - 1, depth + 1);
+        
+        solve(root->right, hd + 1, depth + 1);
+    }
 
 Using single copy 
 void fillMap(Node* root, int &d) {
@@ -584,6 +586,46 @@ Inituition is to preprocess and store ancestors for all nodes so that we can ans
 But if we store all ancestors of all nodes it becomes too large to store in parents (as n given is 10^5)
 
 Key is to represent a number (k) in its binary form so k = 11 is (1+ 2+ 8), so all we need is these three parents and not all.
+
+
+Top-down version more natural 
+
+class TreeAncestor {
+public:
+    vector<vector<int>> dp;
+    int LOG;
+    vector<int> parent; // Store the parent array for lazy computation
+
+    TreeAncestor(int n, vector<int>& parent) {
+        this->LOG = 20; // Assuming maximum k will fit in 20 bits
+        this->parent = parent;
+        dp.resize(n, vector<int>(LOG, -1)); // Initialize dp with -1
+    }
+
+    // Recursive function to calculate the 2^i-th ancestor of a node
+    int getAncestor(int node, int i) {
+        if (node == -1) return -1; // If there's no ancestor, return -1
+        if (i == 0) return parent[node]; // Base case: the direct parent
+        if (dp[node][i] != -1) return dp[node][i]; // Return cached result
+
+        // Recursively calculate and cache the 2^i-th ancestor
+        int halfAncestor = getAncestor(node, i - 1); // 2^(i-1) ancestor
+        dp[node][i] = getAncestor(halfAncestor, i - 1); // 2^i ancestor
+        return dp[node][i];
+    }
+
+    int getKthAncestor(int node, int k) {
+        for (int i = 0; i < LOG && node != -1; i++) {
+            if (k & (1 << i)) { // Check if the i-th bit of k is set
+                node = getAncestor(node, i); // Move to the 2^i-th ancestor
+            }
+        }
+        return node;
+    }
+};
+
+Bottom up
+
 
 class TreeAncestor {
 public:

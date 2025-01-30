@@ -216,6 +216,8 @@ public:
     }
 };
 
+TC : each number insertion is at max 0(32) --> N , 0(N) , same for finding xor too
+
 
 3043. Find the Length of the Longest Common Prefix
 

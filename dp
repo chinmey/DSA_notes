@@ -817,6 +817,8 @@ Code
         return solve(arr,1,N-1);
     }
 
+Burst ballon :: similar concept just assume cost with that ballon being last to burst (instead of j we have j+1 in cost)
+
 Palindromic partitioning :: Given a string find the minimum no of cuts such that all substring are palindrom ex : nitin : 3 (n iti n)
 
 Here knowing i,j range and base case is easy, the key observation here is that if a string is already a palindrom we have 0 cost and when we start taking 
@@ -842,10 +844,12 @@ int solve(string &s, int i, int j) {
     return dp[i][j] = ans; // Store and return the minimum cuts
 }
 
+isPalindrom takes a O(N) time we can precompute it for faster
+
 Similar idea is used in word break problem where also we break at every point prefix exists in dictionary
 
 
-Scrambled string : PS (https://leetcode.com/problems/scramble-string/description/)
+Scrambled string : (https://leetcode.com/problems/scramble-string/description/)
 
 Ex : great and aterg , so we would break at all places and we have choices to swap or not here ex at r , we need to check if gr and rg , eat and ate are both scrmabled or not (swap case) or we need to check if gr and at , eat and erg are scambled or not (not swap case)
 
@@ -1052,7 +1056,7 @@ If the second character is '*', it can represent any valid number from 0-9, depe
 
 
 
-10. Regular expression matching
+10. Regular expression matching (Neetcode)
 
 
 The key idea is x* --> nothing, x, xx, xxx etc so we need to handle this carefully 

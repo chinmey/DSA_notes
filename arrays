@@ -280,6 +280,8 @@ public:
     }
 };
 
+
+
 This follows the Initution of BS where we need to discard a side based on our selection(mid), here the pivot element would be one which is lesser than both 
 of its neighbor, if this is not the case we need to check if arr[m] > arr[high] because one half of array would be sorted and other half would be unsorted , 
 answer would always lie in unsorted half because its less than both neighbor, it means answer lies in (mid+1,high) else opposite
@@ -458,6 +460,8 @@ class Solution {
 
 Median of 2 sorted arrays (https://www.youtube.com/watch?v=jDJuW7tSxio) / prefer watching code story with mik one instead
 
+btw there exists a worst solution to do this by applying bs on range [min, max] {similar to finding median in row wise sorted matrix}
+
 
 Finding the Correct Partition: Let’s say we partition arr1 at index i and arr2 at index j. The total number of elements in the left part of both arrays will 
 be i + j, and the right part will contain the remaining elements.
@@ -587,6 +591,34 @@ FindIndex is time consuming we can simply store that in a map to make computatio
         return swaps;
     }
 
+*** Interval classing issues ***
+https://leetcode.com/problems/my-calendar-i/description/
+
+Two events with start and endTime (s, e) and (a, b) are overlapping if and only if (a < e) && (s < b) where (s, e) are existing events and a, b is incoming
+basically both startTimes are less than bothEndTimes
+
+ bool book(int startTime, int endTime) {
+
+        if(bookSet.empty()) {
+            bookSet.insert({startTime, endTime});
+            return true;
+        }
+        
+        auto it = bookSet.lower_bound({startTime, endTime});
+        
+        if(it != bookSet.end() && it->first < endTime) return false; // check next
+
+        if(it != bookSet.begin()) { // check prev
+             auto prevIt = prev(it);
+
+             if(startTime < prevIt->second) return false;
+        }
+
+        bookSet.insert({startTime, endTime});
+        return true;
+        
+    }
+ 
 
 PigeonHole principal (can be in maths)
 
