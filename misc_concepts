@@ -896,6 +896,68 @@ public:
 };
 
 
+> Check if all circle form one connected component 
+
+--> Treat circle center as graph vertices, make a adjacency list by traversing thru all circles and seeing which we touch, than do DFS 
+
+> For a N-ary tree delete all the leaf nodes and give back tree 
+
+class Node {
+  public:
+    int data;
+    vector<Node *> children;
+
+    Node(int val) {
+        data = val;
+    }
+};
+
+// Recursive function to delete all leaf nodes
+Node* deleteLeafNodes(Node *root) {
+    if (root == NULL) return NULL;
+
+    // Iterate over the children
+    vector<Node*> new_children;
+    for (auto child : root->children) {
+        if (child->children.empty()) {
+            // If the child is a leaf, skip it
+            delete child;  // Deallocate memory for the leaf node
+        } else {
+            // Otherwise, recursively delete leaves in the child
+            child = deleteLeafNodes(child);
+            new_children.push_back(child);
+        }
+    }
+
+    // Update the children vector to only contain non-leaf nodes
+    root->children = new_children;
+
+    // Return the root node
+    return root;
+}
+
+int main() {
+
+    // Representation of given N-ary tree
+    //         1
+    //       / | \
+    //     2   3   4
+    //    /         \
+    //   5           6
+    Node *root = new Node(1);
+    root->children.push_back(new Node(2));
+    root->children.push_back(new Node(3));
+    root->children.push_back(new Node(4));
+    root->children[0]->children.push_back(new Node(5));
+    root->children[2]->children.push_back(new Node(6));
+
+    root = deleteLeafNodes(root);
+
+    preorderTraversal(root);
+
+    return 0;
+}
+
 >>> Did not remember first time 
 peak element/ rotated sorted list
 string tokensition

@@ -1,5 +1,41 @@
 The basic idea of Backtrack is to do something , explore (let recursion do rest), undo
 
+If we are applying backtracking using a loop we only call our method once (of taking number) since loop takes care of case of not taking the number
+
+ex for 
+Code : 1593. Split a String Into the Max Number of Unique Substrings
+
+class Solution {
+public:
+    int solve(string s, int idx, unordered_set<string> &seen) {
+        if(idx == s.size()) {
+            return 0;
+        }
+
+        int ans = 0;
+
+        for(int len = 1; len <= s.size() - idx; len++) {
+            string substr = s.substr(idx, len);
+
+            if(seen.find(substr) == seen.end()) {
+                seen.insert(substr);
+                int count = 1 + solve(s, idx + len, seen);
+                ans = max(ans, count);
+                seen.erase(substr);
+            }
+        }
+
+        return ans;
+    }
+    int maxUniqueSplit(string s) {
+        int idx = 0;
+
+        unordered_set<string> seen;
+        
+        return solve(s, 0, seen);
+    }
+};
+
 Rate in a maze problem (https://www.youtube.com/watch?v=wXwZSytYrIs&list=PLpIkg8OmuX-IBcXsfITH5ql0Lqci1MYPM&index=11)
 Problem link : https://www.geeksforgeeks.org/problems/rat-in-a-maze-problem/1
 

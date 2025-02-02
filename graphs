@@ -1011,6 +1011,59 @@ So we calculate minimum distance from D to all nodes, Alice to all nodes, Bob fr
 
 Maximum bipartite matching : https://www.geeksforgeeks.org/problems/maximum-bipartite-matching/1 (new concept)
 
+more problems : https://leetcode.com/problems/maximum-number-of-accepted-invitations/description/ and https://leetcode.com/problems/maximum-matching-of-players-with-trainers/description/
+
+
+Key is to always iterate over who gets what (ex employee gets job so we iterate over them or player get trainer)
+
+Ex for player gets trainer this is code 
+
+
+class Solution {
+public:
+    bool match(int player, vector<vector<int>> &pt, vector<int> &tp, vector<bool> &visited) {
+        for(int trainer : pt[player]) {
+            if(visited[trainer]) continue;
+
+            visited[trainer] = true;
+
+            if(tp[trainer] == -1 || match(tp[trainer], pt, tp, visited)) {
+                tp[trainer] = player;
+                return true;
+            }
+        }
+
+        return false;
+    }
+    int matchPlayersAndTrainers(vector<int>& p, vector<int>& t) {
+        int m = p.size();
+        int n = t.size();
+
+        vector<vector<int>> pt(m); // playerToTrainer
+
+        for(int i=0; i<m; i++) {
+            for(int j=0; j<n; j++) {
+                if(p[i] <= t[j]) {
+                    pt[i].push_back(j);
+                }
+            }
+        }
+
+        vector<int> tp(n, -1); // trainerToPlayer
+        int ans = 0;
+
+        for(int i=0; i<m; i++) { // going thru players
+           vector<bool> visited(n, false); // set All trainers as unvisited
+
+           if(match(i, pt, tp, visited)) {
+            ans++;
+           }
+        }
+
+        return ans;
+    }
+};
+
 Bipartite is a graph in which we can divide nodes into 2 sets where there is no edge between nodes of same set
 
 #include <vector>

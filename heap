@@ -50,6 +50,15 @@ If the size of the heap is exactly k, calculate the cost to hire these k workers
 Return Minimum Cost:
 
 
+480. Sliding Window median 
+
+Median of running streams is made by keeping minHeap and maxHeap and maintaining size diff of 1 between them the similar idea we want to apply here but 
+we need to have ability to remove elements that are out of window 
+
+For this we would maintain a map of deletedElements and once an element is outside considered window we add it in this and than when we calculate median 
+we remove top elements till, we reach a non-deleted entity
+
+
 How does Heap sort work ?
 
 

@@ -173,3 +173,42 @@ Coin change (min coins with limited supply) :: Just try and take the biggest den
 
 
 
+**** House rearrangement *****
+
+you are given an array of houses in a neighboorhood in a city.
+you have to rearrange houses in such a way that in a single neighbourhood the houses are sorted by number in ascending order and no 2 houses with same number are in same neighbourhood.
+you can only rearrange house based on the capacity of each neighbourhood . If neighbourhood "1" in input has 2 houses then at output also it can only have 2 houses.
+
+
+For example-
+{
+{1,2},
+{4,4,7,8},
+{4,9,9,9}
+}
+
+
+becomes
+{
+{4,9},
+{1,2,4,9},
+{4,7,8,9}
+}
+
+
+Sorting + Greedy indeed.
+
+Create a maxHeap of size,index so that we can store we can process largest neighboorhood first 
+Sort the house by frequency and number (first frequency than number)
+Put these in neighboorhood skipping duplicates
+
+ex : {4, 1} {4, 2} {2, 0} 
+
+4 4 4 9 9 9 1 2 7 8 
+
+> 4 9 1 2
+> 4 9 2 7 
+> 4 9 
+
+Now again sort the results
+
