@@ -1,3 +1,9 @@
+https://leetcode.com/discuss/interview-question/5963463/Googlyness-Frequently-Asked-Questions
+
+
+JMH story could be useful --> say i added JMH in local
+
+
 *** Tell me about yourself ***
 
 
@@ -35,8 +41,7 @@ The incident highlighted the importance of integration tests, and as a team, we 
 
 *** Insisted on high quality (EMR) ***
 
-
-wrong story mention about how we wanted to prelaunch our services seperately and not club them in that case we want complete sync so we did vending stream syncer 
+Mention about old systems are in sync and new systems are in sync wanted to prelaunch so implemented a syncer type 
 
 Situation:
 Our system initially relied on a centralized EMR job for reducing data and populating the database. This setup ensured all services stayed in sync. However, we later transitioned to processing data on a per-stream basis to improve scalability and flexibility. While this transition brought several benefits, it also introduced the potential for discrepancies between the new per-stream flows and the EMR job.
@@ -355,3 +360,131 @@ and it was pointed out when team launching new device came up with bugs around f
 Lerning could be got to learn to make design scalable more better understand dependenices and reach out to them for any changes before hand 
 
 > another direction could be , because we got to know late we had to delay release to accomodate the changes 
+
+
+*** Give an example of a time you identified a technical bottleneck and fixed it ***
+
+Vending, a high-throughput and low-latency service, lacked a seamless microbenchmarking workflow for SpyPackages. Teams were relying on an inefficient TPS generator that made performance optimization slow and difficult.
+
+Engineers had to set up ad hoc benchmarking, leading to inconsistent results.
+The lack of a structured microbenchmarking framework made it hard to measure and compare new implementations of critical workflows.
+Some optimizations were being tested end-to-end, making the process expensive and time-consuming.
+
+2️⃣ Task:
+I wanted to introduce a standardized, easy-to-use microbenchmarking workflow within the SpyBuildTool, so teams could:
+
+Run targeted benchmarks locally, without setting up end-to-end tests.
+Compare different implementations efficiently (e.g., ItemId deserialization V1 vs. V2).
+Establish baseline performance metrics and prevent regressions.
+Help teams quickly iterate on optimizations without manual effort.
+3️⃣ Action:
+✅ Prototyped the solution using existing tools:
+
+I used JMH-based microbenchmarking and ran tests for ItemId deserialization.
+Found that Jackson parser was inefficient, causing high latency (350ms → 50ms reduction) in TV hierarchy processing.
+✅ Validated the approach with real use cases:
+
+Ran benchmarks on SpyIO to compare different reader/writer implementations.
+Found that ItemIdV2 deserialization was 40% faster than V1, proving the usefulness of this approach.
+✅ Gained alignment with key stakeholders:
+
+Worked with Spy team to integrate this into SpyBuildTool.
+Proposed adding benchmark results to S3 and pipeline reports, ensuring visibility for all teams.
+✅ Gradual rollout to reduce risk:
+
+Initially exposed this only as a build script to collect early feedback.
+Tested within Vending first, before making it a default part of SpyBuildTool.
+Ensured that adding this wouldn’t modify spy-build.xml behavior by default.
+✅ Future-proofing the approach:
+
+Planned integration with SpyNawsTool for running benchmarks in a controlled environment.
+Designed a mechanism for teams to define custom formatters and set performance guardrails to prevent regressions.
+4️⃣ Result:
+🚀 Improved performance benchmarking for all teams:
+
+Made microbenchmarking as simple as writing a unit test—no need for complex setups.
+Enabled fast iteration on performance optimizations without running full end-to-end tests.
+Identified a critical performance bottleneck (Jackson parser inefficiency) and improved latency from 350ms to 50ms.
+Established a data-driven approach to measure the impact of changes in SpyIO and incremental processing.
+📈 Long-term impact:
+
+Teams can now set baseline latencies and fail builds if performance regresses.
+Improved the efficiency of incremental data processing, helping with Euclid Phase-2 goals (5-minute latency requirement).
+Provided a standardized benchmarking tool for all SpyPackages, benefiting multiple teams beyond Vending.
+
+
+*** Recieved critical feedback ***
+
+During my sde-1 days , in one of our  1-1 manger pointed out to me that feedback i give to my seniors is minimal and i wasnt showing enough backbone and 
+disagree to them in terms of design meetings etc
+
+Obviously at first i tried to justify the behaviour by the fact that i was fairly new and am working with people with far more experience than me 
+
+On retro i felt the issue was due to me showing extereme ownership towards my work (which is directly assigned to me ) and not caring much about team goal
+
+I rectified it by proactively trying to understand work of others this i emphasized by doing more and more code reviews ,i also set up ad-hoc discussion with them in case i did not understand some part of their changes 
+
+This naturally translated to me being more in sync of team goals and i was able to suggest alternative approaches to many of my senior work
+
+*** Priortise/ Manage multiple tasks ***
+
+When handling multiple tasks or projects, I follow a structured approach to ensure efficiency and business impact:
+
+Sort by Business Impact & Effort
+
+I prioritize tasks based on their business impact and the time required to complete them.
+High-impact, time-sensitive tasks take precedence over lower-impact ones.
+Address External Dependencies Early
+
+Tasks with external dependencies are tackled first since response times from other teams are unpredictable.
+This ensures that while waiting for feedback, I can continue working on other items in parallel.
+Tackle Low-Hanging Fruit
+
+I complete quick, low-effort tasks early to clear them from my plate and build momentum.
+This helps free up mental bandwidth for more complex, time-consuming work.
+Time Blocking & Parallel Execution
+
+I allocate dedicated time blocks for deep work while balancing smaller tasks in between.
+Where possible, I parallelize tasks that don’t depend on each other to maximize efficiency.
+Regularly Re-Evaluate Priorities
+
+Priorities can shift, so I reassess tasks daily or weekly based on new developments.
+If a high-priority task arises, I adjust my plan dynamically while ensuring ongoing tasks are not neglected.
+
+
+*** Work getting depriotised continuoslly ***
+
+1. Understand the Reasoning Behind the Change
+I proactively ask for context on why priorities are shifting.
+If the change is driven by business impact, dependencies, or strategic shifts, I align my mindset accordingly.
+2. Stay Flexible & Adaptable
+I recognize that adaptability is key in dynamic environments.
+Instead of getting frustrated, I focus on quickly pivoting and ensuring my work aligns with new priorities.
+3. Document & Track Effort
+If work gets repeatedly deprioritized, I document progress and share updates so that effort isn’t wasted.
+This also helps in case the task resurfaces later.
+4. Raise Concerns if Needed
+If constant changes create inefficiencies or affect delivery timelines, I communicate this to my manager.
+I suggest potential solutions, such as better backlog grooming or stronger prioritization frameworks
+
+
+*** Amiguity ***
+
+Storage was a concern need to solve 
+
+Added metrics figure out how many people suffer low storage 
+Looked at modern day solutions (dyno/ALD)
+Came up with proposed solutions got alingment from leadership 
+
+
+*** Tile getting dropped in production ***
+
+Analysed logs figured out what reasons could cause this put critical logs on same
+
+Asked all service owners to put critical logs whenever their service would drop a tile
+
+We immediately solved the issue in short term and for long term we cut jiras for issues we felt could bottle up
+
+Created a dashboard around same at org level 
+
+Added alarms on all these critical logs ensuring any increase in them we would be notified before customer reachs
