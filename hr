@@ -39,6 +39,48 @@ Result:
 The incident highlighted the importance of integration tests, and as a team, we established a policy to prioritize tests for any code interacting with production traffic, regardless of its immediate visibility to end users. This not only improved system stability but also built a stronger consensus on balancing speed and quality in future projects
 
 
+*** Better way to put ***
+
+S — Situation
+
+In a previous role, I had a manager who was very output-driven and often pushed the team to ship features quickly. During one project, he repeatedly asked us to cut certain validation and throttling safeguards so we could meet an aggressive release date.
+I felt removing them would introduce instability and could cause downstream services to be overloaded.
+
+T — Task
+
+My task was to push back constructively, protect system safety, and maintain a healthy working relationship. I needed to help him understand the long-term reliability risk without slowing the team unnecessarily.
+
+A — Action
+
+I scheduled a short 15-minute discussion with him and came prepared with data.
+Instead of saying “this is risky,” I showed:
+
+past incidents where missing safeguards caused outages,
+
+projected increase in QPS after the new feature launch,
+
+a quick simulation demonstrating that removing throttles could breach downstream SLAs.
+
+I also respected his urgency and proposed a middle-ground:
+
+keep the critical safeguards,
+
+wrap non-critical validations under a feature flag,
+
+ship the MVP on time,
+
+enable deeper checks gradually post-launch.
+
+This balanced safety and speed in a way that addressed both our concerns.
+
+R — Result
+
+He agreed to the compromise.
+We shipped on time without introducing reliability regressions.
+After launch, our metrics validated the risk projections — downstream services were close to saturation, so the throttles prevented a potential incident.
+My manager later told me he appreciated that I pushed back with data and options, not emotion.
+
+
 *** Insisted on high quality (EMR) ***
 
 Mention about old systems are in sync and new systems are in sync wanted to prelaunch so implemented a syncer type 
@@ -257,6 +299,8 @@ Positive Feedback: The improvements significantly enhanced the app's functionali
 
 *** Collabrate with cross-functional teams (SPY CDK) {could also serve as mentored team} ***
 
+Can give cloudcoverage story for integration tests also
+
 Situation:
 Our team was using an old deployment system based on LPT+CFN, which had limitations in terms of flexibility and ease of management. FireTV’s base team, Spy, was in charge of providing infrastructure needs across teams, but due to bandwidth constraints, they couldn't directly support our transition to a more efficient solution.
 
@@ -413,6 +457,18 @@ Improved the efficiency of incremental data processing, helping with Euclid Phas
 Provided a standardized benchmarking tool for all SpyPackages, benefiting multiple teams beyond Vending.
 
 
+Stories from time in Vending
+
+*** Went above and beyond *****
+
+Integrate with SVS service , endTime we got from catalog for prime it was very large around 8/9 hour this was causing issues since the actual deepLink to content comes from TAG which expires after game is expired
+this led to broken experience where tile was showing live but when user pressed on it , it lead to content expired
+
+We figured that in Prime also same is done but SVS is called which helps override these which gets its data from sports radar etc
+
+Since catalog could not do in shortTime figured out the issue and helped integrate with them.
+
+
 *** Recieved critical feedback ***
 
 During my sde-1 days , in one of our  1-1 manger pointed out to me that feedback i give to my seniors is minimal and i wasnt showing enough backbone and 
@@ -488,3 +544,165 @@ We immediately solved the issue in short term and for long term we cut jiras for
 Created a dashboard around same at org level 
 
 Added alarms on all these critical logs ensuring any increase in them we would be notified before customer reachs
+
+
+*** Other stories ****
+
+Distillation override --> Generally our distillation framework would always select one winner , however we may want certain candidate to get picked for example if someone 
+is running a combined offer etc , that was not possible before built a new capability that ensures product managers can override choices when needed
+
+Game getting delayed giving updates --> Tiles have TTL of 5 minutes game may get extended for live games built dynamic TTL based tiles , SQS based check to continue to polll
+sports API and update tile if needed.
+
+NEW STORY — “I stepped up to rebuild our broken on-call rotation.”
+
+(Completely NEW. Not connected to any story you’ve shared earlier.)
+
+✅ STARL Answer (2 minutes, high-signal)
+
+{oncall me importance --> PayXploer (slack bot)/ reduce cascading impact tickets/ uniformed threshold/ introduced scaling best practices}
+S — Situation
+
+In one of my previous teams, our on-call rotation had become extremely stressful.
+Alerts were noisy, ownership boundaries were unclear, and runbooks were outdated.
+A few newer teammates started burning out — they were waking up at night for alerts they didn’t understand.
+People complained privately, but no one owned fixing the system because “on-call” belonged to everyone and therefore effectively no one.
+
+T — Task
+
+Even though I wasn’t the on-call lead, I decided to step up and take responsibility for stabilizing the entire rotation, so the team could operate confidently and without burnout.
+
+A — Action
+
+I took a structured approach:
+
+Shadowed on-call for a week
+I joined the next on-call engineer for every alert, cataloguing:
+
+flakey alarms
+
+unclear runbooks
+
+repeated incidents
+
+slow-to-diagnose issues
+
+Built a consolidated “On-Call Health Doc”
+I grouped problems by severity and proposed concrete fixes:
+
+which alarms to silence
+
+which thresholds to tune
+
+which dashboards to create
+
+which runbooks to rewrite
+
+which owners needed to update which components
+
+Brought the team together
+I hosted a small workshop where I didn’t blame anyone — I just walked everyone through the problem patterns and made it easy to sign up for fixes.
+I personally rewrote the highest-impact runbooks and built a unified dashboard that showed system health in one place.
+
+Drove long-term ownership
+I created a simple rule:
+
+“If you fix an alert once, you also fix the alerting logic.”
+That created shared responsibility and prevented regressions.
+
+R — Result
+
+Alerts dropped by 60% within two sprints.
+
+New engineers were comfortable taking on-call within a month.
+
+Issues that previously took 20–30 minutes to diagnose were now resolved in under 5 minutes.
+
+My manager later used the On-Call Health Doc template for other teams in the org.
+
+L — Learning
+
+I learned that stepping up isn’t always about solving the biggest technical problem — sometimes it’s about fixing the team’s operating system.
+When you help the entire team be more effective, your impact multiplies far beyond your own code.
+
+
+
+*** Questions from meta ****
+
+Core values 
+
+1. Move fast
+
+We build and learn faster than anyone else. Acting with urgency, we don’t wait until next week to do something we could do today. We continuously work to speed up our highest priority initiatives by methodically removing barriers that get in the way. It’s about moving fast in one direction together–as a company and as individuals.
+
+2. Focus on long-term impact
+
+We emphasize long-term thinking that encourages us to extend the timeline for the impact we have, rather than optimizing for near-term wins. We should take on the challenges that will be the most impactful, even if the full results won’t be seen for years.
+
+3. Build awesome things
+
+We push ourselves to ship things that are not just good, but also awe-inspiring. We’ve already built products that are useful to billions of people. In our next chapter, we’ll focus more on inspiring them as well, in everything we do.
+
+4. Live in the future
+
+Let’s build the future of work that we want, with an in-person focus designed to support a strong, valuable experience for our people who have chosen to work from the office, and a thoughtful and intentional approach to where we invest in remote work. This also means being early adopters of the future products we build to help people feel present together wherever they are.
+
+5. Be direct and respect your colleagues
+
+We create a culture where we are straightforward and willing to have hard conversations with each other. At the same time, we are also respectful and when we share feedback, we recognize that many of the world’s leading experts work here.
+
+6. Meta, metamates, me
+
+We are stewards of our company and our mission. We have a sense of responsibility for our collective success and to each other as teammates. It’s about taking care of our company and each other.
+
+
+
+
+How do resolve conflict with manager and team manager
+How to convence other team to completed the task/initiative you are have
+project you are proud of, mentorship, why meta
+How do you deal with difficult co worker
+Project you are most proud of
+Instance where you had to change direction mid execution
+Biggest weakness
+Tell me about a time you pushed a bug in production or something went wrong because of you. What did you learn?
+What do you do outside of work to learn or improve yourself?
+
+A project that you’re proud of
+What was the project trying to achieve?
+How much resources you saved by implementing this?
+What was the learning?
+What were the challenges?
+What was the result?
+When you disagreed with your senior and ended up listening to him, i.e. going with his suggestion
+A time when you were misunderstood at work
+A time you had a misunderstanding with your colleague
+A time when you had to work on a project where the requirements were missing
+
+
+
+
+
+
+Difficult manager                     ----------------> Integration test coverage presented in a way manager focused on outputs without validation
+Diffiuclt coworker                    -------------------> long polling/streams and rocksdb v cassnadra
+Convinced others/led something                  ----------------------> SPY CDK/ Implemented syncer
+Task you are proud of / switched midway.        ------------> SVS integration for dynamic TTL/ station airings
+Biggest weekness         ---------------------------------> pushing back seniors/ catch up on details of implementing something (POC concerned)
+pushed a bug/something went wrong ------------------------> Android storie of FOS 
+outside of work                  -------------------------> read blogs/build small projects/mentor juniors
+Mentor a junior.                 ------------------------> live event handling you did HLD juniors were going to do LLD how did you break the task and stuff
+Ambiguity                       -------------------------> Storage/ Tile getting dropped/ALD
+Collbarated with Product managers   ----------------> ALD
+Helped QA                           ----------------> Time travel testing 
+
+Spare story --> Microbenching JMH/ Oncall improvements (PayXploer (slack bot)/ reduce cascading impact tickets/ uniformed threshold/ introduced scaling best practices)
+
+
+Why meta ?
+
+It’s really a combination of a new kind of problem, a new kind of culture, and a chance to stretch myself as an engineer. Meta feels like the right place to grow in the next chapter.
+
+i have been at amazon for around 4 years now i understand a way of building and have enjoyed building at scale and i want to broaden my focus area.
+
+Another reason is the people. Meta attracts engineers who are very direct, collaborative, and unafraid to challenge assumptions. I enjoy environments where debates are fast, technical, and honest — that’s where I do my best work.
