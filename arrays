@@ -618,7 +618,36 @@ basically both startTimes are less than bothEndTimes
         return true;
         
     }
- 
+
+line sweep principal 
+
+Its a way of thinking where we are given some events (usually with start and end time) and we are asked to find something around that
+
+Line sweep is a technique where we convert events into timeline points, sort them, and sweep through time while maintaining a running state to answer questions about overlaps, counts, or transitions.
+
+This is usually done via ordered map ( or putting event in array and sorting them)
+
+Example problem ( My Calendar 2 leetcode 731) ( given various meeting check if i am triple booked)
+Idea would be store all events in map than go thru them if count > 2 we know we are triple booked 
+
+bool canbook(int startTime, int endTime) {
+        mp[startTime]++;
+        mp[endTime]--;
+
+        int count = 0;
+
+        for(auto it : mp) {
+            count += it.second;
+
+            if(count > 2) {
+                mp[startTime]--;
+                mp[endTime]++;
+                return false; // I cant book this without getting triple booked so i dont ( by reverting) and returning false
+            }
+        }
+
+        return true;
+    } 
 
 PigeonHole principal (can be in maths)
 
