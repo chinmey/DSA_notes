@@ -3,3 +3,57 @@ If in a question we are asked to print/show all possible ways to do something it
 Basic idea is to always --> do explore undo 
 
 Example in combination sum --> we take a number call recursion than we pop number and call recursion
+
+If we are applying backtracking using a loop we only call our method once (of taking number) since loop takes care of case of not taking the number
+
+
+aditya verma notes 
+
+
+Backtracking is actually recursion + undo , basically you do recursion explore and clean the state afterwards , in more formal terms backtracking is 
+controoled recursion + pass by referance
+
+what is controlled recursion ?
+
+We don't blindly call recursion for all states , we identify valid states which can contribute to answer and only call recursion for them. In short we prune invalid states
+
+why pass by refarnce ?
+
+To ensure we dont create unnecessary states , we preserve the state which contributes to answer since we are handling clean up 
+
+Template 
+
+void solve(state &state) { --> pass by ref
+    if (base_condition) {
+        answer.push_back(state);
+        return;
+    }
+
+    for (choice in all_choices) {
+        if (isValid(choice)) { --> controlling the recursion
+            make_choice(choice);
+            solve(updated_state);
+            undo_choice(choice);   // backtrack
+        }
+    }
+}
+
+
+used usually where we are asked find all / generate all combinations etc that lead to target
+
+
+Sample questions 
+
+largest number in k swaps (gfg)
+
+idea is to swap with max digit greater than me 
+
+n digit numbers with digits in increasing order
+
+rat in maze
+
+palindromic partitioning
+
+word break
+
+letter combination of phone number

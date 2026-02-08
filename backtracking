@@ -1,3 +1,28 @@
+
+aditya verma notes 
+
+Please refer backtracking patterns inside pattern for this and than only proceed
+
+void solve(state &state) { --> pass by ref
+    if (base_condition) {
+        answer.push_back(state);
+        return;
+    }
+
+    for (choice in all_choices) {
+        if (isValid(choice)) {
+            make_choice(choice);
+            solve(updated_state);
+            undo_choice(choice);   // backtrack
+        }
+    }
+}
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+earlier notes
+
 The basic idea of Backtrack is to do something , explore (let recursion do rest), undo
 
 If we are applying backtracking using a loop we only call our method once (of taking number) since loop takes care of case of not taking the number
