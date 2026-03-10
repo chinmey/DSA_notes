@@ -1,0 +1,262 @@
+Aim is to document all problems that teach a new type of topic
+
+
+
+Leetcode 2402 - https://leetcode.com/problems/meeting-rooms-iii/description/ (CodeStoryWithMik)
+
+Unique concept here was use of 2 heaps , one for roomsUsed and another for availablerooms, basically maintaining heaps with each other 
+
+class Solution {
+public:
+    typedef pair<long long, int> P;
+
+    int mostBooked(int n, vector<vector<int>>& meetings) {
+        int m = meetings.size();
+
+        sort(begin(meetings), end(meetings));
+
+        vector<int> roomsUsedCount(n, 0); //Each room is used 0 times in the beginning
+
+        priority_queue<P, vector<P>, greater<P>> usedRooms;
+        //To store {earliest room empty time, room No.}
+        
+        priority_queue<int, vector<int>, greater<int>> unusedRooms;
+        //To store rooms that are used
+        
+        for(int room = 0; room < n; room++) {
+            unusedRooms.push(room); 
+        }
+
+        for(vector<int>& meet : meetings) {
+            int start  = meet[0];
+            int end    = meet[1];
+
+            //First see, by this time, which rooms can be empty now
+            //And move them to unusedRooms
+            while(!usedRooms.empty() && usedRooms.top().first <= start) {
+                int room = usedRooms.top().second;
+                usedRooms.pop();
+                unusedRooms.push(room);
+            }
+
+            if(!unusedRooms.empty()) {
+                int room = unusedRooms.top();
+                unusedRooms.pop();
+                usedRooms.push({end, room});
+                roomsUsedCount[room]++;
+            } else { //We don't have any room available now. Pick earliest end room
+                int room          = usedRooms.top().second;
+                long long endTime = usedRooms.top().first;
+                usedRooms.pop();
+                usedRooms.push({endTime + (end-start), room});
+                roomsUsedCount[room]++;
+            }
+
+        }
+
+        int resultRoom = -1;
+        int maxUse     = 0;  
+        for(int room = 0; room < n; room++) {
+            if(roomsUsedCount[room] > maxUse) {
+                maxUse = roomsUsedCount[room];
+                resultRoom = room;
+            }
+        }
+
+        return resultRoom;
+    }
+};
+
+Leetcode 2262 - https://leetcode.com/problems/total-appeal-of-a-string/ (vivek malik)
+
+PS - The appeal of a string is the number of distinct characters found in the string.
+
+For example, the appeal of "abbca" is 3 because it has 3 distinct characters: 'a', 'b', and 'c'.
+Given a string s, return the total appeal of all of its substrings.
+
+
+The naive approach would be to try every substring and count but taht is 0(N2)
+
+The concept used is called contributions, instead of counting unique characters we count number of substring in which a particualr character occurs and sum that. let us 
+take a example 
+
+ex for aba
+        a       b                   ans is 9 ( 5 + 4)
+a       1       0
+b       0       1
+a       1       0
+ab      1       1
+ba      1       1
+aba     1       1
+
+so the problem now boils down to for a given string how to find number of substrings in which a char example ('a') occurs --> we find total where a does not occur and subtract from total
+
+class Solution {
+public:
+    long long appealSum(string s) {
+        int n = s.size();
+        long long totalSub = (long long)n * (n + 1) / 2;
+        long long ans = 0;
+
+        for(char c = 'a'; c <= 'z'; c++) {
+
+            long long without = 0;
+            int len = 0;
+
+            for(int i = 0; i < n; i++) {
+
+                if(s[i] == c) {
+                    without += (long long)len * (len + 1) / 2;
+                    len = 0;
+                }
+                else {
+                    len++;
+                }
+            }
+
+            without += (long long)len * (len + 1) / 2;
+
+            ans += totalSub - without;
+        }
+
+        return ans;
+    }
+};
+
+
+
+
+Leetcode 2167 - https://leetcode.com/problems/minimum-time-to-remove-all-cars-containing-illegal-goods/description/ (vivek malik)
+
+We got to know about multistage dp where we restrict ourself in movement because either the prefix or suffix needs to be selected
+
+class Solution {
+public:
+    vector<vector<int>> dp;
+    int minimumTime(string s) {
+        int n = s.size();
+
+        dp.resize(n, vector<int> (3, -1));
+        return helper(s, 0, 0);
+    }
+
+    int helper(string &s, int idx, int stage) {
+        if(idx == s.size()) return 0;
+
+        if(dp[idx][stage] != -1) return dp[idx][stage];
+
+        if(stage == 0) { // Left
+
+            int continueLeft = 1 + helper(s, idx + 1, 0);
+            int moveMid = helper(s, idx, 1);
+
+            return dp[idx][stage] = min(continueLeft, moveMid);
+        } else if (stage == 1) { // Mid
+
+            int stayMid = (s[idx] == '1' ? 2 : 0) + helper(s, idx + 1, 1);
+            int moveRight = helper(s, idx , 2);
+
+            return dp[idx][stage] = min(stayMid, moveRight);
+
+        } else if (stage == 2) { // Right
+
+            return dp[idx][stage] = s.size()-idx;
+        }
+
+        return 0;
+    }
+};
+
+Leetcode 839 -  Similar String Groups
+
+Idea to use Union find here is good , for union find we need to have a way to connect two nodes(strings here), that is done by following constraint and rest we use standard union find logic
+
+Leetcode 2218 - https://leetcode.com/problems/maximum-value-of-k-coins-from-piles/description/
+
+
+This is essentially a knapscak problem because from each pile you can pick from 0 to min(k, piles.size()) coins, the way to optimise this is by using prefix sum and precomputing the gain we will get by selecting x coins from a pile
+
+class Solution {
+public:
+    int dp[1001][2001];
+    int maxValueOfCoins(vector<vector<int>>& piles, int k) {
+
+        int n = piles.size();
+        vector<vector<int>> prefix;
+
+        for(int i=0;i<n;i++){
+
+            int sz = piles[i].size();
+            vector<int> temp(sz+1,0);
+
+            for(int j=0;j<sz;j++)
+                temp[j+1] = temp[j] + piles[i][j];
+
+            prefix.push_back(temp);
+        }
+
+        memset(dp, -1, sizeof(dp));
+
+        return helper(prefix,0,k);
+    }
+
+    int helper(vector<vector<int>> &prefix,int idx,int k){
+
+        if(idx==prefix.size() || k==0)
+            return 0;
+
+        if(dp[idx][k] != -1) return dp[idx][k];
+
+        int ans = 0;
+
+        int pileSize = prefix[idx].size()-1;
+
+        for(int i=0;i<=min(k,pileSize);i++){
+
+            ans = max(ans,
+                prefix[idx][i] +
+                helper(prefix,idx+1,k-i));
+        }
+
+        return dp[idx][k] = ans;
+    }
+};
+
+2183. Count Array Pairs Divisible by K (vivek malik)
+
+ART : Similar questions exists which says count pairs whose sum is divisable by k, that is done by taking modulo with K getting re and seeing if K - rem exists in map
+
+Somewhat similar idea is used here for any number ex 48 to be divisable by 18 we see what part of 18 is covered by 48 , here it is 6 , 3 must come from somewhere else.
+On more close look 6 is the gcd of 48 and 18, so we need some other number whose gcd is 3 with 18 and these two would form the perfect pair 
+
+class Solution {
+public:
+    long long countPairs(vector<int>& nums, int k) {
+        long long cnt = 0;
+
+        unordered_map<int, long long> mp;
+
+        for(int i=0; i<nums.size(); i++) {
+            int g1 = gcd(nums[i], k); // int g1 = __gcd(nums[i], k); --> Library function
+
+            for(auto &[g2, freq] : mp) {
+                if ((1LL * g2 * g1) % k == 0) {
+                    cnt += freq;
+                }
+            }
+
+            mp[g1]++;
+        }
+
+        return cnt;
+    }
+
+    int gcd (int a, int b) {
+        if (b == 0) return a;
+
+        return gcd(b, a % b);
+    }
+};
+
+Time - map can contain only divisors of k, if k --> 1e5 that number is around 128 , gcd calculations takes log(min(a,b)) time, n*logk*d(divisor count) = n (approx)
+
