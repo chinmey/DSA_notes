@@ -1,0 +1,481 @@
+939. Minimum Area Rectangle 
+
+You are given an array of points in the X-Y plane points where points[i] = [xi, yi].
+
+Return the minimum area of a rectangle formed from these points, with sides parallel to the X and Y axes. If there is not any such rectangle, return 0.
+
+this is a basic geometry application push all points in a set now traverse through array and check for every point in set as if they were diagonal elements 
+of rectangle (that means x1 != x2 and y1 != y2)
+
+class Solution {
+public:
+    int minAreaRect(vector<vector<int>>& points) {
+        
+        int ans = INT_MAX;
+
+        set<pair<int,int>> s;
+
+        for(vector<int> point : points) {
+            s.insert({point[0], point[1]});
+        }
+
+        for(vector<int> point : points) {
+            int x1 = point[0];
+            int y1 = point[1];
+
+            for(pair<int,int> p : s) {
+                int x2 = p.first;
+                int y2 = p.second;
+
+                if(x1 != x2 && y1 != y2 && s.find({x1, y2}) != s.end() && s.find({x2, y1}) != s.end()) {
+                    int area = abs(x1- x2) * abs(y1- y2);
+                    ans = min(ans, area);
+                }
+            }
+        }
+
+        return ans == INT_MAX ? 0 : ans;
+    }
+};
+
+2101. Detonate the Maximum Bombs
+
+Points and radius are given which shows bomb location and blast radius , if one bomb exploded it explodes all bombs in its blast radius find out max 
+bombs exploded if we are allowed to explode only one bomb 
+
+How to find if 2 bombs are in range of each other ?
+
+> radius of a + b < distance between their center points 
+
+Use this combine with dfs to solve this ex 
+
+class Solution {
+public:
+    bool isInRange(int x1, int y1, int x2, int y2, int r1) {
+        long long dist = (long long)(x2 - x1) * (x2 - x1) + (long long)(y2 - y1) * (y2 - y1);
+        long long radius = (long long)r1 * r1;
+        return dist <= radius;
+    }
+
+    void dfs(int vertex, vector<bool> &exploded, int &explode, const vector<vector<int>>& bombs) {
+        exploded[vertex] = true;
+        explode++;
+        int n = bombs.size();
+
+        for (int i = 0; i < n; i++) {
+            if (!exploded[i] && isInRange(bombs[vertex][0], bombs[vertex][1], bombs[i][0], bombs[i][1], bombs[vertex][2])) {
+                dfs(i, exploded, explode, bombs);
+            }
+        }
+    }
+
+    int maximumDetonation(vector<vector<int>>& bombs) {
+        int n = bombs.size();
+        int ans = 1;
+
+        for (int i = 0; i < n; i++) {
+            vector<bool> exploded(n, false);  // Reset exploded array for each bomb
+            int explode = 0;
+            dfs(i, exploded, explode, bombs);
+            ans = max(ans, explode);
+        }
+
+        return ans;
+    }
+};
+
+Now here we are doing repeated DFS let us memorize the result for easier Use
+
+class Solution {
+public:
+    bool isInRange(int x1, int y1, int x2, int y2, int r1) {
+        long long dist = (long long)(x2 - x1) * (x2 - x1) + (long long)(y2 - y1) * (y2 - y1);
+        long long radius = (long long)r1 * r1;
+        return dist <= radius;
+    }
+
+    int dfs(int vertex, vector<bool> &exploded, vector<int> &memo, const vector<vector<int>>& bombs) {
+        if (memo[vertex] != -1) return memo[vertex];  // Return memoized result if already computed
+
+        exploded[vertex] = true;
+        int n = bombs.size();
+        int explode = 1;  // Start with the current bomb
+
+        for (int i = 0; i < n; i++) {
+            if (!exploded[i] && isInRange(bombs[vertex][0], bombs[vertex][1], bombs[i][0], bombs[i][1], bombs[vertex][2])) {
+                explode += dfs(i, exploded, memo, bombs);
+            }
+        }
+
+        memo[vertex] = explode;    // Memoize the result for this bomb
+        return explode;
+    }
+
+    int maximumDetonation(vector<vector<int>>& bombs) {
+        int n = bombs.size();
+        vector<int> memo(n, -1);  // To store the result of DFS for each bomb
+        int ans = 1;
+
+        for (int i = 0; i < n; i++) {
+            vector<bool> exploded(n, false);  // Reset exploded array for each bomb
+            ans = max(ans, dfs(i, exploded, memo, bombs));
+        }
+
+        return ans;
+    }
+};
+
+
+2543. Check if Point Is Reachable
+
+we are 1,1 we need to reach some tx, ty
+
+
+In one step, you can move from point (x, y) to any one of the following points:
+
+(x, y - x)
+(x - y, y)
+(2 * x, y)
+(x, 2 * y)
+
+
+ bool isReachable(int targetX, int targetY) {
+        /**
+        https://www.youtube.com/watch?v=KiVZRzPfKnQ
+        This is the initution to the problem 
+        since we dont need minimum we just need to know if we can reach or not 
+
+        (2x, y) --> (2^n*x, y)
+        (x, 2y) ---> (x, 2^m*y)
+
+        we can merge this into one (2^n*x, 2^m*y)
+
+        now gcd of this will always be some power of 2 (since both are power of 2)
+
+        also even if subtract x or y the number is still always divisable by some power of 2 
+
+        so from 1,1 we can reach x, y if and only if their gcd is some power of 2 
+        **/
+
+        int gcd = __gcd(targetX, targetY);
+
+        return (gcd & (gcd - 1)) == 0;
+}
+
+365. Water and Jug problem 
+
+capacities are x and y , target is z , this is solved by if z % GCD(x,y) ==0
+
+
+Whenever we have linear combination of 2 variables and we are asked if a eventual state can be reached or not gcd is always something which should be 
+kept in mind
+
+
+**** Binary Exponentiation ****
+
+https://www.youtube.com/watch?v=D320QeHS0XQ
+
+This is a fast way of calculating power of number 
+
+example if i have to calculate a pow b if we do simple multiplication it takes o(b) time , but in this way we will take o(logb) time
+
+int solve(int a, int b) {
+    if(b == 0) return 1; // any number power 0 is 1
+
+    int half = solve(a, b/2);
+    int res = half*half;
+
+    if(b % 2 == 1) res = res * a;
+    return res;
+}
+
+same code for very large number 
+
+int solve(long long a, long long b, int mod) {
+    if(b == 0) return 1;
+    
+    long long half = solve(a, b/2, mod);
+    long long res = (half * half) % mod;
+    
+    if(b % 2 == 1) 
+        res = (res * a) % mod;
+    
+    return res;
+}
+
+
+LC 1922 - https://leetcode.com/problems/count-good-numbers/
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Combinatorial Game Theory (CGT)
+
+Two-player perfect-information games with no randomness and players alternate moves until a terminal position.
+
+Outcome is win/lose (sometimes draw) and the game must eventually terminate.
+
+Examples: Chess, Tic-Tac-Toe, Game of Nim.
+
+Two types:
+
+Impartial games: both players have the same set of moves from any position (e.g., Nim).
+
+Partisan games: players have different moves (e.g., Chess). {one player always moves with only one color}
+
+Impartial games are easier to analyze and use tools like Sprague–Grundy theorem. 
+
+
+Game of Nim
+
+Problem:
+
+Given n piles of stones. Each turn a player removes ≥1 stones from a single pile. Players alternate; whoever takes the last stone wins.
+
+Key Observation (Nim-Sum):
+
+Compute XOR of all piles.
+
+If NimSum = 0 → first player loses (optimal play)
+
+If NimSum ≠ 0 → first player can force a win.
+
+Winning Move:
+Reduce some pile p to p ^ NimSum so the new XOR becomes 0.
+
+Code
+
+bool firstPlayerWins(vector<int>& piles) {
+    int nim = 0;
+    for (int p : piles) nim ^= p;
+    return nim != 0;
+}
+
+Optimal Move
+
+pair<int,int> move(vector<int>& piles) {
+    int nim = 0;
+    for (int p : piles) nim ^= p;
+
+    for (int i = 0; i < piles.size(); i++) {
+        int target = piles[i] ^ nim;
+        if (target < piles[i])
+            return {i, piles[i] - target}; // remove stones
+    }
+    return {-1,-1}; // losing position
+}
+
+1. Grundy Numbers (Game State Value)
+
+A Grundy Number (G) represents the value of a game state in an impartial game.
+
+Definition
+
+G(state) = mex( Grundy(all possible next states) )
+
+Special case:
+
+If no moves possible → G = 0
+
+Meaning:
+
+G = 0 → losing position
+
+G ≠ 0 → winning position
+
+2. Mex (Minimum Excluded)
+
+Mex(S) = smallest non-negative integer not in S
+
+Examples:
+
+mex{0,1,2} = 3
+mex{1,2,3} = 0
+mex{0,2,3} = 1
+
+
+
+Mex essentially finds the first missing number.
+
+3. How Grundy Numbers Are Computed
+
+General template:
+
+G(state) = mex{ G(next_state1), G(next_state2), ... }
+
+Algorithm:
+
+List all possible moves
+
+Compute Grundy for resulting states
+
+Take mex
+
+4. Example 1 — Take Any Stones (Classic Nim)
+
+Moves: remove 1..n stones
+
+Transitions:
+
+n → n-1, n-2, ..., 0
+
+So:
+
+G(n) = mex{ G(0), G(1), ... G(n-1) }
+
+Result:
+
+G(n) = n
+
+Example:
+
+G(0) = 0
+G(1) = mex{0} = 1
+G(2) = mex{0,1} = 2
+G(3) = mex{0,1,2} = 3
+
+This explains why Nim uses XOR.
+
+5. Example 2 — Remove Only 1,2,3 Stones
+
+Moves:
+
+n → n-1, n-2, n-3
+
+Recurrence:
+
+G(n) = mex{ G(n-1), G(n-2), G(n-3) }
+
+Values:
+
+n : 0 1 2 3 4 5 6 7 ...
+G : 0 1 2 3 0 1 2 3 ...
+
+Pattern:
+
+G(n) = n % 4
+
+7. Sprague-Grundy Theorem (Most Important Idea)
+
+Every impartial game can be converted to equivalent Nim piles.
+
+If the game has multiple independent subgames:
+
+Grundy_total = G1 ⊕ G2 ⊕ ... ⊕ Gn
+
+Where:
+
+Gi = Grundy number of subgame i
+
+Decision rule:
+
+Grundy_total = 0 → losing state
+Grundy_total ≠ 0 → winning state
+8. Example
+
+Piles:
+
+3,4,5
+
+For "remove up to 3":
+
+G(3)=3
+G(4)=0
+G(5)=1
+
+Compute XOR:
+
+3 ⊕ 0 ⊕ 1 = 2 ≠ 0
+
+First player wins.
+
+9. Generic Coding Template
+int grundy(int n){
+    if(n == 0) return 0;
+
+    unordered_set<int> s;
+
+    for(move in possible_moves){
+        s.insert(grundy(next_state));
+    }
+
+    return mex(s);
+}
+
+Problem: Alice and Bob are playing a game with candy baskets. Initially, there are N baskets, and the i-th basket has candies_in_basket_i candies and a special number candies_limit_i. 
+The game starts with Alice, and they take turns. On each turn, the player picks a basket and takes away some candies. 
+If the player chooses the i-th basket and there are candies_left_in_basket_i candies, they must take between 1 and floor(candies_left_in_basket_i / candies_limit_i) candies. 
+The player who can't make a move (because all baskets are empty or they can't take the required number of candies) loses the game. 
+Both Alice and Bob play perfectly, so they always make the best possible moves. Your task is to determine who will win the game, assuming both play optimally.
+
+
+This is a generalised nim game 
+
+1. Break the game into subgames
+
+Each basket behaves independently.
+
+So the full game is a composite game of N subgames.
+
+By the Sprague–Grundy theorem:
+
+winner depends on XOR of Grundy numbers of all baskets
+
+If
+
+G1 ^ G2 ^ ... ^ GN ≠ 0 → Alice wins
+G1 ^ G2 ^ ... ^ GN = 0 → Bob wins
+
+2. Understand a single basket
+
+Basket i:
+
+candies = x
+limit = k
+
+Allowed move:
+
+remove 1 ... floor(x / k)
+
+So transitions are:
+
+x → x-1
+x → x-2
+...
+x → x-floor(x/k)
+
+This is exactly an impartial game, so we compute
+
+G(x) = mex{ G(x-1), G(x-2), ..., G(x-floor(x/k)) }
+
+int grundy(int x, int k, vector<int>& dp) {
+    if (x == 0) return 0;
+    if (dp[x] != -1) return dp[x];
+
+    unordered_set<int> s;
+
+    int limit = x / k;
+
+    for (int take = 1; take <= limit; take++)
+        s.insert(grundy(x - take, k, dp));
+
+    int g = 0;
+    while (s.count(g)) g++;
+
+    return dp[x] = g;
+}
+
+int nim = 0;
+
+for(int i=0;i<n;i++)
+    nim ^= grundy(candies[i], limit[i], dp);
+
+if(nim) cout<<"Alice";
+else cout<<"Bob";
+
+Grundy(state) = mex{ Grundy(next states) }
+
+For independent games:
+First player wins iff XOR of Grundy numbers ≠ 0
